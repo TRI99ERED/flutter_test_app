@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:test_app/src/app_controller.dart';
 import 'package:test_app/src/app_home.dart';
 import 'package:test_app/src/app_scope.dart';
@@ -43,7 +44,20 @@ class _AppState extends State<App> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Calculator',
+      title: 'Test App',
+      theme: ThemeData(
+        buttonTheme: Theme.of(context).buttonTheme.copyWith(
+          highlightColor: const Color.fromARGB(255, 0x00, 0x6F, 0xFD),
+        ),
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color.fromARGB(255, 0x00, 0x6F, 0xFD),
+        ),
+        textTheme: GoogleFonts.interTextTheme(Theme.of(context).textTheme),
+        visualDensity: VisualDensity.adaptivePlatformDensity,
+        iconTheme: const IconThemeData(
+          color: Color.fromARGB(255, 0x00, 0x6F, 0xFD),
+        ),
+      ),
       home: const AppHome(),
       builder: (context, child) => AppScope(
         controller: _controller,

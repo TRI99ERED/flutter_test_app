@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:test_app/src/app_icons.dart';
 
 class LoginForm extends StatelessWidget {
   const LoginForm({
@@ -31,7 +32,7 @@ class LoginForm extends StatelessWidget {
             suffixIcon: IconButton(
               onPressed: passwordSuffixIconCallback,
               icon: Icon(
-                obscurePassword ? Icons.visibility_off : Icons.visibility,
+                obscurePassword ? AppIcons.eyeInvisible : AppIcons.eyeVisible,
               ),
             ),
           ),
@@ -59,9 +60,9 @@ class LoginForm extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            IconButton(onPressed: () {}, icon: const Icon(Icons.g_mobiledata)),
-            IconButton(onPressed: () {}, icon: const Icon(Icons.apple)),
-            IconButton(onPressed: () {}, icon: const Icon(Icons.facebook)),
+            IconButton(onPressed: () {}, icon: const Icon(AppIcons.google)),
+            IconButton(onPressed: () {}, icon: const Icon(AppIcons.apple)),
+            IconButton(onPressed: () {}, icon: const Icon(AppIcons.facebook)),
           ],
         ),
       ],

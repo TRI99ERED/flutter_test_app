@@ -1,0 +1,50 @@
+import 'package:flutter/widgets.dart';
+
+class AppIcons {
+  AppIcons._();
+  static const String _kFontFam = 'AppIcons';
+
+  static const IconData add = IconData(0xf12b, fontFamily: _kFontFam);
+  static const IconData apple = IconData(0xf12a, fontFamily: _kFontFam);
+  static const IconData arrowDown = IconData(0xf129, fontFamily: _kFontFam);
+  static const IconData arrowLeft = IconData(0xf128, fontFamily: _kFontFam);
+  static const IconData arrowRight = IconData(0xf127, fontFamily: _kFontFam);
+  static const IconData arrowUp = IconData(0xf126, fontFamily: _kFontFam);
+  static const IconData camera = IconData(0xf125, fontFamily: _kFontFam);
+  static const IconData categories = IconData(0xf124, fontFamily: _kFontFam);
+  static const IconData chat = IconData(0xf123, fontFamily: _kFontFam);
+  static const IconData check = IconData(0xf122, fontFamily: _kFontFam);
+  static const IconData close = IconData(0xf121, fontFamily: _kFontFam);
+  static const IconData create = IconData(0xf120, fontFamily: _kFontFam);
+  static const IconData delete = IconData(0xf11f, fontFamily: _kFontFam);
+  static const IconData edit = IconData(0xf11e, fontFamily: _kFontFam);
+  static const IconData energy = IconData(0xf11d, fontFamily: _kFontFam);
+  static const IconData explore = IconData(0xf11c, fontFamily: _kFontFam);
+  static const IconData eyeInvisible = IconData(0xf11b, fontFamily: _kFontFam);
+  static const IconData eyeVisible = IconData(0xf11a, fontFamily: _kFontFam);
+  static const IconData facebook = IconData(0xf119, fontFamily: _kFontFam);
+  static const IconData filter = IconData(0xf118, fontFamily: _kFontFam);
+  static const IconData google = IconData(0xf117, fontFamily: _kFontFam);
+  static const IconData hamburger = IconData(0xf116, fontFamily: _kFontFam);
+  static const IconData heartFilled = IconData(0xf115, fontFamily: _kFontFam);
+  static const IconData heartOutlined = IconData(0xf114, fontFamily: _kFontFam);
+  static const IconData image = IconData(0xf113, fontFamily: _kFontFam);
+  static const IconData inbox = IconData(0xf112, fontFamily: _kFontFam);
+  static const IconData info = IconData(0xf111, fontFamily: _kFontFam);
+  static const IconData linkedIn = IconData(0xf110, fontFamily: _kFontFam);
+  static const IconData minus = IconData(0xf10f, fontFamily: _kFontFam);
+  static const IconData play = IconData(0xf10e, fontFamily: _kFontFam);
+  static const IconData profile = IconData(0xf10d, fontFamily: _kFontFam);
+  static const IconData record = IconData(0xf10c, fontFamily: _kFontFam);
+  static const IconData search = IconData(0xf10b, fontFamily: _kFontFam);
+  static const IconData send = IconData(0xf10a, fontFamily: _kFontFam);
+  static const IconData settings = IconData(0xf109, fontFamily: _kFontFam);
+  static const IconData shoppingBagFilled = IconData(0xf108, fontFamily: _kFontFam);
+  static const IconData shoppingBagOutlined = IconData(0xf107, fontFamily: _kFontFam);
+  static const IconData sort = IconData(0xf106, fontFamily: _kFontFam);
+  static const IconData starFilled = IconData(0xf105, fontFamily: _kFontFam);
+  static const IconData starOutlined = IconData(0xf104, fontFamily: _kFontFam);
+  static const IconData store = IconData(0xf103, fontFamily: _kFontFam);
+  static const IconData success = IconData(0xf102, fontFamily: _kFontFam);
+  static const IconData warning = IconData(0xf101, fontFamily: _kFontFam);
+}

@@ -1,0 +1,145 @@
+@font-face {
+    font-family: "AppIcons";
+    src: url("./AppIcons.ttf?98ef7c3e314e97b9bcfd5d733f1e1c07") format("truetype");
+}
+
+i[class^="icon--"]:before, i[class*=" icon--"]:before {
+    font-family: AppIcons !important;
+    font-style: normal;
+    font-weight: normal !important;
+    font-variant: normal;
+    text-transform: none;
+    line-height: 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.icon--warning:before {
+    content: "\f101";
+}
+.icon--success:before {
+    content: "\f102";
+}
+.icon--store:before {
+    content: "\f103";
+}
+.icon--star_outlined:before {
+    content: "\f104";
+}
+.icon--star_filled:before {
+    content: "\f105";
+}
+.icon--sort:before {
+    content: "\f106";
+}
+.icon--shopping_bag_outlined:before {
+    content: "\f107";
+}
+.icon--shopping_bag_filled:before {
+    content: "\f108";
+}
+.icon--settings:before {
+    content: "\f109";
+}
+.icon--send:before {
+    content: "\f10a";
+}
+.icon--search:before {
+    content: "\f10b";
+}
+.icon--record:before {
+    content: "\f10c";
+}
+.icon--profile:before {
+    content: "\f10d";
+}
+.icon--play:before {
+    content: "\f10e";
+}
+.icon--minus:before {
+    content: "\f10f";
+}
+.icon--linked_in:before {
+    content: "\f110";
+}
+.icon--info:before {
+    content: "\f111";
+}
+.icon--inbox:before {
+    content: "\f112";
+}
+.icon--image:before {
+    content: "\f113";
+}
+.icon--heart_outlined:before {
+    content: "\f114";
+}
+.icon--heart_filled:before {
+    content: "\f115";
+}
+.icon--hamburger:before {
+    content: "\f116";
+}
+.icon--google:before {
+    content: "\f117";
+}
+.icon--filter:before {
+    content: "\f118";
+}
+.icon--facebook:before {
+    content: "\f119";
+}
+.icon--eye_visible:before {
+    content: "\f11a";
+}
+.icon--eye_invisible:before {
+    content: "\f11b";
+}
+.icon--explore:before {
+    content: "\f11c";
+}
+.icon--energy:before {
+    content: "\f11d";
+}
+.icon--edit:before {
+    content: "\f11e";
+}
+.icon--delete:before {
+    content: "\f11f";
+}
+.icon--create:before {
+    content: "\f120";
+}
+.icon--close:before {
+    content: "\f121";
+}
+.icon--check:before {
+    content: "\f122";
+}
+.icon--chat:before {
+    content: "\f123";
+}
+.icon--categories:before {
+    content: "\f124";
+}
+.icon--camera:before {
+    content: "\f125";
+}
+.icon--arrow_up:before {
+    content: "\f126";
+}
+.icon--arrow_right:before {
+    content: "\f127";
+}
+.icon--arrow_left:before {
+    content: "\f128";
+}
+.icon--arrow_down:before {
+    content: "\f129";
+}
+.icon--apple:before {
+    content: "\f12a";
+}
+.icon--add:before {
+    content: "\f12b";
+}

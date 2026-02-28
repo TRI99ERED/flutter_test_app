@@ -1,0 +1,15 @@
+{
+  "name": "test_app",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "generate-icons": "node scripts/generate_icons.js"
+  },
+  "devDependencies": {
+    "minimist": "^1.2.8"
+  },
+  "dependencies": {
+    "fantasticon": "^4.1.0",
+    "svgpath": "^2.6.0"
+  }
+}

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:test_app/src/app_scope.dart';
-import 'package:test_app/src/components/placeholder_image.dart';
+import 'package:test_app/src/components/placeholders.dart';
 import 'package:test_app/src/controller_builder.dart';
 import 'package:test_app/src/controller_listener.dart';
 import 'package:test_app/src/login_form.dart';
@@ -28,26 +28,31 @@ class _AppHomeState extends State<AppHome> {
           context,
         ).showSnackBar(SnackBar(content: Text('Error: ${current.message}')));
       },
-      child: Scaffold(
-        body: Column(
-          children: [
-            const PlaceholderImage(),
-            ControllerBuilder(
-              controller: context.appController,
-              buildWhen: (previous, current) =>
-                  previous.obscurePassword != current.obscurePassword,
-              builder: (context, state) {
-                return LoginForm(
-                  obscurePassword: state.obscurePassword,
-                  forgotPasswordCallback: context.appController.forgotPassword,
-                  loginCallback: context.appController.login,
-                  registerCallback: context.appController.register,
-                  passwordSuffixIconCallback:
-                      context.appController.toggleObscurePassword,
-                );
-              },
-            ),
-          ],
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 375, maxHeight: 812),
+        child: Scaffold(
+          body: ListView(
+            physics: NeverScrollableScrollPhysics(),
+            children: [
+              const PlaceholderImage(),
+              ControllerBuilder(
+                controller: context.appController,
+                buildWhen: (previous, current) =>
+                    previous.obscurePassword != current.obscurePassword,
+                builder: (context, state) {
+                  return LoginForm(
+                    obscurePassword: state.obscurePassword,
+                    forgotPasswordCallback:
+                        context.appController.forgotPassword,
+                    loginCallback: context.appController.login,
+                    registerCallback: context.appController.register,
+                    passwordSuffixIconCallback:
+                        context.appController.toggleObscurePassword,
+                  );
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );
