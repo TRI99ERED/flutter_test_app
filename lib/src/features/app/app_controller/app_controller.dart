@@ -44,7 +44,7 @@ final class AppController extends BaseController<AppState> {
     }
   }
 
-  Future<void> signIn(String email, String password) async {
+  Future<void> login(String email, String password) async {
     setState(AppState.processing(message: 'Signing in...', user: state.user));
     try {
       await _authRepository.signInWithEmailAndPassword(
@@ -58,7 +58,7 @@ final class AppController extends BaseController<AppState> {
     }
   }
 
-  Future<void> signOut() async {
+  Future<void> logout() async {
     setState(AppState.processing(message: 'Signing out...', user: state.user));
     try {
       await _authRepository.signOut();

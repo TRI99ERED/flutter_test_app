@@ -14,6 +14,9 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  final emailController = TextEditingController();
+  final passwordController = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     return ControllerListener(
@@ -22,12 +25,19 @@ class _LoginScreenState extends State<LoginScreen> {
         if (!previous.isFailed && current.isFailed) {
           return true;
         }
+        if (!previous.isAuthorized && current.isAuthorized) {
+          return true;
+        }
         return false;
       },
       listener: (context, previous, current) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Error: ${current.message}')));
+        if (current.isFailed) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('Error: ${current.message}')));
+        } else if (current.isAuthorized && !previous.isAuthorized) {
+          context.go(homePath);
+        }
       },
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 375, maxHeight: 812),
@@ -42,9 +52,13 @@ class _LoginScreenState extends State<LoginScreen> {
                   children: [
                     const Text('Welcome!'),
                     TextFormField(
-                      decoration: InputDecoration(labelText: 'Email Address'),
+                      controller: emailController,
+                      decoration: const InputDecoration(
+                        labelText: 'Email Address',
+                      ),
                     ),
                     TextFormField(
+                      controller: passwordController,
                       decoration: InputDecoration(
                         labelText: 'Password',
                         suffixIcon: IconButton(
@@ -60,7 +74,12 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     Center(
                       child: ElevatedButton(
-                        onPressed: () {},
+                        onPressed: () async {
+                          final email = emailController.text;
+                          final password = passwordController.text;
+
+                          await context.appController.login(email, password);
+                        },
                         child: Text('Login'),
                       ),
                     ),
@@ -104,5 +123,12 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    emailController.dispose();
+    passwordController.dispose();
+    super.dispose();
   }
 }

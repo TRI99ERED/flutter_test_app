@@ -68,7 +68,8 @@ class _AppState extends State<App> {
         ),
       ),
       routerConfig: _router,
-      builder: (context, child) => AppScope(child: child!),
+      builder: (context, child) =>
+          AppScope(child: child!, controller: _controller),
     );
   }
 

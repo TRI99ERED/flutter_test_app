@@ -4,8 +4,13 @@ import 'package:test_app/src/features/app/data/models/user_model.dart';
 
 class AppScope extends StatefulWidget {
   final Widget child;
+  final AppController controller;
 
-  const AppScope({super.key, required this.child});
+  const AppScope({
+    super.key,
+    required this.child,
+    required this.controller,
+  });
 
   @override
   State<AppScope> createState() => _AppScopeState();
@@ -20,7 +25,7 @@ class _AppScopeState extends State<AppScope> {
   @override
   void initState() {
     super.initState();
-    _controller = AppController();
+    _controller = widget.controller;
     _state = _controller.state;
 
     _controller.addListener(_onStateChange);
@@ -49,7 +54,6 @@ class _AppScopeState extends State<AppScope> {
   @override
   void dispose() {
     _controller.removeListener(_onStateChange);
-    _controller.dispose();
     super.dispose();
   }
 }
