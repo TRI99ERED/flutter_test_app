@@ -20,6 +20,12 @@ dependencies:
   async: any
   collection: any
   meta: any
+  go_router: any
+
+  firebase_core: ^4.4.0
+  firebase_auth: ^6.1.4
+  cloud_firestore: ^6.1.2
+  firebase_ui_auth: ^3.0.1
 
 dev_dependencies:
   flutter_test:

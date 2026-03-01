@@ -1,24 +1,26 @@
 import 'package:flutter/material.dart';
-import 'package:test_app/src/base_controller.dart';
+import 'package:test_app/src/core/controller/base_controller/base_controller.dart';
 
-class ControllerBuilder<S extends BaseState> extends StatefulWidget {
+class ControllerListener<S extends BaseState> extends StatefulWidget {
   final BaseController<S> controller;
-  final Widget Function(BuildContext context, S state) builder;
-  final bool Function(S previous, S current)? buildWhen;
+  final void Function(BuildContext context, S previous, S current) listener;
+  final Widget child;
+  final bool Function(S previous, S current)? listenWhen;
 
-  const ControllerBuilder({
+  const ControllerListener({
     super.key,
     required this.controller,
-    required this.builder,
-    this.buildWhen,
+    required this.listener,
+    required this.child,
+    this.listenWhen,
   });
 
   @override
-  State<ControllerBuilder<S>> createState() => _ControllerBuilderState<S>();
+  State<ControllerListener<S>> createState() => _ControllerListenerState<S>();
 }
 
-class _ControllerBuilderState<S extends BaseState>
-    extends State<ControllerBuilder<S>> {
+class _ControllerListenerState<S extends BaseState>
+    extends State<ControllerListener<S>> {
   late S _previousState;
 
   @override
@@ -33,15 +35,15 @@ class _ControllerBuilderState<S extends BaseState>
 
     final current = widget.controller.state;
 
-    if (widget.buildWhen?.call(_previousState, current) ?? true) {
-      setState(() {});
+    if (widget.listenWhen?.call(_previousState, current) ?? true) {
+      widget.listener(context, _previousState, current);
     }
 
     _previousState = current;
   }
 
   @override
-  void didUpdateWidget(covariant ControllerBuilder<S> oldWidget) {
+  void didUpdateWidget(covariant ControllerListener<S> oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.controller != widget.controller) {
       oldWidget.controller.removeListener(_onStateChange);
@@ -51,8 +53,9 @@ class _ControllerBuilderState<S extends BaseState>
   }
 
   @override
-  Widget build(BuildContext context) =>
-      widget.builder(context, widget.controller.state);
+  Widget build(BuildContext context) {
+    return widget.child;
+  }
 
   @override
   void dispose() {

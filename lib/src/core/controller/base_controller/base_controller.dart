@@ -1,8 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
-import 'package:test_app/src/controller_observer.dart';
-import 'package:test_app/src/serial_executor.dart';
+import 'package:test_app/src/core/observers/controller_observer.dart';
+import 'package:test_app/src/core/utils/serial_executor.dart';
 
 part 'base_state.dart';
 

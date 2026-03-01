@@ -27,15 +27,27 @@ class PlaceholderVideo extends StatelessWidget {
   }
 }
 
+enum AvatarSize {
+  small(40),
+  medium(56),
+  large(80);
+
+  final double size;
+
+  const AvatarSize(this.size);
+}
+
 class PlaceholderAvatar extends StatelessWidget {
-  const PlaceholderAvatar({super.key});
+  final AvatarSize size;
+
+  const PlaceholderAvatar({super.key, this.size = AvatarSize.large});
 
   @override
   Widget build(BuildContext context) {
     return SvgPicture.asset(
       'assets/images/placeholder_avatar.svg',
-      width: 375,
-      height: 375,
+      width: size.size,
+      height: size.size,
     );
   }
 }

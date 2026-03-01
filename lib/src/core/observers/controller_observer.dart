@@ -1,6 +1,6 @@
 import 'dart:developer';
 
-import 'package:test_app/src/base_controller.dart';
+import 'package:test_app/src/core/controller/base_controller/base_controller.dart';
 
 class ControllerObserver {
   ControllerObserver._();

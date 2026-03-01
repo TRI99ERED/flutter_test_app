@@ -1,26 +1,28 @@
 import 'package:flutter/material.dart';
-import 'package:test_app/src/base_controller.dart';
+import 'package:test_app/src/core/controller/base_controller/base_controller.dart';
 
-class ControllerListener<S extends BaseState> extends StatefulWidget {
+class ControllerConsumer<S extends BaseState> extends StatefulWidget {
   final BaseController<S> controller;
+  final Widget Function(BuildContext context, S current) builder;
   final void Function(BuildContext context, S previous, S current) listener;
-  final Widget child;
+  final bool Function(S previous, S current)? buildWhen;
   final bool Function(S previous, S current)? listenWhen;
 
-  const ControllerListener({
+  const ControllerConsumer({
     super.key,
     required this.controller,
+    required this.builder,
     required this.listener,
-    required this.child,
+    this.buildWhen,
     this.listenWhen,
   });
 
   @override
-  State<ControllerListener<S>> createState() => _ControllerListenerState<S>();
+  State<ControllerConsumer<S>> createState() => _ControllerConsumerState<S>();
 }
 
-class _ControllerListenerState<S extends BaseState>
-    extends State<ControllerListener<S>> {
+class _ControllerConsumerState<S extends BaseState>
+    extends State<ControllerConsumer<S>> {
   late S _previousState;
 
   @override
@@ -39,11 +41,15 @@ class _ControllerListenerState<S extends BaseState>
       widget.listener(context, _previousState, current);
     }
 
+    if (widget.buildWhen?.call(_previousState, current) ?? true) {
+      setState(() {});
+    }
+
     _previousState = current;
   }
 
   @override
-  void didUpdateWidget(covariant ControllerListener<S> oldWidget) {
+  void didUpdateWidget(covariant ControllerConsumer<S> oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.controller != widget.controller) {
       oldWidget.controller.removeListener(_onStateChange);
@@ -54,7 +60,7 @@ class _ControllerListenerState<S extends BaseState>
 
   @override
   Widget build(BuildContext context) {
-    return widget.child;
+    return widget.builder(context, widget.controller.state);
   }
 
   @override

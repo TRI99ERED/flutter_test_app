@@ -284,7 +284,7 @@ Defaults:
   --icons assets/images/icons
   --out assets/fonts
   --font AppIcons
-  --dart lib/src/app_icons.dart
+  --dart lib/src/core/resources/app_icons/app_icons.dart
   --class AppIcons
   --prefix icon-
 `);
@@ -294,7 +294,7 @@ const argv = require('minimist')(process.argv.slice(2));
 const iconsDir = argv.icons || 'assets/images/icons';
 const outDir = argv.out || 'assets/fonts';
 const fontName = argv.font || 'AppIcons';
-const dartFile = argv.dart || 'lib/src/app_icons.dart';
+const dartFile = argv.dart || 'lib/src/core/resources/app_icons/app_icons.dart';
 const className = argv.class || 'AppIcons';
 // fantasticon default prefix is 'icon'
 const cssPrefix = argv.prefix || 'icon-';
