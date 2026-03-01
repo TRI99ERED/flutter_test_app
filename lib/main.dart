@@ -1,15 +1,21 @@
 import 'dart:async';
 
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:test_app/firebase_options.dart';
 import 'package:test_app/src/features/app/app_controller/app_controller.dart';
 import 'package:test_app/src/features/app/app_scope.dart';
 import 'package:test_app/src/router/routes.dart';
 
 void main() {
   runZonedGuarded(
-    () {
+    () async {
+      WidgetsFlutterBinding.ensureInitialized();
+      await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform,
+      );
       runApp(const App());
     },
     (error, stackTrace) {
@@ -35,7 +41,7 @@ class _AppState extends State<App> {
     super.initState();
     _controller = AppController();
     _controller.addListener(_rebuild);
-    _router = generateRouter();
+    _router = generateRouter(_controller);
   }
 
   void _rebuild() {

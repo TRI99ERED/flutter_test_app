@@ -37,7 +37,7 @@ sealed class AppState extends BaseState {
     _ => null,
   };
 
-  AppState copyWith({String? message});
+  AppState copyWith({String? message, UserEntity? user});
 }
 
 final class AppStateIdle extends AppState {

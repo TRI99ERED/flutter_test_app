@@ -2,6 +2,10 @@ import 'package:test_app/src/features/app/data/models/user_model.dart';
 
 /// Interface for Firebase Authentication operations
 abstract interface class IFirebaseAuthRepository {
+  /// Stream of authentication state changes
+  /// Emits [AuthorizedUser] when signed in, [UnauthorizedUser] when signed out
+  Stream<UserEntity> get authStateChanges;
+
   /// Get the current authenticated user
   /// Returns [AuthorizedUser] if signed in, [UnauthorizedUser] otherwise
   Future<UserEntity> getCurrentUser();

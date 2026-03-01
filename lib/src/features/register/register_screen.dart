@@ -2,9 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:test_app/src/core/resources/app_icons.dart';
 import 'package:test_app/src/features/app/app_scope.dart';
-import 'package:test_app/src/router/routes.dart';
-import 'package:test_app/src/widgets/common/placeholders.dart';
 import 'package:test_app/src/core/widgets/controller_listener.dart';
+import 'package:test_app/src/router/routes.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -14,6 +13,11 @@ class RegisterScreen extends StatefulWidget {
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
+  final nameController = TextEditingController();
+  final emailController = TextEditingController();
+  final passwordController = TextEditingController();
+  final confirmPasswordController = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     return ControllerListener(
@@ -22,12 +26,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
         if (!previous.isFailed && current.isFailed) {
           return true;
         }
+        if (!previous.isAuthorized && current.isAuthorized) {
+          return true;
+        }
         return false;
       },
       listener: (context, previous, current) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Error: ${current.message}')));
+        if (current.isFailed) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('Error: ${current.message}')));
+        } else if (current.isAuthorized && !previous.isAuthorized) {
+          context.go(homePath);
+        }
       },
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 375, maxHeight: 812),
@@ -35,19 +46,29 @@ class _RegisterScreenState extends State<RegisterScreen> {
           body: ListView(
             physics: NeverScrollableScrollPhysics(),
             children: [
-              const PlaceholderImage(),
               Form(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text('Sign up!'),
                     const Text('Create an account to get started'),
+                    const Text('Name'),
                     TextFormField(
-                      decoration: InputDecoration(labelText: 'Email Address'),
+                      controller: nameController,
+                      decoration: const InputDecoration(labelText: 'Test Test'),
                     ),
+                    const Text('Email Address'),
                     TextFormField(
+                      controller: emailController,
+                      decoration: const InputDecoration(
+                        labelText: 'test@test.com',
+                      ),
+                    ),
+                    const Text('Password'),
+                    TextFormField(
+                      controller: passwordController,
                       decoration: InputDecoration(
-                        labelText: 'Password',
+                        labelText: 'Create a password',
                         suffixIcon: IconButton(
                           onPressed: () => {},
                           icon: Icon(AppIcons.eyeInvisible),
@@ -55,47 +76,51 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       ),
                       obscureText: true,
                     ),
-                    TextButton(
-                      onPressed: () => context.go(forgotPasswordPath),
-                      child: const Text('Forgot Password?'),
+                    TextFormField(
+                      controller: confirmPasswordController,
+                      decoration: InputDecoration(
+                        labelText: 'Confirm password',
+                        suffixIcon: IconButton(
+                          onPressed: () => {},
+                          icon: Icon(AppIcons.eyeInvisible),
+                        ),
+                      ),
+                      obscureText: true,
+                    ),
+                    Row(
+                      children: [
+                        Checkbox(value: false, onChanged: (value) => {}),
+                        const Text(
+                          'I\'ve read and agree with the Terms and Conditions and the Privacy Policy',
+                        ),
+                      ],
                     ),
                     Center(
                       child: ElevatedButton(
-                        onPressed: () {},
+                        onPressed: () async {
+                          final name = nameController.text;
+                          final email = emailController.text;
+                          final password = passwordController.text;
+                          final confirmPassword =
+                              confirmPasswordController.text;
+
+                          if (password != confirmPassword) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Passwords do not match'),
+                              ),
+                            );
+                            return;
+                          }
+
+                          await context.appController.register(
+                            email,
+                            password,
+                            name,
+                          );
+                        },
                         child: Text('Register'),
                       ),
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Text('Not a member?'),
-                        TextButton(
-                          onPressed: () => context.go(registerPath),
-                          child: const Text('Register now'),
-                        ),
-                      ],
-                    ),
-                    Divider(),
-                    Center(child: Text('Or continue with')),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        IconButton(
-                          onPressed: () =>
-                              debugPrint('Google login is disabled'),
-                          icon: const Icon(AppIcons.google),
-                        ),
-                        IconButton(
-                          onPressed: () =>
-                              debugPrint('Apple login is disabled'),
-                          icon: const Icon(AppIcons.apple),
-                        ),
-                        IconButton(
-                          onPressed: () =>
-                              debugPrint('Facebook login is disabled'),
-                          icon: const Icon(AppIcons.facebook),
-                        ),
-                      ],
                     ),
                   ],
                 ),

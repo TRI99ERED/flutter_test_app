@@ -4,6 +4,13 @@ import 'package:test_app/src/features/app/data/repositories/firebase/firebase_au
 
 class FirebaseAuthRepositoryImpl implements IFirebaseAuthRepository {
   @override
+  Stream<UserEntity> get authStateChanges {
+    return FirebaseAuth.instance.authStateChanges().map(
+      (user) => _mapFirebaseUser(user),
+    );
+  }
+
+  @override
   Future<UserEntity> getCurrentUser() async {
     final user = FirebaseAuth.instance.currentUser;
     return _mapFirebaseUser(user);

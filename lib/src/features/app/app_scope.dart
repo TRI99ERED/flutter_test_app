@@ -22,6 +22,14 @@ class _AppScopeState extends State<AppScope> {
     super.initState();
     _controller = AppController();
     _state = _controller.state;
+
+    _controller.addListener(_onStateChange);
+  }
+
+  void _onStateChange() {
+    setState(() {
+      _state = _controller.state;
+    });
   }
 
   @override
@@ -40,6 +48,7 @@ class _AppScopeState extends State<AppScope> {
 
   @override
   void dispose() {
+    _controller.removeListener(_onStateChange);
     _controller.dispose();
     super.dispose();
   }
