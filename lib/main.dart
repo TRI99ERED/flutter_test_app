@@ -8,6 +8,7 @@ import 'package:test_app/firebase_options.dart';
 import 'package:test_app/src/features/app/app_controller/app_controller.dart';
 import 'package:test_app/src/features/app/app_scope.dart';
 import 'package:test_app/src/router/routes.dart';
+import 'package:test_app/src/widgets/common/styles.dart';
 
 void main() {
   runZonedGuarded(
@@ -55,21 +56,19 @@ class _AppState extends State<App> {
     return MaterialApp.router(
       title: 'Test App',
       theme: ThemeData(
-        buttonTheme: Theme.of(context).buttonTheme.copyWith(
-          highlightColor: const Color.fromARGB(255, 0x00, 0x6F, 0xFD),
-        ),
+        buttonTheme: Theme.of(
+          context,
+        ).buttonTheme.copyWith(highlightColor: HighlightColor.darkest.color),
         colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color.fromARGB(255, 0x00, 0x6F, 0xFD),
+          seedColor: HighlightColor.darkest.color,
         ),
         textTheme: GoogleFonts.interTextTheme(Theme.of(context).textTheme),
         visualDensity: VisualDensity.adaptivePlatformDensity,
-        iconTheme: const IconThemeData(
-          color: Color.fromARGB(255, 0x00, 0x6F, 0xFD),
-        ),
+        iconTheme: IconThemeData(color: HighlightColor.darkest.color),
       ),
       routerConfig: _router,
       builder: (context, child) =>
-          AppScope(child: child!, controller: _controller),
+          AppScope(controller: _controller, child: child!),
     );
   }
 

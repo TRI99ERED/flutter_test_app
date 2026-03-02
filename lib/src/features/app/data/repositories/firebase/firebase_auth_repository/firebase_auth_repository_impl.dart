@@ -180,8 +180,6 @@ class FirebaseAuthRepositoryImpl implements IFirebaseAuthRepository {
     return FirebaseAuth.instance.currentUser?.emailVerified ?? false;
   }
 
-  // Helper methods
-
   /// Maps Firebase User to UserEntity
   UserEntity _mapFirebaseUser(User? user) {
     if (user == null) {
