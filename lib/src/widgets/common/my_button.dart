@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:test_app/src/widgets/common/styles.dart';
 
-class MyButtonPrimary extends StatefulWidget {
+class MyButtonPrimary extends StatelessWidget {
   final String? text;
   final IconData? leftIcon;
   final IconData? rightIcon;
@@ -16,14 +16,9 @@ class MyButtonPrimary extends StatefulWidget {
   });
 
   @override
-  State<MyButtonPrimary> createState() => _MyButtonPrimaryState();
-}
-
-class _MyButtonPrimaryState extends State<MyButtonPrimary> {
-  @override
   Widget build(BuildContext context) {
     return FilledButton(
-      onPressed: widget.onPressed,
+      onPressed: onPressed,
       style: FilledButton.styleFrom(
         backgroundColor: HighlightColor.darkest.color,
         foregroundColor: HighlightColor.lightest.color,
@@ -32,20 +27,20 @@ class _MyButtonPrimaryState extends State<MyButtonPrimary> {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (widget.leftIcon != null) Icon(widget.leftIcon!),
-          if (widget.text != null)
+          if (leftIcon != null) Icon(leftIcon!),
+          if (text != null)
             Text(
-              widget.text!,
+              text!,
               style: const TextStyle(fontSize: aMSize, fontWeight: aMWeight),
             ),
-          if (widget.rightIcon != null) Icon(widget.rightIcon!),
+          if (rightIcon != null) Icon(rightIcon!),
         ],
       ),
     );
   }
 }
 
-class MyButtonSecondary extends StatefulWidget {
+class MyButtonSecondary extends StatelessWidget {
   final String? text;
   final IconData? leftIcon;
   final IconData? rightIcon;
@@ -60,14 +55,9 @@ class MyButtonSecondary extends StatefulWidget {
   });
 
   @override
-  State<MyButtonSecondary> createState() => _MyButtonSecondaryState();
-}
-
-class _MyButtonSecondaryState extends State<MyButtonSecondary> {
-  @override
   Widget build(BuildContext context) {
     return OutlinedButton(
-      onPressed: widget.onPressed,
+      onPressed: onPressed,
       style: OutlinedButton.styleFrom(
         backgroundColor: HighlightColor.lightest.color,
         foregroundColor: HighlightColor.darkest.color,
@@ -77,20 +67,20 @@ class _MyButtonSecondaryState extends State<MyButtonSecondary> {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (widget.leftIcon != null) Icon(widget.leftIcon!),
-          if (widget.text != null)
+          if (leftIcon != null) Icon(leftIcon!),
+          if (text != null)
             Text(
-              widget.text!,
+              text!,
               style: const TextStyle(fontSize: aMSize, fontWeight: aMWeight),
             ),
-          if (widget.rightIcon != null) Icon(widget.rightIcon!),
+          if (rightIcon != null) Icon(rightIcon!),
         ],
       ),
     );
   }
 }
 
-class MyButtonTertiary extends StatefulWidget {
+class MyButtonTertiary extends StatelessWidget {
   final String? text;
   final IconData? leftIcon;
   final IconData? rightIcon;
@@ -105,14 +95,9 @@ class MyButtonTertiary extends StatefulWidget {
   });
 
   @override
-  State<MyButtonTertiary> createState() => _MyButtonTertiaryState();
-}
-
-class _MyButtonTertiaryState extends State<MyButtonTertiary> {
-  @override
   Widget build(BuildContext context) {
     return TextButton(
-      onPressed: widget.onPressed,
+      onPressed: onPressed,
       style: TextButton.styleFrom(
         foregroundColor: HighlightColor.darkest.color,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -120,13 +105,13 @@ class _MyButtonTertiaryState extends State<MyButtonTertiary> {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (widget.leftIcon != null) Icon(widget.leftIcon!),
-          if (widget.text != null)
+          if (leftIcon != null) Icon(leftIcon!),
+          if (text != null)
             Text(
-              widget.text!,
+              text!,
               style: const TextStyle(fontSize: aMSize, fontWeight: aMWeight),
             ),
-          if (widget.rightIcon != null) Icon(widget.rightIcon!),
+          if (rightIcon != null) Icon(rightIcon!),
         ],
       ),
     );

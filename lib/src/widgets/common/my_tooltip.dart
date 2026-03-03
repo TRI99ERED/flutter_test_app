@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:test_app/src/widgets/common/styles.dart';
 
-class MyTooltip extends StatefulWidget {
+class MyTooltip extends StatelessWidget {
   final bool isTop;
   final double horizontalOffset;
   final String? title;
@@ -16,69 +16,66 @@ class MyTooltip extends StatefulWidget {
   });
 
   @override
-  State<MyTooltip> createState() => _MyTooltipState();
-}
-
-class _MyTooltipState extends State<MyTooltip> {
-  @override
   Widget build(BuildContext context) {
-    return ConstrainedBox(
-      constraints: const BoxConstraints(maxWidth: 200, maxHeight: 112),
-      child: CustomPaint(
-        painter: TooltipTipPainter(
-          isTop: widget.isTop,
-          horizontalOffset: widget.horizontalOffset,
-        ),
-        child: Column(
-          children: [
-            if (widget.isTop) const SizedBox(height: 10),
-            Expanded(
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(8),
-                  color: DarkColor.dark.color,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    if (widget.title != null)
-                      Text(
-                        widget.title!,
-                        style: TextStyle(
-                          fontSize: h5Size,
-                          fontWeight: h5Weight,
-                          color: LightColor.lightest.color,
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 200, maxHeight: 112),
+        child: CustomPaint(
+          painter: _TooltipTipPainter(
+            isTop: isTop,
+            horizontalOffset: horizontalOffset,
+          ),
+          child: Column(
+            children: [
+              if (isTop) const SizedBox(height: 10),
+              Expanded(
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(8),
+                    color: DarkColor.dark.color,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (title != null)
+                        Text(
+                          title!,
+                          style: TextStyle(
+                            fontSize: h5Size,
+                            fontWeight: h5Weight,
+                            color: LightColor.lightest.color,
+                          ),
                         ),
-                      ),
-                    if (widget.title != null) const SizedBox(height: 8),
-                    if (widget.description != null)
-                      Text(
-                        widget.description!,
-                        style: TextStyle(
-                          fontSize: bXSSize,
-                          fontWeight: bXSWeight,
-                          color: LightColor.lightest.color,
+                      if (title != null) const SizedBox(height: 8),
+                      if (description != null)
+                        Text(
+                          description!,
+                          style: TextStyle(
+                            fontSize: bXSSize,
+                            fontWeight: bXSWeight,
+                            color: LightColor.lightest.color,
+                          ),
                         ),
-                      ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
-            ),
-            if (!widget.isTop) const SizedBox(height: 10),
-          ],
+              if (!isTop) const SizedBox(height: 10),
+            ],
+          ),
         ),
       ),
     );
   }
 }
 
-class TooltipTipPainter extends CustomPainter {
+class _TooltipTipPainter extends CustomPainter {
   final bool isTop;
   final double horizontalOffset;
 
-  TooltipTipPainter({required this.isTop, required this.horizontalOffset});
+  _TooltipTipPainter({required this.isTop, required this.horizontalOffset});
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -119,7 +116,7 @@ class TooltipTipPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant TooltipTipPainter oldDelegate) =>
+  bool shouldRepaint(covariant _TooltipTipPainter oldDelegate) =>
       oldDelegate.isTop != isTop ||
       oldDelegate.horizontalOffset != horizontalOffset;
 }

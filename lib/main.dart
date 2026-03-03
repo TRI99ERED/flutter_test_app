@@ -65,6 +65,7 @@ class _AppState extends State<App> {
         textTheme: GoogleFonts.interTextTheme(Theme.of(context).textTheme),
         visualDensity: VisualDensity.adaptivePlatformDensity,
         iconTheme: IconThemeData(color: HighlightColor.darkest.color),
+        scaffoldBackgroundColor: LightColor.lightest.color,
       ),
       routerConfig: _router,
       builder: (context, child) =>
