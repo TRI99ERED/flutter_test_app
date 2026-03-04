@@ -1,19 +1,22 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:test_app/src/core/resources/app_icons.dart';
-import 'package:test_app/src/widgets/common/my_badge.dart';
+import 'package:test_app/src/widgets/common/app_badge.dart';
 import 'package:test_app/src/widgets/common/styles.dart';
 
-class MyFilter extends StatelessWidget {
+class AppFilter extends StatelessWidget {
   final bool showIcon;
   final int filteredItemCount;
   final VoidCallback? onPressed;
 
-  const MyFilter({
+  const AppFilter({
     super.key,
     this.showIcon = true,
     this.filteredItemCount = 0,
     this.onPressed,
-  });
+  }) : assert(
+         filteredItemCount >= 0,
+         'filteredItemCount must be greater than or equal to 0',
+       );
 
   @override
   Widget build(BuildContext context) {
@@ -31,9 +34,16 @@ class MyFilter extends StatelessWidget {
           children: [
             if (showIcon)
               Icon(AppIcons.filter, size: 12, color: LightColor.darkest.color),
-            if (showIcon) const SizedBox(width: 8),
-            Text('Filter', style: TextStyle(color: DarkColor.darkest.color)),
-            const SizedBox(width: 12),
+            if (showIcon) SizedBox(width: spacing8),
+            Text(
+              'Filter',
+              style: TextStyle(
+                fontSize: bSSize,
+                fontWeight: bSWeight,
+                color: DarkColor.darkest.color,
+              ),
+            ),
+            SizedBox(width: spacing12),
             if (filteredItemCount == 0)
               Icon(
                 AppIcons.arrowDown,
@@ -41,7 +51,7 @@ class MyFilter extends StatelessWidget {
                 color: LightColor.darkest.color,
               ),
             if (filteredItemCount > 0)
-              MyBadgeSymbol(symbol: filteredItemCount.toString(), size: 20),
+              AppBadgeSymbol(symbol: filteredItemCount.toString(), size: 20),
           ],
         ),
       ),

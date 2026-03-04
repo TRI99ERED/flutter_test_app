@@ -1,11 +1,11 @@
-import 'package:flutter/widgets.dart';
+﻿import 'package:flutter/widgets.dart';
 import 'package:test_app/src/widgets/common/styles.dart';
 
-class MyBadgeSymbol extends StatelessWidget {
+class AppBadgeSymbol extends StatelessWidget {
   final double size;
   final String symbol;
 
-  const MyBadgeSymbol({super.key, required this.symbol, this.size = 24});
+  const AppBadgeSymbol({super.key, required this.symbol, this.size = 24});
 
   @override
   Widget build(BuildContext context) {
@@ -30,11 +30,11 @@ class MyBadgeSymbol extends StatelessWidget {
   }
 }
 
-class MyBadgeIcon extends StatelessWidget {
+class AppBadgeIcon extends StatelessWidget {
   final double size;
   final IconData icon;
 
-  const MyBadgeIcon({super.key, required this.icon, this.size = 24});
+  const AppBadgeIcon({super.key, required this.icon, this.size = 24});
 
   @override
   Widget build(BuildContext context) {
@@ -52,10 +52,10 @@ class MyBadgeIcon extends StatelessWidget {
   }
 }
 
-class MyBadgeEmpty extends StatelessWidget {
+class AppBadgeEmpty extends StatelessWidget {
   final double size;
 
-  const MyBadgeEmpty({super.key, this.size = 24});
+  const AppBadgeEmpty({super.key, this.size = 24});
 
   @override
   Widget build(BuildContext context) {
@@ -69,3 +69,4 @@ class MyBadgeEmpty extends StatelessWidget {
     );
   }
 }
+

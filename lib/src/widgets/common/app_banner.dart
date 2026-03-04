@@ -1,15 +1,15 @@
-import 'package:flutter/material.dart';
-import 'package:test_app/src/widgets/common/my_button.dart';
+﻿import 'package:flutter/material.dart';
+import 'package:test_app/src/widgets/common/app_button.dart';
 import 'package:test_app/src/widgets/common/styles.dart';
 
-class MyBanner extends StatelessWidget {
+class AppBanner extends StatelessWidget {
   final String? title;
   final String? description;
   final VoidCallback? onPressed;
   final String? buttonText;
   final Widget? image;
 
-  const MyBanner({
+  const AppBanner({
     super.key,
     this.title,
     this.description,
@@ -57,7 +57,7 @@ class MyBanner extends StatelessWidget {
                       ),
                     if (description != null) const SizedBox(height: 8),
                     if (buttonText != null)
-                      MyButtonPrimary(onPressed: onPressed, text: buttonText!),
+                      AppButtonPrimary(onPressed: onPressed, text: buttonText!),
                   ],
                 ),
               ),
@@ -76,3 +76,5 @@ class MyBanner extends StatelessWidget {
     );
   }
 }
+
+

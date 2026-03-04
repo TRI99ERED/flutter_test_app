@@ -4,7 +4,7 @@ enum HighlightColor {
   darkest(Color.fromARGB(255, 0x00, 0x6F, 0xFD)),
   dark(Color.fromARGB(255, 0x28, 0x97, 0xFF)),
   medium(Color.fromARGB(255, 0x6F, 0xBA, 0xFF)),
-  light(Color.fromARGB(255, 0xB4, 0xBD, 0xFF)),
+  light(Color.fromARGB(255, 0xB4, 0xDB, 0xFF)),
   lightest(Color.fromARGB(255, 0xEA, 0xF2, 0xFF));
 
   final Color color;
@@ -101,3 +101,15 @@ const aSWeight = FontWeight.w600;
 const cMSize = 10.0;
 
 const cMWeight = FontWeight.w600;
+
+// Spacing tokens
+const spacing2 = 2.0;
+const spacing4 = 4.0;
+const spacing6 = 6.0;
+const spacing8 = 8.0;
+const spacing9 = 9.0;
+const spacing10 = 10.0;
+const spacing12 = 12.0;
+const spacing16 = 16.0;
+const spacing24 = 24.0;
+const spacing32 = 32.0;

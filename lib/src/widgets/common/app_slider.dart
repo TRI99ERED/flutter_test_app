@@ -1,25 +1,25 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:test_app/src/widgets/common/styles.dart';
 
-class MySlider extends StatefulWidget {
+class AppSlider extends StatefulWidget {
   final double value;
   final double min;
   final double max;
   final ValueChanged<double>? onChanged;
 
-  const MySlider({
+  const AppSlider({
     super.key,
     required this.value,
     this.min = 0,
     this.max = 100,
     this.onChanged,
-  });
+  }) : assert(min < max, 'min must be less than max');
 
   @override
-  State<MySlider> createState() => _MySliderState();
+  State<AppSlider> createState() => _AppSliderState();
 }
 
-class _MySliderState extends State<MySlider> {
+class _AppSliderState extends State<AppSlider> {
   late double _currentValue;
 
   @override
@@ -29,46 +29,44 @@ class _MySliderState extends State<MySlider> {
   }
 
   @override
-  void didUpdateWidget(MySlider oldWidget) {
+  void didUpdateWidget(AppSlider oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.value != widget.value) {
       _currentValue = widget.value;
     }
   }
 
-  void _handleDrag(Offset globalPosition) {
-    final RenderBox box = context.findRenderObject() as RenderBox;
-    final Offset localPosition = box.globalToLocal(globalPosition);
-    final double width = box.size.width;
-
-    double newValue =
-        (localPosition.dx / width) * (widget.max - widget.min) + widget.min;
-
-    newValue = newValue.clamp(widget.min, widget.max);
-
-    setState(() {
-      _currentValue = newValue;
-    });
-
-    widget.onChanged?.call(_currentValue);
-  }
-
   @override
   Widget build(BuildContext context) {
+    final sliderTheme = SliderTheme.of(context).copyWith(
+      trackHeight: 8,
+      inactiveTrackColor: LightColor.medium.color,
+      activeTrackColor: HighlightColor.darkest.color,
+      thumbColor: LightColor.lightest.color,
+      thumbShape: const _InnerDotThumbShape(),
+      overlayShape: const RoundSliderOverlayShape(overlayRadius: 16),
+    );
+
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: GestureDetector(
-          onHorizontalDragUpdate: (details) =>
-              _handleDrag(details.globalPosition),
-          onTapDown: (details) => _handleDrag(details.globalPosition),
-          child: CustomPaint(
-            painter: _SliderPainter(
-              value: _currentValue,
+        padding: EdgeInsets.all(spacing8),
+        child: SizedBox(
+          height: 40,
+          child: SliderTheme(
+            data: sliderTheme,
+            child: Slider(
+              value: _currentValue.clamp(widget.min, widget.max),
               min: widget.min,
               max: widget.max,
+              onChanged: widget.onChanged == null
+                  ? null
+                  : (value) {
+                      setState(() {
+                        _currentValue = value;
+                      });
+                      widget.onChanged?.call(value);
+                    },
             ),
-            size: const Size(double.infinity, 40),
           ),
         ),
       ),
@@ -76,80 +74,60 @@ class _MySliderState extends State<MySlider> {
   }
 }
 
-class _SliderPainter extends CustomPainter {
-  final double _value;
-  final double _min;
-  final double _max;
+class _InnerDotThumbShape extends SliderComponentShape {
+  final double outerRadius = 9;
+  final double innerRadius = 4.5;
+  final double elevation = 3;
+  final Color shadowColor = const Color(0x33000000);
 
-  _SliderPainter({
-    required double value,
-    required double min,
-    required double max,
-  }) : _min = min,
-       _max = max,
-       _value = value;
+  const _InnerDotThumbShape();
 
   @override
-  void paint(Canvas canvas, Size size) {
-    final trackPaint = Paint()
-      ..color = LightColor.medium.color
-      ..strokeWidth = 8
-      ..strokeCap = StrokeCap.round;
+  Size getPreferredSize(bool isEnabled, bool isDiscrete) {
+    return Size.fromRadius(outerRadius);
+  }
 
-    final activePaint = Paint()
-      ..color = HighlightColor.darkest.color
-      ..strokeWidth = 8
-      ..strokeCap = StrokeCap.round;
-
-    canvas.drawLine(
-      Offset(0, size.height / 2),
-      Offset(size.width, size.height / 2),
-      trackPaint,
-    );
-
-    final percentage = (_value - _min) / (_max - _min);
-    final thumbX = percentage * size.width;
-    final thumbOffset = Offset(thumbX, size.height / 2);
-
-    canvas.drawLine(
-      Offset(0, size.height / 2),
-      Offset(thumbX, size.height / 2),
-      activePaint,
-    );
+  @override
+  void paint(
+    PaintingContext context,
+    Offset center, {
+    required Animation<double> activationAnimation,
+    required Animation<double> enableAnimation,
+    required bool isDiscrete,
+    required TextPainter labelPainter,
+    required RenderBox parentBox,
+    required SliderThemeData sliderTheme,
+    required TextDirection textDirection,
+    required double value,
+    required double textScaleFactor,
+    required Size sizeWithOverflow,
+  }) {
+    final canvas = context.canvas;
+    final thumbColor = sliderTheme.thumbColor ?? LightColor.lightest.color;
 
     canvas.drawShadow(
-      Path()..addOval(Rect.fromCircle(center: thumbOffset, radius: 10)),
-      Colors.black,
-      4,
+      Path()..addOval(Rect.fromCircle(center: center, radius: outerRadius)),
+      shadowColor,
+      elevation,
       false,
     );
 
+    canvas.drawCircle(center, outerRadius, Paint()..color = thumbColor);
     canvas.drawCircle(
-      Offset(thumbX, size.height / 2),
-      10,
-      Paint()..color = LightColor.lightest.color,
-    );
-
-    canvas.drawCircle(
-      Offset(thumbX, size.height / 2),
-      5,
+      center,
+      innerRadius,
       Paint()..color = HighlightColor.darkest.color,
     );
   }
-
-  @override
-  bool shouldRepaint(_SliderPainter oldDelegate) {
-    return oldDelegate._value != _value;
-  }
 }
 
-class MySliderDefault extends StatefulWidget {
+class AppSliderDefault extends StatefulWidget {
   final double value;
   final double min;
   final double max;
   final ValueChanged<double>? onChanged;
 
-  const MySliderDefault({
+  const AppSliderDefault({
     super.key,
     required this.value,
     this.min = 0,
@@ -158,10 +136,10 @@ class MySliderDefault extends StatefulWidget {
   });
 
   @override
-  State<MySliderDefault> createState() => _MySliderDefaultState();
+  State<AppSliderDefault> createState() => _AppSliderDefaultState();
 }
 
-class _MySliderDefaultState extends State<MySliderDefault> {
+class _AppSliderDefaultState extends State<AppSliderDefault> {
   late double _value;
 
   @override
@@ -171,7 +149,7 @@ class _MySliderDefaultState extends State<MySliderDefault> {
   }
 
   @override
-  void didUpdateWidget(MySliderDefault oldWidget) {
+  void didUpdateWidget(AppSliderDefault oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.value != widget.value) {
       _value = widget.value;
@@ -185,7 +163,7 @@ class _MySliderDefaultState extends State<MySliderDefault> {
       child: Row(
         children: [
           Expanded(
-            child: MySlider(
+            child: AppSlider(
               value: _value,
               min: widget.min,
               max: widget.max,
@@ -206,7 +184,7 @@ class _MySliderDefaultState extends State<MySliderDefault> {
               borderRadius: BorderRadius.circular(12),
             ),
             child: Text(
-              '${_value.toStringAsFixed(0)}%',
+              '${((_value - widget.min) / (widget.max - widget.min) * 100).toStringAsFixed(0)}%',
               style: TextStyle(
                 color: DarkColor.darkest.color,
                 fontSize: bSSize,
@@ -220,14 +198,14 @@ class _MySliderDefaultState extends State<MySliderDefault> {
   }
 }
 
-class MySliderTitled extends StatefulWidget {
+class AppSliderTitled extends StatefulWidget {
   final double value;
   final double min;
   final double max;
   final String title;
   final ValueChanged<double>? onChanged;
 
-  const MySliderTitled({
+  const AppSliderTitled({
     super.key,
     required this.value,
     required this.title,
@@ -237,10 +215,10 @@ class MySliderTitled extends StatefulWidget {
   });
 
   @override
-  State<MySliderTitled> createState() => _MySliderTitledState();
+  State<AppSliderTitled> createState() => _AppSliderTitledState();
 }
 
-class _MySliderTitledState extends State<MySliderTitled> {
+class _AppSliderTitledState extends State<AppSliderTitled> {
   late double _value;
 
   @override
@@ -250,7 +228,7 @@ class _MySliderTitledState extends State<MySliderTitled> {
   }
 
   @override
-  void didUpdateWidget(MySliderTitled oldWidget) {
+  void didUpdateWidget(AppSliderTitled oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.value != widget.value) {
       _value = widget.value;
@@ -264,7 +242,7 @@ class _MySliderTitledState extends State<MySliderTitled> {
       child: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+            padding: EdgeInsets.symmetric(horizontal: spacing8),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -277,7 +255,7 @@ class _MySliderTitledState extends State<MySliderTitled> {
                   ),
                 ),
                 Text(
-                  '${_value.toStringAsFixed(0)}%',
+                  '${((_value - widget.min) / (widget.max - widget.min) * 100).toStringAsFixed(0)}%',
                   style: TextStyle(
                     color: DarkColor.medium.color,
                     fontSize: bSSize,
@@ -287,7 +265,7 @@ class _MySliderTitledState extends State<MySliderTitled> {
               ],
             ),
           ),
-          MySlider(
+          AppSlider(
             value: _value,
             min: widget.min,
             max: widget.max,

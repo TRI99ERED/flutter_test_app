@@ -1,16 +1,16 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:test_app/src/widgets/common/styles.dart';
 
 const double checkboxSmallSize = 0.8;
 const double checkboxMediumSize = 1.2;
 const double checkboxLargeSize = 1.6;
 
-class MyCheckbox extends StatelessWidget {
+class AppCheckbox extends StatelessWidget {
   final bool value;
   final double size;
   final ValueChanged<bool?>? onChanged;
 
-  const MyCheckbox({
+  const AppCheckbox({
     super.key,
     required this.value,
     this.size = checkboxSmallSize,
@@ -26,9 +26,11 @@ class MyCheckbox extends StatelessWidget {
         onChanged: onChanged,
         materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-        fillColor: value
-            ? WidgetStateProperty.all(HighlightColor.darkest.color)
-            : null,
+        fillColor: WidgetStateProperty.fromMap(<WidgetStatesConstraint, Color?>{
+          WidgetState.disabled: LightColor.medium.color,
+          WidgetState.selected: HighlightColor.darkest.color,
+          WidgetState.any: LightColor.lightest.color,
+        }),
         checkColor: LightColor.lightest.color,
         side: BorderSide(color: LightColor.darkest.color, width: 1.5),
       ),

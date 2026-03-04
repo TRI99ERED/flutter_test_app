@@ -1,15 +1,14 @@
-import 'package:flutter/material.dart';
-import 'package:test_app/src/core/resources/app_icons.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:test_app/src/widgets/common/styles.dart';
 
-class MyTapBar extends StatefulWidget {
+class AppTapBar extends StatefulWidget {
   final int tabCount;
   final List<String> tabTitles;
   final List<IconData> tabIcons;
   final int selectedIndex;
   final ValueChanged<int>? onTabSelected;
 
-  const MyTapBar({
+  const AppTapBar({
     super.key,
     required this.tabCount,
     required this.tabTitles,
@@ -20,13 +19,17 @@ class MyTapBar extends StatefulWidget {
        assert(
          tabTitles.length == tabCount,
          'tabTitles length must be equal to tabCount',
+       ),
+       assert(
+         tabIcons.length == tabCount,
+         'tabIcons length must be equal to tabCount',
        );
 
   @override
-  State<MyTapBar> createState() => _MyTapBarState();
+  State<AppTapBar> createState() => _AppTapBarState();
 }
 
-class _MyTapBarState extends State<MyTapBar> {
+class _AppTapBarState extends State<AppTapBar> {
   late int _selectedIndex;
 
   @override
@@ -36,10 +39,18 @@ class _MyTapBarState extends State<MyTapBar> {
   }
 
   @override
+  void didUpdateWidget(AppTapBar oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.selectedIndex != oldWidget.selectedIndex) {
+      setState(() {
+        _selectedIndex = widget.selectedIndex;
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Container(
-      width: 332,
-      height: 39,
       decoration: BoxDecoration(
         color: LightColor.lightest.color,
         borderRadius: BorderRadius.circular(16),
@@ -48,13 +59,9 @@ class _MyTapBarState extends State<MyTapBar> {
         spacing: 4,
         children: List.generate(widget.tabCount, (index) {
           return Expanded(
-            child: _MyTab(
-              text: widget.tabTitles.length > index
-                  ? widget.tabTitles[index]
-                  : 'Tab ${index + 1}',
-              icon: widget.tabIcons.length > index
-                  ? widget.tabIcons[index]
-                  : AppIcons.record,
+            child: _TabItem(
+              text: widget.tabTitles[index],
+              icon: widget.tabIcons[index],
               onPressed: () {
                 setState(() {
                   _selectedIndex = index;
@@ -72,13 +79,13 @@ class _MyTapBarState extends State<MyTapBar> {
   }
 }
 
-class _MyTab extends StatelessWidget {
+class _TabItem extends StatelessWidget {
   final VoidCallback? onPressed;
   final String text;
   final IconData icon;
   final bool selected;
 
-  const _MyTab({
+  const _TabItem({
     required this.text,
     required this.icon,
     this.onPressed,

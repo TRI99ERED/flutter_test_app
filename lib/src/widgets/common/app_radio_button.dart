@@ -1,20 +1,18 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:test_app/src/widgets/common/styles.dart';
 
 const double radioButtonSmallSize = 0.8;
 const double radioButtonMediumSize = 1.2;
 const double radioButtonLargeSize = 1.6;
 
-class MyRadioButton<T> extends StatelessWidget {
+class AppRadioButton<T> extends StatelessWidget {
   final T value;
   final double size;
-  final ValueChanged<bool?>? onChanged;
 
-  const MyRadioButton({
+  const AppRadioButton({
     super.key,
     required this.value,
     this.size = radioButtonSmallSize,
-    this.onChanged,
   });
 
   @override
@@ -26,6 +24,10 @@ class MyRadioButton<T> extends StatelessWidget {
         materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
         side:
             WidgetStateBorderSide.fromMap(<WidgetStatesConstraint, BorderSide?>{
+              WidgetState.disabled: BorderSide(
+                color: LightColor.medium.color,
+                width: 1.5,
+              ),
               WidgetState.selected: BorderSide(
                 color: HighlightColor.darkest.color,
                 width: 5.5,
@@ -35,7 +37,11 @@ class MyRadioButton<T> extends StatelessWidget {
                 width: 1.5,
               ),
             }),
-        activeColor: HighlightColor.darkest.color,
+        fillColor: WidgetStateProperty.fromMap(<WidgetStatesConstraint, Color?>{
+          WidgetState.disabled: LightColor.medium.color,
+          WidgetState.selected: HighlightColor.darkest.color,
+          WidgetState.any: LightColor.lightest.color,
+        }),
         innerRadius: WidgetStatePropertyAll(0),
       ),
     );

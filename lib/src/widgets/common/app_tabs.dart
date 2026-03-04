@@ -1,13 +1,13 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:test_app/src/widgets/common/styles.dart';
 
-class MyTabs extends StatefulWidget {
+class AppTabs extends StatefulWidget {
   final int tabCount;
   final List<String> tabTitles;
   final int selectedIndex;
   final ValueChanged<int>? onTabSelected;
 
-  const MyTabs({
+  const AppTabs({
     super.key,
     required this.tabCount,
     required this.tabTitles,
@@ -20,10 +20,10 @@ class MyTabs extends StatefulWidget {
        );
 
   @override
-  State<MyTabs> createState() => _MyTabsState();
+  State<AppTabs> createState() => _AppTabsState();
 }
 
-class _MyTabsState extends State<MyTabs> {
+class _AppTabsState extends State<AppTabs> {
   late int _selectedIndex;
 
   @override
@@ -33,21 +33,27 @@ class _MyTabsState extends State<MyTabs> {
   }
 
   @override
+  void didUpdateWidget(AppTabs oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.selectedIndex != oldWidget.selectedIndex) {
+      setState(() {
+        _selectedIndex = widget.selectedIndex;
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Container(
-      width: 332,
-      height: 39,
       decoration: BoxDecoration(
-        color: LightColor.light.color,
+        color: LightColor.lightest.color,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Row(
         children: List.generate(widget.tabCount, (index) {
           return Expanded(
-            child: _MyTab(
-              text: widget.tabTitles.length > index
-                  ? widget.tabTitles[index]
-                  : 'Tab ${index + 1}',
+            child: _Tab(
+              text: widget.tabTitles[index],
               onPressed: () {
                 setState(() {
                   _selectedIndex = index;
@@ -65,12 +71,12 @@ class _MyTabsState extends State<MyTabs> {
   }
 }
 
-class _MyTab extends StatelessWidget {
+class _Tab extends StatelessWidget {
   final VoidCallback? onPressed;
   final String text;
   final bool selected;
 
-  const _MyTab({required this.text, this.onPressed, this.selected = false});
+  const _Tab({required this.text, this.onPressed, this.selected = false});
 
   @override
   Widget build(BuildContext context) {
@@ -87,7 +93,7 @@ class _MyTab extends StatelessWidget {
           Text(text),
           selected
               ? Container(
-                  margin: const EdgeInsets.only(top: 4),
+                  margin: EdgeInsets.only(top: spacing4),
                   width: 24,
                   height: 4,
                   decoration: BoxDecoration(
@@ -95,7 +101,7 @@ class _MyTab extends StatelessWidget {
                     borderRadius: BorderRadius.circular(2),
                   ),
                 )
-              : const SizedBox(height: 4),
+              : SizedBox(height: spacing8),
         ],
       ),
     );

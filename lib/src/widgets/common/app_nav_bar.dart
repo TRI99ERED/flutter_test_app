@@ -1,8 +1,8 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:test_app/src/core/resources/app_icons.dart';
 import 'package:test_app/src/widgets/common/styles.dart';
 
-class MyNavBar extends StatelessWidget {
+class AppNavBar extends StatelessWidget {
   final String title;
   final String? leftText;
   final IconData? leftIcon;
@@ -13,17 +13,17 @@ class MyNavBar extends StatelessWidget {
   final VoidCallback? onPressedLeft;
   final VoidCallback? onPressedRight;
 
-  const MyNavBar({
+  const AppNavBar({
     super.key,
     required this.title,
-    required this.onPressedLeft,
-    required this.onPressedRight,
     this.leftText,
     this.leftIcon,
     this.rightText,
     this.rightIcon,
     this.leftImage,
     this.rightImage,
+    this.onPressedLeft,
+    this.onPressedRight,
   });
 
   @override
@@ -34,7 +34,7 @@ class MyNavBar extends StatelessWidget {
           child: Align(
             alignment: Alignment.centerLeft,
             child: (leftText != null || leftIcon != null || leftImage != null)
-                ? _MyControl(
+                ? _AppControl(
                     text: leftText,
                     icon: leftIcon,
                     image: leftImage,
@@ -60,13 +60,13 @@ class MyNavBar extends StatelessWidget {
             alignment: Alignment.centerRight,
             child:
                 (rightText != null || rightIcon != null || rightImage != null)
-                ? _MyControl(
+                ? _AppControl(
                     text: rightText,
                     icon: rightIcon,
                     image: rightImage,
                     onPressed: onPressedRight,
                   )
-                : SizedBox.shrink(),
+                : const SizedBox.shrink(),
           ),
         ),
       ],
@@ -74,13 +74,13 @@ class MyNavBar extends StatelessWidget {
   }
 }
 
-class _MyControl extends StatelessWidget {
+class _AppControl extends StatelessWidget {
   final String? _text;
   final IconData? _icon;
   final Widget? _image;
   final VoidCallback? _onPressed;
 
-  const _MyControl({
+  const _AppControl({
     String? text,
     IconData? icon,
     Widget? image,

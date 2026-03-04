@@ -1,12 +1,10 @@
-import 'package:flutter/material.dart';
-import 'package:test_app/src/core/resources/app_icons.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:test_app/src/widgets/common/styles.dart';
 
-class MyTextField extends StatefulWidget {
+class AppTextArea extends StatefulWidget {
   final String title;
   final bool enabled;
-  final bool obscureText;
-  final bool showIcon;
+  final int maxLines;
   final String? placeholder;
   final String? text;
   final String? errorText;
@@ -17,12 +15,11 @@ class MyTextField extends StatefulWidget {
   final AutovalidateMode? autovalidateMode;
   final TextEditingController? controller;
 
-  MyTextField({
+  AppTextArea({
     super.key,
     required this.title,
     this.enabled = true,
-    this.obscureText = false,
-    this.showIcon = false,
+    this.maxLines = 2,
     this.placeholder,
     this.text,
     this.errorText,
@@ -33,8 +30,8 @@ class MyTextField extends StatefulWidget {
     this.autovalidateMode,
     this.controller,
   }) : assert(
-         !(obscureText && !showIcon),
-         'obscureText can only be true when showIcon is true',
+         controller == null || text == null,
+         'controller and text cannot both be provided',
        ) {
     if (unit != null) {
       assert(
@@ -45,12 +42,15 @@ class MyTextField extends StatefulWidget {
   }
 
   @override
-  State<MyTextField> createState() => _MyTextFieldState();
+  State<AppTextArea> createState() => _AppTextAreaState();
 }
 
-class _MyTextFieldState extends State<MyTextField> {
-  late bool _obscureText;
+class _AppTextAreaState extends State<AppTextArea> {
   String? _validatorErrorText;
+  late TextEditingController _internalController;
+
+  TextEditingController get _effectiveController =>
+      widget.controller ?? _internalController;
 
   String? _getDisplayErrorText() {
     final customError = widget.errorText;
@@ -80,7 +80,29 @@ class _MyTextFieldState extends State<MyTextField> {
   @override
   void initState() {
     super.initState();
-    _obscureText = widget.obscureText;
+    _internalController = TextEditingController();
+
+    if (widget.text != null) {
+      _effectiveController.text = widget.text!;
+      _validatorErrorText = widget.validator?.call(widget.text);
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant AppTextArea oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (widget.controller == null && widget.text != oldWidget.text) {
+      _internalController.text = widget.text ?? '';
+    }
+  }
+
+  @override
+  void dispose() {
+    if (widget.controller == null) {
+      _internalController.dispose();
+    }
+    super.dispose();
   }
 
   @override
@@ -101,8 +123,7 @@ class _MyTextFieldState extends State<MyTextField> {
           ),
         ),
         TextFormField(
-          controller: widget.controller,
-          initialValue: widget.text,
+          controller: _effectiveController,
           onChanged: (value) {
             final nextError = widget.validator?.call(value);
             if (nextError != _validatorErrorText) {
@@ -118,8 +139,8 @@ class _MyTextFieldState extends State<MyTextField> {
             return result;
           },
           autovalidateMode: widget.autovalidateMode,
+          maxLines: widget.maxLines,
           enabled: widget.enabled,
-          obscureText: _obscureText,
           cursorColor: HighlightColor.darkest.color,
           cursorErrorColor: ErrorColor.dark.color,
           style: TextStyle(
@@ -160,25 +181,11 @@ class _MyTextFieldState extends State<MyTextField> {
             fillColor: LightColor.darkest.color,
             filled: !widget.enabled,
             prefixText: widget.unit != null ? '${widget.unit} ' : null,
-            suffixIcon: widget.showIcon
-                ? IconButton(
-                    onPressed: () {
-                      setState(() {
-                        _obscureText = !_obscureText;
-                      });
-                    },
-                    icon: Icon(
-                      _obscureText
-                          ? AppIcons.eyeInvisible
-                          : AppIcons.eyeVisible,
-                    ),
-                  )
-                : null,
           ),
         ),
         if (displayErrorText != null && displayErrorText.isNotEmpty)
           Padding(
-            padding: const EdgeInsets.only(top: 4),
+            padding: EdgeInsets.only(top: spacing4),
             child: Text(
               displayErrorText,
               style: TextStyle(
@@ -191,7 +198,7 @@ class _MyTextFieldState extends State<MyTextField> {
         if (widget.supportText != null &&
             (displayErrorText == null || displayErrorText.isEmpty))
           Padding(
-            padding: const EdgeInsets.only(top: 4),
+            padding: EdgeInsets.only(top: spacing4),
             child: Text(
               widget.supportText!,
               style: TextStyle(

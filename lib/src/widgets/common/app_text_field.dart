@@ -1,10 +1,12 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
+import 'package:test_app/src/core/resources/app_icons.dart';
 import 'package:test_app/src/widgets/common/styles.dart';
 
-class MyTextArea extends StatefulWidget {
+class AppTextField extends StatefulWidget {
   final String title;
   final bool enabled;
-  final int maxLines;
+  final bool obscureText;
+  final bool showIcon;
   final String? placeholder;
   final String? text;
   final String? errorText;
@@ -15,11 +17,12 @@ class MyTextArea extends StatefulWidget {
   final AutovalidateMode? autovalidateMode;
   final TextEditingController? controller;
 
-  MyTextArea({
+  AppTextField({
     super.key,
     required this.title,
     this.enabled = true,
-    this.maxLines = 2,
+    this.obscureText = false,
+    this.showIcon = false,
     this.placeholder,
     this.text,
     this.errorText,
@@ -29,7 +32,14 @@ class MyTextArea extends StatefulWidget {
     this.validator,
     this.autovalidateMode,
     this.controller,
-  }) {
+  }) : assert(
+         !(obscureText && !showIcon),
+         'obscureText can only be true when showIcon is true',
+       ),
+       assert(
+         controller == null || text == null,
+         'controller and text cannot both be provided',
+       ) {
     if (unit != null) {
       assert(
         unit!.length == 1 && unit!.trim().isNotEmpty,
@@ -39,11 +49,16 @@ class MyTextArea extends StatefulWidget {
   }
 
   @override
-  State<MyTextArea> createState() => _MyTextAreaState();
+  State<AppTextField> createState() => _AppTextFieldState();
 }
 
-class _MyTextAreaState extends State<MyTextArea> {
+class _AppTextFieldState extends State<AppTextField> {
+  late bool _obscureText;
   String? _validatorErrorText;
+  late TextEditingController _internalController;
+
+  TextEditingController get _effectiveController =>
+      widget.controller ?? _internalController;
 
   String? _getDisplayErrorText() {
     final customError = widget.errorText;
@@ -71,6 +86,35 @@ class _MyTextAreaState extends State<MyTextArea> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    _obscureText = widget.obscureText;
+    _internalController = TextEditingController();
+
+    if (widget.text != null) {
+      _effectiveController.text = widget.text!;
+      _validatorErrorText = widget.validator?.call(widget.text);
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant AppTextField oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (widget.controller == null && widget.text != oldWidget.text) {
+      _internalController.text = widget.text ?? '';
+    }
+  }
+
+  @override
+  void dispose() {
+    if (widget.controller == null) {
+      _internalController.dispose();
+    }
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final displayErrorText = _getDisplayErrorText();
 
@@ -88,8 +132,7 @@ class _MyTextAreaState extends State<MyTextArea> {
           ),
         ),
         TextFormField(
-          controller: widget.controller,
-          initialValue: widget.text,
+          controller: _effectiveController,
           onChanged: (value) {
             final nextError = widget.validator?.call(value);
             if (nextError != _validatorErrorText) {
@@ -105,8 +148,8 @@ class _MyTextAreaState extends State<MyTextArea> {
             return result;
           },
           autovalidateMode: widget.autovalidateMode,
-          maxLines: widget.maxLines,
           enabled: widget.enabled,
+          obscureText: _obscureText,
           cursorColor: HighlightColor.darkest.color,
           cursorErrorColor: ErrorColor.dark.color,
           style: TextStyle(
@@ -147,11 +190,25 @@ class _MyTextAreaState extends State<MyTextArea> {
             fillColor: LightColor.darkest.color,
             filled: !widget.enabled,
             prefixText: widget.unit != null ? '${widget.unit} ' : null,
+            suffixIcon: widget.showIcon
+                ? IconButton(
+                    onPressed: () {
+                      setState(() {
+                        _obscureText = !_obscureText;
+                      });
+                    },
+                    icon: Icon(
+                      _obscureText
+                          ? AppIcons.eyeInvisible
+                          : AppIcons.eyeVisible,
+                    ),
+                  )
+                : null,
           ),
         ),
         if (displayErrorText != null && displayErrorText.isNotEmpty)
           Padding(
-            padding: const EdgeInsets.only(top: 4),
+            padding: EdgeInsets.only(top: spacing4),
             child: Text(
               displayErrorText,
               style: TextStyle(
@@ -164,7 +221,7 @@ class _MyTextAreaState extends State<MyTextArea> {
         if (widget.supportText != null &&
             (displayErrorText == null || displayErrorText.isEmpty))
           Padding(
-            padding: const EdgeInsets.only(top: 4),
+            padding: EdgeInsets.only(top: spacing4),
             child: Text(
               widget.supportText!,
               style: TextStyle(

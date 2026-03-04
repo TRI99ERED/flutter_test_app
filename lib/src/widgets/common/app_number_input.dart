@@ -1,8 +1,8 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:test_app/src/core/resources/app_icons.dart';
 import 'package:test_app/src/widgets/common/styles.dart';
 
-class MyNumberInput extends StatefulWidget {
+class AppNumberInput extends StatefulWidget {
   final int value;
   final int? min;
   final int? max;
@@ -10,7 +10,7 @@ class MyNumberInput extends StatefulWidget {
   final Color? textColor;
   final ValueChanged<int>? onChanged;
 
-  const MyNumberInput({
+  const AppNumberInput({
     super.key,
     required this.value,
     this.min,
@@ -18,13 +18,16 @@ class MyNumberInput extends StatefulWidget {
     this.enabled = true,
     this.textColor,
     this.onChanged,
-  });
+  }) : assert(
+         min == null || max == null || min <= max,
+         'min must be less than or equal to max',
+       );
 
   @override
-  State<MyNumberInput> createState() => _MyNumberInputState();
+  State<AppNumberInput> createState() => _AppNumberInputState();
 }
 
-class _MyNumberInputState extends State<MyNumberInput> {
+class _AppNumberInputState extends State<AppNumberInput> {
   late int _value;
 
   @override
@@ -34,23 +37,36 @@ class _MyNumberInputState extends State<MyNumberInput> {
   }
 
   @override
+  void didUpdateWidget(covariant AppNumberInput oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.value != oldWidget.value) {
+      _value = widget.value;
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Center(
       child: Row(
         mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.center,
-        spacing: 6,
+        spacing: spacing8,
         children: [
           ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 24, maxHeight: 24),
+            constraints: const BoxConstraints(
+              maxWidth: spacing24,
+              maxHeight: spacing24,
+            ),
             child: IconButton(
               onPressed:
                   (widget.min == null || _value > widget.min!) && widget.enabled
-                  ? () => {
+                  ? () {
                       setState(() {
                         --_value;
-                      }),
-                      if (widget.onChanged != null) {widget.onChanged!(_value)},
+                      });
+                      if (widget.onChanged != null) {
+                        widget.onChanged!(_value);
+                      }
                     }
                   : null,
               icon: Icon(AppIcons.minus),
@@ -74,15 +90,20 @@ class _MyNumberInputState extends State<MyNumberInput> {
             ),
           ),
           ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 24, maxHeight: 24),
+            constraints: const BoxConstraints(
+              maxWidth: spacing24,
+              maxHeight: spacing24,
+            ),
             child: IconButton(
               onPressed:
                   (widget.max == null || _value < widget.max!) && widget.enabled
-                  ? () => {
+                  ? () {
                       setState(() {
                         ++_value;
-                      }),
-                      if (widget.onChanged != null) {widget.onChanged!(_value)},
+                      });
+                      if (widget.onChanged != null) {
+                        widget.onChanged!(_value);
+                      }
                     }
                   : null,
               icon: Icon(AppIcons.add),
@@ -101,7 +122,7 @@ class _MyNumberInputState extends State<MyNumberInput> {
   }
 }
 
-class MyNumberInputTitled extends StatelessWidget {
+class AppNumberInputTitled extends StatelessWidget {
   final int value;
   final int? min;
   final int? max;
@@ -110,7 +131,7 @@ class MyNumberInputTitled extends StatelessWidget {
   final String? supportText;
   final ValueChanged<int>? onChanged;
 
-  const MyNumberInputTitled({
+  const AppNumberInputTitled({
     super.key,
     required this.value,
     this.min,
@@ -152,7 +173,7 @@ class MyNumberInputTitled extends StatelessWidget {
               ),
           ],
         ),
-        MyNumberInput(
+        AppNumberInput(
           value: value,
           min: min,
           max: max,

@@ -1,8 +1,8 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:test_app/src/core/resources/app_icons.dart';
 import 'package:test_app/src/widgets/common/styles.dart';
 
-class MyDropdown extends StatefulWidget {
+class AppDropdown extends StatefulWidget {
   final List<DropdownMenuEntry<String>> items;
   final String title;
   final bool enabled;
@@ -16,7 +16,7 @@ class MyDropdown extends StatefulWidget {
   final AutovalidateMode? autovalidateMode;
   final TextEditingController? controller;
 
-  const MyDropdown({
+  const AppDropdown({
     super.key,
     required this.items,
     required this.title,
@@ -30,13 +30,16 @@ class MyDropdown extends StatefulWidget {
     this.validator,
     this.autovalidateMode,
     this.controller,
-  });
+  }) : assert(
+         controller == null || text == null,
+         'controller and text cannot both be provided',
+       );
 
   @override
-  State<MyDropdown> createState() => _MyDropdownState();
+  State<AppDropdown> createState() => _AppDropdownState();
 }
 
-class _MyDropdownState extends State<MyDropdown> {
+class _AppDropdownState extends State<AppDropdown> {
   late int _selectedIndex;
   String? _validatorErrorText;
   bool _isSelected = false;
@@ -53,23 +56,6 @@ class _MyDropdownState extends State<MyDropdown> {
       return customError;
     }
     return _validatorErrorText;
-  }
-
-  void _syncValidatorError(String? value) {
-    if (widget.validator == null) {
-      return;
-    }
-    final nextError = widget.validator!(value);
-    if (nextError != _validatorErrorText && mounted) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (!mounted) {
-          return;
-        }
-        setState(() {
-          _validatorErrorText = nextError;
-        });
-      });
-    }
   }
 
   List<DropdownMenuEntry<String>> _getFilteredItems() {
@@ -99,11 +85,12 @@ class _MyDropdownState extends State<MyDropdown> {
     _selectedIndex = widget.selectedIndex;
     _internalController = TextEditingController();
 
-    // Use external controller if provided, otherwise use internal
     final controller = widget.controller ?? _internalController;
     if (widget.text != null) {
       controller.text = widget.text!;
       _searchQuery = widget.text!;
+
+      _validatorErrorText = widget.validator?.call(widget.text!);
     }
   }
 
@@ -125,12 +112,10 @@ class _MyDropdownState extends State<MyDropdown> {
     final offset = renderBox.localToGlobal(Offset.zero);
     final screenHeight = MediaQuery.of(context).size.height;
 
-    // Calculate available space
     const maxOverlayHeight = 250.0;
     final spaceBelow = screenHeight - (offset.dy + size.height);
     final spaceAbove = offset.dy;
 
-    // Determine if overlay should be shown above or below
     final showAbove = spaceBelow < maxOverlayHeight && spaceAbove > spaceBelow;
     final overlayOffset = showAbove
         ? Offset(0, -(maxOverlayHeight + 4))
@@ -153,9 +138,7 @@ class _MyDropdownState extends State<MyDropdown> {
             showWhenUnlinked: false,
             offset: overlayOffset,
             child: GestureDetector(
-              onTap: () {
-                // Prevent closing when tapping on the menu itself
-              },
+              onTap: () {},
               child: Material(
                 borderRadius: BorderRadius.zero,
                 elevation: 0,
@@ -172,9 +155,9 @@ class _MyDropdownState extends State<MyDropdown> {
                   child: _getFilteredItems().isEmpty
                       ? Center(
                           child: Padding(
-                            padding: const EdgeInsets.symmetric(
-                              vertical: 8.0,
-                              horizontal: 16.0,
+                            padding: EdgeInsets.symmetric(
+                              vertical: spacing8,
+                              horizontal: spacing16,
                             ),
                             child: Text(
                               'No options found',
@@ -187,14 +170,14 @@ class _MyDropdownState extends State<MyDropdown> {
                           ),
                         )
                       : ListView(
-                          padding: EdgeInsets.all(8),
+                          padding: EdgeInsets.all(spacing8),
                           shrinkWrap: true,
                           children: _getFilteredItems().map((entry) {
                             final isSelected =
                                 widget.items.indexOf(entry) == _selectedIndex;
                             return Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 2),
-                              child: _MyDropdownOption(
+                              padding: EdgeInsets.symmetric(vertical: spacing2),
+                              child: _AppDropdownOption(
                                 value: entry.label,
                                 selected: isSelected,
                                 onPressed: () {
@@ -303,11 +286,7 @@ class _MyDropdownState extends State<MyDropdown> {
                     });
                   }
                 },
-                validator: (value) {
-                  final result = widget.validator?.call(value);
-                  _syncValidatorError(value);
-                  return result;
-                },
+                validator: (value) => widget.validator?.call(value),
                 autovalidateMode: widget.autovalidateMode,
                 enabled: widget.enabled,
                 cursorColor: HighlightColor.darkest.color,
@@ -368,7 +347,7 @@ class _MyDropdownState extends State<MyDropdown> {
             ),
             if (displayErrorText != null && displayErrorText.isNotEmpty)
               Padding(
-                padding: const EdgeInsets.only(top: 4),
+                padding: EdgeInsets.only(top: spacing4),
                 child: Text(
                   displayErrorText,
                   style: TextStyle(
@@ -381,7 +360,7 @@ class _MyDropdownState extends State<MyDropdown> {
             if (widget.supportText != null &&
                 (displayErrorText == null || displayErrorText.isEmpty))
               Padding(
-                padding: const EdgeInsets.only(top: 4),
+                padding: EdgeInsets.only(top: spacing4),
                 child: Text(
                   widget.supportText!,
                   style: TextStyle(
@@ -398,12 +377,12 @@ class _MyDropdownState extends State<MyDropdown> {
   }
 }
 
-class _MyDropdownOption extends StatelessWidget {
+class _AppDropdownOption extends StatelessWidget {
   final String _value;
   final VoidCallback? _onPressed;
   final bool _selected;
 
-  const _MyDropdownOption({
+  const _AppDropdownOption({
     required String value,
     void Function()? onPressed,
     bool selected = false,

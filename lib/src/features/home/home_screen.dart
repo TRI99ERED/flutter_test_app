@@ -1,31 +1,42 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:test_app/src/core/resources/app_icons.dart';
 import 'package:test_app/src/core/widgets/controller_listener.dart';
 import 'package:test_app/src/features/app/app_scope.dart';
 import 'package:test_app/src/router/routes.dart';
-import 'package:test_app/src/widgets/common/my_action_sheet.dart';
-import 'package:test_app/src/widgets/common/my_badge.dart';
-import 'package:test_app/src/widgets/common/my_banner.dart';
-import 'package:test_app/src/widgets/common/my_button.dart';
-import 'package:test_app/src/widgets/common/my_checkbox.dart';
-import 'package:test_app/src/widgets/common/my_content_switcher.dart';
-import 'package:test_app/src/widgets/common/my_dialog.dart';
-import 'package:test_app/src/widgets/common/my_dropdown.dart';
-import 'package:test_app/src/widgets/common/my_filter.dart';
-import 'package:test_app/src/widgets/common/my_nav_bar.dart';
-import 'package:test_app/src/widgets/common/my_number_input.dart';
-import 'package:test_app/src/widgets/common/my_radio_button.dart';
-import 'package:test_app/src/widgets/common/my_search_bar.dart';
-import 'package:test_app/src/widgets/common/my_slider.dart';
-import 'package:test_app/src/widgets/common/my_star_rating.dart';
-import 'package:test_app/src/widgets/common/my_tabs.dart';
-import 'package:test_app/src/widgets/common/my_tap_bar.dart';
-import 'package:test_app/src/widgets/common/my_text_area.dart';
-import 'package:test_app/src/widgets/common/my_text_field.dart';
-import 'package:test_app/src/widgets/common/my_toast.dart';
-import 'package:test_app/src/widgets/common/my_toggle.dart';
-import 'package:test_app/src/widgets/common/my_tooltip.dart';
+import 'package:test_app/src/widgets/common/app_accordion.dart';
+import 'package:test_app/src/widgets/common/app_action_sheet.dart';
+import 'package:test_app/src/widgets/common/app_badge.dart';
+import 'package:test_app/src/widgets/common/app_banner.dart';
+import 'package:test_app/src/widgets/common/app_button.dart';
+import 'package:test_app/src/widgets/common/app_calendar.dart';
+import 'package:test_app/src/widgets/common/app_card.dart';
+import 'package:test_app/src/widgets/common/app_checkbox.dart';
+import 'package:test_app/src/widgets/common/app_content_switcher.dart';
+import 'package:test_app/src/widgets/common/app_dialog.dart';
+import 'package:test_app/src/widgets/common/app_divider.dart';
+import 'package:test_app/src/widgets/common/app_dropdown.dart';
+import 'package:test_app/src/widgets/common/app_filter.dart';
+import 'package:test_app/src/widgets/common/app_list_item.dart';
+import 'package:test_app/src/widgets/common/app_list_title.dart';
+import 'package:test_app/src/widgets/common/app_loader.dart';
+import 'package:test_app/src/widgets/common/app_nav_bar.dart';
+import 'package:test_app/src/widgets/common/app_number_input.dart';
+import 'package:test_app/src/widgets/common/app_pagination_dots.dart';
+import 'package:test_app/src/widgets/common/app_progress_bar.dart';
+import 'package:test_app/src/widgets/common/app_radio_button.dart';
+import 'package:test_app/src/widgets/common/app_search_bar.dart';
+import 'package:test_app/src/widgets/common/app_slider.dart';
+import 'package:test_app/src/widgets/common/app_star_rating.dart';
+import 'package:test_app/src/widgets/common/app_stepper.dart';
+import 'package:test_app/src/widgets/common/app_tabs.dart';
+import 'package:test_app/src/widgets/common/app_tag.dart';
+import 'package:test_app/src/widgets/common/app_tap_bar.dart';
+import 'package:test_app/src/widgets/common/app_text_area.dart';
+import 'package:test_app/src/widgets/common/app_text_field.dart';
+import 'package:test_app/src/widgets/common/app_toast.dart';
+import 'package:test_app/src/widgets/common/app_toggle.dart';
+import 'package:test_app/src/widgets/common/app_tooltip.dart';
 import 'package:test_app/src/widgets/common/placeholders.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -63,12 +74,12 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Scaffold(
           body: ListView(
             children: [
-              MyButtonPrimary(
+              AppButtonPrimary(
                 onPressed: () => context.appController.logout(),
                 text: 'Logout',
               ),
               const SizedBox(height: 16),
-              MyBanner(
+              AppBanner(
                 title: 'Title',
                 description:
                     'Description. Lorem ipsum dolor sit amet consectetur adipiscing elit, sed do.',
@@ -77,57 +88,67 @@ class _HomeScreenState extends State<HomeScreen> {
                 image: const PlaceholderImage(),
               ),
               const SizedBox(height: 16),
-              MyToastInformative(
+              AppToastInformative(
                 title: 'Title',
                 description:
                     'Description. Lorem ipsum dolor sit amet consectetur adipiscing elit, sed do.',
                 onClose: () => debugPrint('Toast closed'),
               ),
               const SizedBox(height: 16),
-              MyToastSuccess(
+              AppToastSuccess(
                 title: 'Title',
                 description:
                     'Description. Lorem ipsum dolor sit amet consectetur adipiscing elit, sed do.',
                 onClose: () => debugPrint('Toast closed'),
               ),
               const SizedBox(height: 16),
-              MyToastWarning(
+              AppToastWarning(
                 title: 'Title',
                 description:
                     'Description. Lorem ipsum dolor sit amet consectetur adipiscing elit, sed do.',
                 onClose: () => debugPrint('Toast closed'),
               ),
               const SizedBox(height: 16),
-              MyToastError(
+              AppToastError(
                 title: 'Title',
                 description:
                     'Description. Lorem ipsum dolor sit amet consectetur adipiscing elit, sed do.',
                 onClose: () => debugPrint('Toast closed'),
               ),
               const SizedBox(height: 16),
-              MyDialog2(
-                title: 'Title',
-                description:
-                    'Description. Lorem ipsum dolor sit amet consectetur adipiscing elit, sed do.',
-                onPressed1: () => debugPrint('Button 1 pressed'),
-                onPressed2: () => debugPrint('Button 2 pressed'),
-                buttonText1: 'Button 1',
-                buttonText2: 'Button 2',
+              Center(
+                child: SizedBox(
+                  width: 300,
+                  child: AppDialog2(
+                    title: 'Title',
+                    description:
+                        'Description. Lorem ipsum dolor sit amet consectetur adipiscing elit, sed do.',
+                    onPressed1: () => debugPrint('Button 1 pressed'),
+                    onPressed2: () => debugPrint('Button 2 pressed'),
+                    buttonText1: 'Button 1',
+                    buttonText2: 'Button 2',
+                  ),
+                ),
               ),
               const SizedBox(height: 16),
-              MyDialog3(
-                title: 'Title',
-                description:
-                    'Description. Lorem ipsum dolor sit amet consectetur adipiscing elit, sed do.',
-                onPressed1: () => debugPrint('Button 1 pressed'),
-                onPressed2: () => debugPrint('Button 2 pressed'),
-                onPressed3: () => debugPrint('Button 3 pressed'),
-                buttonText1: 'Button 1',
-                buttonText2: 'Button 2',
-                buttonText3: 'Button 3',
+              Center(
+                child: SizedBox(
+                  width: 300,
+                  child: AppDialog3(
+                    title: 'Title',
+                    description:
+                        'Description. Lorem ipsum dolor sit amet consectetur adipiscing elit, sed do.',
+                    onPressed1: () => debugPrint('Button 1 pressed'),
+                    onPressed2: () => debugPrint('Button 2 pressed'),
+                    onPressed3: () => debugPrint('Button 3 pressed'),
+                    buttonText1: 'Button 1',
+                    buttonText2: 'Button 2',
+                    buttonText3: 'Button 3',
+                  ),
+                ),
               ),
               const SizedBox(height: 16),
-              MyTooltip(
+              AppTooltip(
                 title: 'Title',
                 description:
                     'Description. Lorem ipsum dolor sit amet consectetur adipiscing elit, sed do',
@@ -138,67 +159,96 @@ class _HomeScreenState extends State<HomeScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  MyBadgeSymbol(symbol: '9'),
+                  AppBadgeSymbol(symbol: '9'),
                   const SizedBox(width: 8),
-                  MyBadgeIcon(icon: AppIcons.check),
+                  AppBadgeIcon(icon: AppIcons.check),
                   const SizedBox(width: 8),
-                  MyBadgeEmpty(),
+                  AppBadgeEmpty(),
                 ],
               ),
               const SizedBox(height: 16),
-              MyContentSwitcher(
-                sectionCount: 4,
-                sectionTitles: List.generate(
-                  4,
-                  (index) => 'Section ${index + 1}',
-                ),
-                onSectionSelected: (value) =>
-                    debugPrint('Selected section: $value'),
-              ),
-              const SizedBox(height: 16),
-              MyContentSwitcher(
-                sectionCount: 3,
-                sectionTitles: List.generate(
-                  3,
-                  (index) => 'Section ${index + 1}',
-                ),
-                onSectionSelected: (value) =>
-                    debugPrint('Selected section: $value'),
-              ),
-              const SizedBox(height: 16),
-              MyContentSwitcher(
-                sectionCount: 2,
-                sectionTitles: List.generate(
-                  2,
-                  (index) => 'Section ${index + 1}',
-                ),
-                onSectionSelected: (value) =>
-                    debugPrint('Selected section: $value'),
-              ),
-              const SizedBox(height: 16),
-              MyTabs(
-                tabCount: 6,
-                tabTitles: List.generate(6, (index) => 'Title ${index + 1}'),
-                onTabSelected: (value) => debugPrint('Selected tab: $value'),
-              ),
-              const SizedBox(height: 16),
-              MyActionSheet(
-                actionCount: 5,
-                actionTitles: List.generate(
-                  5,
-                  (index) => 'Action ${index + 1}',
-                ),
-                actionIcons: List.generate(5, (index) => AppIcons.record),
-                onActionPressed: List.generate(
-                  5,
-                  (index) =>
-                      () => debugPrint('Action ${index + 1} pressed'),
+              Center(
+                child: SizedBox(
+                  width: 332,
+                  child: AppContentSwitcher(
+                    sectionCount: 4,
+                    sectionTitles: List.generate(
+                      4,
+                      (index) => 'Section ${index + 1}',
+                    ),
+                    onSectionSelected: (value) =>
+                        debugPrint('Selected section: $value'),
+                  ),
                 ),
               ),
               const SizedBox(height: 16),
-              MyFilter(onPressed: () => debugPrint('Filter pressed')),
+              Center(
+                child: SizedBox(
+                  width: 332,
+                  child: AppContentSwitcher(
+                    sectionCount: 3,
+                    sectionTitles: List.generate(
+                      3,
+                      (index) => 'Section ${index + 1}',
+                    ),
+                    onSectionSelected: (value) =>
+                        debugPrint('Selected section: $value'),
+                  ),
+                ),
+              ),
               const SizedBox(height: 16),
-              MyFilter(
+              Center(
+                child: SizedBox(
+                  width: 332,
+                  child: AppContentSwitcher(
+                    sectionCount: 2,
+                    sectionTitles: List.generate(
+                      2,
+                      (index) => 'Section ${index + 1}',
+                    ),
+                    onSectionSelected: (value) =>
+                        debugPrint('Selected section: $value'),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Center(
+                child: SizedBox(
+                  width: 405,
+                  child: AppTabs(
+                    tabCount: 6,
+                    tabTitles: List.generate(
+                      6,
+                      (index) => 'Title ${index + 1}',
+                    ),
+                    onTabSelected: (value) =>
+                        debugPrint('Selected tab: $value'),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Center(
+                child: SizedBox(
+                  width: 327,
+                  child: AppActionSheet(
+                    actionCount: 5,
+                    actionTitles: List.generate(
+                      5,
+                      (index) => 'Action ${index + 1}',
+                    ),
+                    actionIcons: List.generate(5, (index) => AppIcons.record),
+                    onActionPressed: List.generate(
+                      5,
+                      (index) =>
+                          () => debugPrint('Action ${index + 1} pressed'),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              AppFilter(onPressed: () => debugPrint('Filter pressed')),
+              const SizedBox(height: 16),
+              AppFilter(
                 filteredItemCount: 2,
                 onPressed: () => debugPrint('Filter pressed'),
               ),
@@ -206,13 +256,13 @@ class _HomeScreenState extends State<HomeScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  MyCheckbox(
+                  AppCheckbox(
                     value: false,
                     onChanged: (value) =>
                         debugPrint('Checkbox 1 changed: $value'),
                   ),
                   const SizedBox(width: 16),
-                  MyCheckbox(
+                  AppCheckbox(
                     value: true,
                     onChanged: (value) =>
                         debugPrint('Checkbox 2 changed: $value'),
@@ -223,14 +273,14 @@ class _HomeScreenState extends State<HomeScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  MyCheckbox(
+                  AppCheckbox(
                     value: false,
                     size: checkboxMediumSize,
                     onChanged: (value) =>
                         debugPrint('Checkbox 3 changed: $value'),
                   ),
                   const SizedBox(width: 16),
-                  MyCheckbox(
+                  AppCheckbox(
                     value: true,
                     size: checkboxMediumSize,
                     onChanged: (value) =>
@@ -242,14 +292,14 @@ class _HomeScreenState extends State<HomeScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  MyCheckbox(
+                  AppCheckbox(
                     value: false,
                     size: checkboxLargeSize,
                     onChanged: (value) =>
                         debugPrint('Checkbox 5 changed: $value'),
                   ),
                   const SizedBox(width: 16),
-                  MyCheckbox(
+                  AppCheckbox(
                     value: true,
                     size: checkboxLargeSize,
                     onChanged: (value) =>
@@ -260,355 +310,1205 @@ class _HomeScreenState extends State<HomeScreen> {
               const SizedBox(height: 16),
               RadioGroup<bool>(
                 groupValue: true,
-                onChanged: (value) => {},
+                onChanged: (value) => debugPrint('Selected: $value'),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    MyRadioButton(
-                      value: false,
-                      onChanged: (value) =>
-                          debugPrint('Radio button 1 changed: $value'),
-                    ),
+                    AppRadioButton(value: false),
                     const SizedBox(width: 16),
-                    MyRadioButton(
-                      value: true,
-                      onChanged: (value) =>
-                          debugPrint('Radio button 2 changed: $value'),
-                    ),
+                    AppRadioButton(value: true),
                   ],
                 ),
               ),
               const SizedBox(height: 16),
               RadioGroup<bool>(
                 groupValue: true,
-                onChanged: (value) => {},
+                onChanged: (value) => debugPrint('Selected: $value'),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    MyRadioButton(
-                      value: false,
-                      size: radioButtonMediumSize,
-                      onChanged: (value) =>
-                          debugPrint('Radio button 3 changed: $value'),
-                    ),
+                    AppRadioButton(value: false, size: radioButtonMediumSize),
                     const SizedBox(width: 16),
-                    MyRadioButton(
-                      value: true,
-                      size: radioButtonMediumSize,
-                      onChanged: (value) =>
-                          debugPrint('Radio button 4 changed: $value'),
-                    ),
+                    AppRadioButton(value: true, size: radioButtonMediumSize),
                   ],
                 ),
               ),
               const SizedBox(height: 16),
               RadioGroup<bool>(
                 groupValue: true,
-                onChanged: (value) => {},
+                onChanged: (value) => debugPrint('Selected: $value'),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    MyRadioButton(
-                      value: false,
-                      size: radioButtonLargeSize,
-                      onChanged: (value) =>
-                          debugPrint('Radio button 5 changed: $value'),
-                    ),
+                    AppRadioButton(value: false, size: radioButtonLargeSize),
                     const SizedBox(width: 16),
-                    MyRadioButton(
-                      value: true,
-                      size: radioButtonLargeSize,
-                      onChanged: (value) =>
-                          debugPrint('Radio button 6 changed: $value'),
-                    ),
+                    AppRadioButton(value: true, size: radioButtonLargeSize),
                   ],
                 ),
               ),
               const SizedBox(height: 16),
-              MyToggle(
+              AppToggle(
                 value: false,
                 onChanged: (value) => debugPrint('Toggle 1 changed: $value'),
               ),
               const SizedBox(height: 16),
-              MyToggle(
+              AppToggle(
                 value: true,
                 onChanged: (value) => debugPrint('Toggle 2 changed: $value'),
               ),
               const SizedBox(height: 16),
-              MyStarRating(
+              AppStarRating(
                 rating: 0,
                 onRatingChanged: (value) =>
                     debugPrint('Star rating changed: $value'),
               ),
               const SizedBox(height: 16),
-              MySlider(
-                value: 50,
-                onChanged: (value) => debugPrint('Slider changed: $value'),
+              Center(
+                child: SizedBox(
+                  width: 300,
+                  child: AppSlider(
+                    value: 50,
+                    onChanged: (value) => debugPrint('Slider changed: $value'),
+                  ),
+                ),
               ),
               const SizedBox(height: 16),
-              MySliderDefault(
-                value: 50,
-                onChanged: (value) =>
-                    debugPrint('Slider default changed: $value'),
+              Center(
+                child: SizedBox(
+                  width: 300,
+                  child: AppSliderDefault(
+                    value: 50,
+                    onChanged: (value) =>
+                        debugPrint('Slider default changed: $value'),
+                  ),
+                ),
               ),
               const SizedBox(height: 16),
-              MySliderTitled(
-                value: 50,
-                title: 'Title',
-                onChanged: (value) =>
-                    debugPrint('Slider titled changed: $value'),
+              Center(
+                child: SizedBox(
+                  width: 300,
+                  child: AppSliderTitled(
+                    value: 50,
+                    title: 'Title',
+                    onChanged: (value) =>
+                        debugPrint('Slider titled changed: $value'),
+                  ),
+                ),
               ),
               const SizedBox(height: 16),
-              MyNumberInput(
+              AppNumberInput(
                 value: 123,
                 onChanged: (value) =>
                     debugPrint('Number input changed: $value'),
               ),
               const SizedBox(height: 16),
-              MyNumberInputTitled(
-                value: 123,
-                title: 'Title',
-                onChanged: (value) =>
-                    debugPrint('Number input titled changed: $value'),
-              ),
-              const SizedBox(height: 16),
-              MyNumberInputTitled(
-                value: 123,
-                min: 123,
-                title: 'Title',
-                onChanged: (value) =>
-                    debugPrint('Number input titled with min changed: $value'),
-              ),
-              const SizedBox(height: 16),
-              MyNumberInputTitled(
-                value: 123,
-                max: 123,
-                title: 'Title',
-                onChanged: (value) =>
-                    debugPrint('Number input titled with max changed: $value'),
-              ),
-              const SizedBox(height: 16),
-              MyNumberInputTitled(
-                value: 123,
-                title: 'Title',
-                supportText: 'Support text',
-                onChanged: (value) => debugPrint(
-                  'Number input titled with support text changed: $value',
-                ),
-              ),
-              const SizedBox(height: 16),
-              MyNumberInputTitled(
-                value: 123,
-                title: 'Title',
-                enabled: false,
-                onChanged: (value) => debugPrint(
-                  'Number input titled with disabled state changed: $value',
-                ),
-              ),
-              const SizedBox(height: 16),
-              MyTextField(title: 'Title', placeholder: 'Placeholder'),
-              const SizedBox(height: 16),
-              MyTextField(title: 'Title', text: 'Text'),
-              const SizedBox(height: 16),
-              MyTextField(
-                title: 'Title',
-                text: 'Text',
-                validator: (value) =>
-                    value == 'Text' ? 'Cannot be "Text"' : null,
-                autovalidateMode: AutovalidateMode.always,
-              ),
-              const SizedBox(height: 16),
-              MyTextField(title: 'Title', text: 'Text', enabled: false),
-              const SizedBox(height: 16),
-              MyTextField(
-                title: 'Title',
-                placeholder: 'Placeholder',
-                supportText: 'Support text',
-                obscureText: false,
-                showIcon: true,
-              ),
-              const SizedBox(height: 16),
-              MyTextField(
-                title: 'Title',
-                placeholder: 'Placeholder',
-                unit: '€',
-              ),
-              const SizedBox(height: 16),
-              MyTextArea(title: 'Title', placeholder: 'Placeholder'),
-              const SizedBox(height: 16),
-              MyTextArea(title: 'Title', text: 'Text'),
-              const SizedBox(height: 16),
-              MyTextArea(
-                title: 'Title',
-                text: 'Text',
-                validator: (value) =>
-                    value == 'Text' ? 'Cannot be "Text"' : null,
-                autovalidateMode: AutovalidateMode.always,
-              ),
-              const SizedBox(height: 16),
-              MyTextArea(title: 'Title', text: 'Text', enabled: false),
-              const SizedBox(height: 16),
-              MyTextArea(
-                title: 'Title',
-                placeholder: 'Placeholder',
-                supportText: 'Support text',
-              ),
-              const SizedBox(height: 16),
-              MyTextArea(title: 'Title', placeholder: 'Placeholder', unit: '€'),
-              const SizedBox(height: 16),
-              MyDropdown(
-                items: List.generate(
-                  5,
-                  (index) => DropdownMenuEntry<String>(
-                    value: 'Option ${index + 1}',
-                    label: 'Option ${index + 1}',
+              Center(
+                child: SizedBox(
+                  width: 303,
+                  child: AppNumberInputTitled(
+                    value: 123,
+                    title: 'Title',
+                    onChanged: (value) =>
+                        debugPrint('Number input titled changed: $value'),
                   ),
                 ),
-                title: 'Title',
-                onSelected: (value) => debugPrint('Selected: $value'),
-                placeholder: 'Placeholder',
               ),
               const SizedBox(height: 16),
-              MyDropdown(
-                items: List.generate(
-                  5,
-                  (index) => DropdownMenuEntry<String>(
-                    value: 'Option ${index + 1}',
-                    label: 'Option ${index + 1}',
+              Center(
+                child: SizedBox(
+                  width: 303,
+                  child: AppNumberInputTitled(
+                    value: 123,
+                    min: 123,
+                    title: 'Title',
+                    onChanged: (value) => debugPrint(
+                      'Number input titled with min changed: $value',
+                    ),
                   ),
                 ),
-                title: 'Title',
-                onSelected: (value) => debugPrint('Selected: $value'),
-                text: 'Text',
               ),
               const SizedBox(height: 16),
-              MyDropdown(
-                items: List.generate(
-                  5,
-                  (index) => DropdownMenuEntry<String>(
-                    value: 'Option ${index + 1}',
-                    label: 'Option ${index + 1}',
+              Center(
+                child: SizedBox(
+                  width: 303,
+                  child: AppNumberInputTitled(
+                    value: 123,
+                    max: 123,
+                    title: 'Title',
+                    onChanged: (value) => debugPrint(
+                      'Number input titled with max changed: $value',
+                    ),
                   ),
                 ),
-                title: 'Title',
-                onSelected: (value) => debugPrint('Selected: $value'),
-                text: 'Text',
-                validator: (value) =>
-                    value == 'Text' ? 'Cannot be "Text"' : null,
-                autovalidateMode: AutovalidateMode.always,
               ),
               const SizedBox(height: 16),
-              MyDropdown(
-                items: List.generate(
-                  5,
-                  (index) => DropdownMenuEntry<String>(
-                    value: 'Option ${index + 1}',
-                    label: 'Option ${index + 1}',
+              Center(
+                child: SizedBox(
+                  width: 303,
+                  child: AppNumberInputTitled(
+                    value: 123,
+                    title: 'Title',
+                    supportText: 'Support text',
+                    onChanged: (value) => debugPrint(
+                      'Number input titled with support text changed: $value',
+                    ),
                   ),
                 ),
-                title: 'Title',
-                onSelected: (value) => debugPrint('Selected: $value'),
-                text: 'Text',
-                enabled: false,
               ),
               const SizedBox(height: 16),
-              MySearchBar(),
-              const SizedBox(height: 16),
-              MySearchBar(text: 'Text'),
-              const SizedBox(height: 16),
-              MyTapBar(
-                tabCount: 5,
-                tabTitles: List.generate(5, (index) => 'Tab ${index + 1}'),
-                tabIcons: List.generate(5, (index) => AppIcons.record),
+              Center(
+                child: SizedBox(
+                  width: 303,
+                  child: AppNumberInputTitled(
+                    value: 123,
+                    title: 'Title',
+                    enabled: false,
+                    onChanged: (value) => debugPrint(
+                      'Number input titled with disabled state changed: $value',
+                    ),
+                  ),
+                ),
               ),
               const SizedBox(height: 16),
-              MyNavBar(
-                title: 'Page Title',
-                leftIcon: AppIcons.arrowLeft,
-                rightText: 'Edit',
-                onPressedLeft: () => debugPrint('Pressed left'),
-                onPressedRight: () => debugPrint('Pressed right'),
+              Center(
+                child: SizedBox(
+                  width: 295,
+                  child: AppTextField(
+                    title: 'Title',
+                    placeholder: 'Placeholder',
+                  ),
+                ),
               ),
               const SizedBox(height: 16),
-              MyNavBar(
-                title: 'Page Title',
-                leftIcon: AppIcons.arrowLeft,
-                rightIcon: AppIcons.heartOutlined,
-                onPressedLeft: () => debugPrint('Pressed left'),
-                onPressedRight: () => debugPrint('Pressed right'),
+              Center(
+                child: SizedBox(
+                  width: 295,
+                  child: AppTextField(title: 'Title', text: 'Text'),
+                ),
               ),
               const SizedBox(height: 16),
-              MyNavBar(
-                title: 'Page Title',
-                leftIcon: AppIcons.arrowLeft,
-                rightImage: const PlaceholderAvatar(size: AvatarSize.small),
-                onPressedLeft: () => debugPrint('Pressed left'),
-                onPressedRight: () => debugPrint('Pressed right'),
+              Center(
+                child: SizedBox(
+                  width: 295,
+                  child: AppTextField(
+                    title: 'Title',
+                    text: 'Text',
+                    validator: (value) =>
+                        value == 'Text' ? 'Cannot be "Text"' : null,
+                    autovalidateMode: AutovalidateMode.always,
+                  ),
+                ),
               ),
               const SizedBox(height: 16),
-              MyNavBar(
-                title: 'Page Title',
-                leftIcon: AppIcons.arrowLeft,
-                onPressedLeft: () => debugPrint('Pressed left'),
-                onPressedRight: () => debugPrint('Pressed right'),
+              Center(
+                child: SizedBox(
+                  width: 295,
+                  child: AppTextField(
+                    title: 'Title',
+                    text: 'Text',
+                    enabled: false,
+                  ),
+                ),
               ),
               const SizedBox(height: 16),
-              MyNavBar(
-                title: 'Page Title',
-                leftText: 'Cancel',
-                rightText: 'Edit',
-                onPressedLeft: () => debugPrint('Pressed left'),
-                onPressedRight: () => debugPrint('Pressed right'),
+              Center(
+                child: SizedBox(
+                  width: 295,
+                  child: AppTextField(
+                    title: 'Title',
+                    placeholder: 'Placeholder',
+                    supportText: 'Support text',
+                    obscureText: false,
+                    showIcon: true,
+                  ),
+                ),
               ),
               const SizedBox(height: 16),
-              MyNavBar(
-                title: 'Page Title',
-                leftText: 'Cancel',
-                rightIcon: AppIcons.heartOutlined,
-                onPressedLeft: () => debugPrint('Pressed left'),
-                onPressedRight: () => debugPrint('Pressed right'),
+              Center(
+                child: SizedBox(
+                  width: 295,
+                  child: AppTextField(
+                    title: 'Title',
+                    placeholder: 'Placeholder',
+                    unit: '€',
+                  ),
+                ),
               ),
               const SizedBox(height: 16),
-              MyNavBar(
-                title: 'Page Title',
-                leftText: 'Cancel',
-                rightImage: const PlaceholderAvatar(size: AvatarSize.small),
-                onPressedLeft: () => debugPrint('Pressed left'),
-                onPressedRight: () => debugPrint('Pressed right'),
+              Center(
+                child: SizedBox(
+                  width: 295,
+                  child: AppTextArea(
+                    title: 'Title',
+                    placeholder: 'Placeholder',
+                  ),
+                ),
               ),
               const SizedBox(height: 16),
-              MyNavBar(
-                title: 'Page Title',
-                leftText: 'Cancel',
-                onPressedLeft: () => debugPrint('Pressed left'),
-                onPressedRight: () => debugPrint('Pressed right'),
+              Center(
+                child: SizedBox(
+                  width: 295,
+                  child: AppTextArea(title: 'Title', text: 'Text'),
+                ),
               ),
               const SizedBox(height: 16),
-              MyNavBar(
-                title: 'Page Title',
-                rightText: 'Edit',
-                onPressedLeft: () => debugPrint('Pressed left'),
-                onPressedRight: () => debugPrint('Pressed right'),
+              Center(
+                child: SizedBox(
+                  width: 295,
+                  child: AppTextArea(
+                    title: 'Title',
+                    text: 'Text',
+                    validator: (value) =>
+                        value == 'Text' ? 'Cannot be "Text"' : null,
+                    autovalidateMode: AutovalidateMode.always,
+                  ),
+                ),
               ),
               const SizedBox(height: 16),
-              MyNavBar(
-                title: 'Page Title',
-                rightIcon: AppIcons.heartOutlined,
-                onPressedLeft: () => debugPrint('Pressed left'),
-                onPressedRight: () => debugPrint('Pressed right'),
+              Center(
+                child: SizedBox(
+                  width: 295,
+                  child: AppTextArea(
+                    title: 'Title',
+                    text: 'Text',
+                    enabled: false,
+                  ),
+                ),
               ),
               const SizedBox(height: 16),
-              MyNavBar(
-                title: 'Page Title',
-                rightImage: const PlaceholderAvatar(size: AvatarSize.small),
-                onPressedLeft: () => debugPrint('Pressed left'),
-                onPressedRight: () => debugPrint('Pressed right'),
+              Center(
+                child: SizedBox(
+                  width: 295,
+                  child: AppTextArea(
+                    title: 'Title',
+                    placeholder: 'Placeholder',
+                    supportText: 'Support text',
+                  ),
+                ),
               ),
               const SizedBox(height: 16),
-              MyNavBar(
-                title: 'Page Title',
-                onPressedLeft: () => debugPrint('Pressed left'),
-                onPressedRight: () => debugPrint('Pressed right'),
+              Center(
+                child: SizedBox(
+                  width: 295,
+                  child: AppTextArea(
+                    title: 'Title',
+                    placeholder: 'Placeholder',
+                    unit: '€',
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Center(
+                child: SizedBox(
+                  width: 295,
+                  child: AppDropdown(
+                    items: List.generate(
+                      5,
+                      (index) => DropdownMenuEntry<String>(
+                        value: 'Option ${index + 1}',
+                        label: 'Option ${index + 1}',
+                      ),
+                    ),
+                    title: 'Title',
+                    onSelected: (value) => debugPrint('Selected: $value'),
+                    placeholder: 'Placeholder',
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Center(
+                child: SizedBox(
+                  width: 295,
+                  child: AppDropdown(
+                    items: List.generate(
+                      5,
+                      (index) => DropdownMenuEntry<String>(
+                        value: 'Option ${index + 1}',
+                        label: 'Option ${index + 1}',
+                      ),
+                    ),
+                    title: 'Title',
+                    onSelected: (value) => debugPrint('Selected: $value'),
+                    text: 'Text',
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Center(
+                child: SizedBox(
+                  width: 295,
+                  child: AppDropdown(
+                    items: List.generate(
+                      5,
+                      (index) => DropdownMenuEntry<String>(
+                        value: 'Option ${index + 1}',
+                        label: 'Option ${index + 1}',
+                      ),
+                    ),
+                    title: 'Title',
+                    onSelected: (value) => debugPrint('Selected: $value'),
+                    text: 'Text',
+                    validator: (value) =>
+                        value == 'Text' ? 'Cannot be "Text"' : null,
+                    autovalidateMode: AutovalidateMode.always,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Center(
+                child: SizedBox(
+                  width: 295,
+                  child: AppDropdown(
+                    items: List.generate(
+                      5,
+                      (index) => DropdownMenuEntry<String>(
+                        value: 'Option ${index + 1}',
+                        label: 'Option ${index + 1}',
+                      ),
+                    ),
+                    title: 'Title',
+                    onSelected: (value) => debugPrint('Selected: $value'),
+                    text: 'Text',
+                    enabled: false,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Center(child: SizedBox(width: 311, child: AppSearchBar())),
+              const SizedBox(height: 16),
+              Center(
+                child: SizedBox(width: 311, child: AppSearchBar(text: 'Text')),
+              ),
+              const SizedBox(height: 16),
+              Center(
+                child: SizedBox(
+                  width: 423,
+                  child: AppTapBar(
+                    tabCount: 5,
+                    tabTitles: List.generate(5, (index) => 'Tab ${index + 1}'),
+                    tabIcons: List.generate(5, (index) => AppIcons.record),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Center(
+                child: SizedBox(
+                  width: 375,
+                  child: AppNavBar(
+                    title: 'Page Title',
+                    leftIcon: AppIcons.arrowLeft,
+                    rightText: 'Edit',
+                    onPressedLeft: () => debugPrint('Pressed left'),
+                    onPressedRight: () => debugPrint('Pressed right'),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Center(
+                child: SizedBox(
+                  width: 375,
+                  child: AppNavBar(
+                    title: 'Page Title',
+                    leftIcon: AppIcons.arrowLeft,
+                    rightIcon: AppIcons.heartOutlined,
+                    onPressedLeft: () => debugPrint('Pressed left'),
+                    onPressedRight: () => debugPrint('Pressed right'),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Center(
+                child: SizedBox(
+                  width: 375,
+                  child: AppNavBar(
+                    title: 'Page Title',
+                    leftIcon: AppIcons.arrowLeft,
+                    rightImage: const PlaceholderAvatar(size: AvatarSize.small),
+                    onPressedLeft: () => debugPrint('Pressed left'),
+                    onPressedRight: () => debugPrint('Pressed right'),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Center(
+                child: SizedBox(
+                  width: 375,
+                  child: AppNavBar(
+                    title: 'Page Title',
+                    leftText: 'Cancel',
+                    rightText: 'Edit',
+                    onPressedLeft: () => debugPrint('Pressed left'),
+                    onPressedRight: () => debugPrint('Pressed right'),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Center(
+                child: SizedBox(
+                  width: 375,
+                  child: AppNavBar(
+                    title: 'Page Title',
+                    leftText: 'Cancel',
+                    rightIcon: AppIcons.heartOutlined,
+                    onPressedLeft: () => debugPrint('Pressed left'),
+                    onPressedRight: () => debugPrint('Pressed right'),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Center(
+                child: SizedBox(
+                  width: 375,
+                  child: AppNavBar(
+                    title: 'Page Title',
+                    leftText: 'Cancel',
+                    rightImage: const PlaceholderAvatar(size: AvatarSize.small),
+                    onPressedLeft: () => debugPrint('Pressed left'),
+                    onPressedRight: () => debugPrint('Pressed right'),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Center(
+                child: SizedBox(
+                  width: 375,
+                  child: AppNavBar(
+                    title: 'Page Title',
+                    leftText: 'Cancel',
+                    onPressedLeft: () => debugPrint('Pressed left'),
+                    onPressedRight: () => debugPrint('Pressed right'),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Center(
+                child: SizedBox(
+                  width: 375,
+                  child: AppNavBar(
+                    title: 'Page Title',
+                    rightText: 'Edit',
+                    onPressedLeft: () => debugPrint('Pressed left'),
+                    onPressedRight: () => debugPrint('Pressed right'),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Center(
+                child: SizedBox(
+                  width: 375,
+                  child: AppNavBar(
+                    title: 'Page Title',
+                    rightIcon: AppIcons.heartOutlined,
+                    onPressedLeft: () => debugPrint('Pressed left'),
+                    onPressedRight: () => debugPrint('Pressed right'),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Center(
+                child: SizedBox(
+                  width: 375,
+                  child: AppNavBar(
+                    title: 'Page Title',
+                    rightImage: const PlaceholderAvatar(size: AvatarSize.small),
+                    onPressedLeft: () => debugPrint('Pressed left'),
+                    onPressedRight: () => debugPrint('Pressed right'),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Center(
+                child: SizedBox(
+                  width: 375,
+                  child: AppNavBar(
+                    title: 'Page Title',
+                    onPressedLeft: () => debugPrint('Pressed left'),
+                    onPressedRight: () => debugPrint('Pressed right'),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Center(
+                child: SizedBox(
+                  width: 200,
+                  child: AppCardLarge(
+                    title: 'Title',
+                    subtitle: 'Subtitle',
+                    description:
+                        'Description. Lorem ipsum dolor sit amet consectetur adipiscing elit, sed do',
+                    tagText: 'TAG',
+                    onTagPressed: () => debugPrint('Tag pressed'),
+                    image: const PlaceholderImage(),
+                    buttonText: 'Button',
+                    onPressed: () => debugPrint('Button pressed'),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Center(
+                child: SizedBox(
+                  width: 200,
+                  child: AppCardLarge(
+                    title: 'Title',
+                    subtitle: 'Subtitle',
+                    description:
+                        'Description. Lorem ipsum dolor sit amet consectetur adipiscing elit, sed do',
+                    icon: AppIcons.heartFilled,
+                    onIconButtonPressed: () =>
+                        debugPrint('Icon button pressed'),
+                    buttonText: 'Button',
+                    onPressed: () => debugPrint('Button pressed'),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Center(
+                child: SizedBox(
+                  width: 200,
+                  child: AppCardLarge(
+                    title: 'Title',
+                    subtitle: 'Subtitle',
+                    description:
+                        'Description. Lorem ipsum dolor sit amet consectetur adipiscing elit, sed do',
+                    avatar: const PlaceholderAvatar(size: AvatarSize.medium),
+                    onAvatarPressed: () => debugPrint('Avatar button pressed'),
+                    buttonText: 'Button',
+                    onPressed: () => debugPrint('Button pressed'),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Center(
+                child: SizedBox(
+                  width: 300,
+                  child: AppCardSmall(
+                    title: 'Title',
+                    subtitle: 'Subtitle',
+                    buttonText: 'Button',
+                    image: const PlaceholderImage(),
+                    onPressed: () => debugPrint('Button pressed'),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Center(
+                child: SizedBox(
+                  width: 300,
+                  child: AppCardSmall(
+                    title: 'Title',
+                    subtitle: 'Subtitle',
+                    image: const PlaceholderImage(),
+                    onPressed: () => debugPrint('Button pressed'),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Center(
+                child: SizedBox(
+                  width: 300,
+                  child: AppCardSmall(
+                    title: 'Title',
+                    subtitle: 'Subtitle',
+                    image: const PlaceholderImage(),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Center(
+                child: SizedBox(
+                  width: 300,
+                  child: AppCardSmall(
+                    title: 'Title',
+                    subtitle: 'Subtitle',
+                    buttonText: 'Button',
+                    avatar: const PlaceholderAvatar(size: AvatarSize.small),
+                    onAvatarPressed: () => debugPrint('Avatar button pressed'),
+                    onPressed: () => debugPrint('Button pressed'),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Center(
+                child: SizedBox(
+                  width: 300,
+                  child: AppCardSmall(
+                    title: 'Title',
+                    subtitle: 'Subtitle',
+                    avatar: const PlaceholderAvatar(size: AvatarSize.small),
+                    onAvatarPressed: () => debugPrint('Avatar button pressed'),
+                    onPressed: () => debugPrint('Button pressed'),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Center(
+                child: SizedBox(
+                  width: 300,
+                  child: AppCardSmall(
+                    title: 'Title',
+                    subtitle: 'Subtitle',
+                    avatar: const PlaceholderAvatar(size: AvatarSize.small),
+                    onAvatarPressed: () => debugPrint('Avatar button pressed'),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Center(
+                child: SizedBox(
+                  width: 300,
+                  child: AppCardSmall(
+                    title: 'Title',
+                    subtitle: 'Subtitle',
+                    buttonText: 'Button',
+                    icon: AppIcons.heartFilled,
+                    onIconButtonPressed: () =>
+                        debugPrint('Icon button pressed'),
+                    onPressed: () => debugPrint('Button pressed'),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Center(
+                child: SizedBox(
+                  width: 300,
+                  child: AppCardSmall(
+                    title: 'Title',
+                    subtitle: 'Subtitle',
+                    icon: AppIcons.heartFilled,
+                    onIconButtonPressed: () =>
+                        debugPrint('Icon button pressed'),
+                    onPressed: () => debugPrint('Button pressed'),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Center(
+                child: SizedBox(
+                  width: 300,
+                  child: AppCardSmall(
+                    title: 'Title',
+                    subtitle: 'Subtitle',
+                    icon: AppIcons.heartFilled,
+                    onIconButtonPressed: () =>
+                        debugPrint('Icon button pressed'),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Center(
+                child: SizedBox(
+                  width: 300,
+                  child: AppCardSmall(
+                    title: 'Title',
+                    subtitle: 'Subtitle',
+                    buttonText: 'Button',
+                    onPressed: () => debugPrint('Button pressed'),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Center(
+                child: SizedBox(
+                  width: 300,
+                  child: AppCardSmall(
+                    title: 'Title',
+                    subtitle: 'Subtitle',
+                    onPressed: () => debugPrint('Button pressed'),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Center(
+                child: SizedBox(
+                  width: 300,
+                  child: AppCardSmall(title: 'Title', subtitle: 'Subtitle'),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Center(
+                child: SizedBox(
+                  width: 46,
+                  child: AppTag(
+                    text: 'TAG',
+                    onPressed: () => debugPrint('Tag pressed'),
+                  ),
+                ),
+              ),
+              Center(
+                child: SizedBox(
+                  width: 327,
+                  child: AppListTitle(title: 'Title'),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Center(
+                child: SizedBox(
+                  width: 327,
+                  child: AppListTitle(
+                    title: 'Title',
+                    buttonText: 'Edit',
+                    onPressed: () => debugPrint('Button pressed'),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Center(
+                child: SizedBox(
+                  width: 327,
+                  child: AppListTitle(
+                    title: 'Title',
+                    icon: AppIcons.search,
+                    onPressed: () => debugPrint('Icon button pressed'),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Center(
+                child: SizedBox(
+                  width: 327,
+                  child: AppListItem(
+                    title: 'Title',
+                    description:
+                        'Description. Lorem ipsum dolor sit amet consectetur adipiscing elit, sed do',
+                    icon: AppIcons.heartFilled,
+                    control: AppListItemControl.button,
+                    onPressed: () => debugPrint('Button pressed'),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Center(
+                child: SizedBox(
+                  width: 327,
+                  child: AppListItem(
+                    title: 'Title',
+                    description:
+                        'Description. Lorem ipsum dolor sit amet consectetur adipiscing elit, sed do',
+                    icon: AppIcons.heartFilled,
+                    control: AppListItemControl.toggle,
+                    value: false,
+                    onChanged: (value) => debugPrint('Toggle changed: $value'),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Center(
+                child: SizedBox(
+                  width: 327,
+                  child: AppListItem(
+                    title: 'Title',
+                    description:
+                        'Description. Lorem ipsum dolor sit amet consectetur adipiscing elit, sed do',
+                    icon: AppIcons.heartFilled,
+                    control: AppListItemControl.checkbox,
+                    value: false,
+                    onChanged: (value) =>
+                        debugPrint('Checkbox changed: $value'),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Center(
+                child: SizedBox(
+                  width: 327,
+                  child: AppListItem(
+                    title: 'Title',
+                    description:
+                        'Description. Lorem ipsum dolor sit amet consectetur adipiscing elit, sed do',
+                    icon: AppIcons.heartFilled,
+                    control: AppListItemControl.badge,
+                    symbol: '9',
+                    onPressed: () => debugPrint('Badge pressed'),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Center(
+                child: SizedBox(
+                  width: 327,
+                  child: AppListItem(
+                    title: 'Title',
+                    description:
+                        'Description. Lorem ipsum dolor sit amet consectetur adipiscing elit, sed do',
+                    icon: AppIcons.heartFilled,
+                    control: AppListItemControl.none,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Center(
+                child: SizedBox(
+                  width: 327,
+                  child: AppListItem(
+                    title: 'Title',
+                    description:
+                        'Description. Lorem ipsum dolor sit amet consectetur adipiscing elit, sed do',
+                    avatar: const PlaceholderAvatar(size: AvatarSize.small),
+                    control: AppListItemControl.button,
+                    onPressed: () => debugPrint('Button pressed'),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Center(
+                child: SizedBox(
+                  width: 327,
+                  child: AppListItem(
+                    title: 'Title',
+                    description:
+                        'Description. Lorem ipsum dolor sit amet consectetur adipiscing elit, sed do',
+                    avatar: const PlaceholderAvatar(size: AvatarSize.small),
+                    control: AppListItemControl.toggle,
+                    value: false,
+                    onChanged: (value) => debugPrint('Toggle changed: $value'),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Center(
+                child: SizedBox(
+                  width: 327,
+                  child: AppListItem(
+                    title: 'Title',
+                    description:
+                        'Description. Lorem ipsum dolor sit amet consectetur adipiscing elit, sed do',
+                    avatar: const PlaceholderAvatar(size: AvatarSize.small),
+                    control: AppListItemControl.checkbox,
+                    value: false,
+                    onChanged: (value) =>
+                        debugPrint('Checkbox changed: $value'),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Center(
+                child: SizedBox(
+                  width: 327,
+                  child: AppListItem(
+                    title: 'Title',
+                    description:
+                        'Description. Lorem ipsum dolor sit amet consectetur adipiscing elit, sed do',
+                    avatar: const PlaceholderAvatar(size: AvatarSize.small),
+                    control: AppListItemControl.badge,
+                    symbol: '9',
+                    onPressed: () => debugPrint('Badge pressed'),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Center(
+                child: SizedBox(
+                  width: 327,
+                  child: AppListItem(
+                    title: 'Title',
+                    description:
+                        'Description. Lorem ipsum dolor sit amet consectetur adipiscing elit, sed do',
+                    avatar: const PlaceholderAvatar(size: AvatarSize.small),
+                    control: AppListItemControl.none,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Center(
+                child: SizedBox(
+                  width: 327,
+                  child: AppListItem(
+                    title: 'Title',
+                    description:
+                        'Description. Lorem ipsum dolor sit amet consectetur adipiscing elit, sed do',
+                    control: AppListItemControl.button,
+                    onPressed: () => debugPrint('Button pressed'),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Center(
+                child: SizedBox(
+                  width: 327,
+                  child: AppListItem(
+                    title: 'Title',
+                    description:
+                        'Description. Lorem ipsum dolor sit amet consectetur adipiscing elit, sed do',
+                    control: AppListItemControl.toggle,
+                    value: false,
+                    onChanged: (value) => debugPrint('Toggle changed: $value'),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Center(
+                child: SizedBox(
+                  width: 327,
+                  child: AppListItem(
+                    title: 'Title',
+                    description:
+                        'Description. Lorem ipsum dolor sit amet consectetur adipiscing elit, sed do',
+                    control: AppListItemControl.checkbox,
+                    value: false,
+                    onChanged: (value) =>
+                        debugPrint('Checkbox changed: $value'),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Center(
+                child: SizedBox(
+                  width: 327,
+                  child: AppListItem(
+                    title: 'Title',
+                    description:
+                        'Description. Lorem ipsum dolor sit amet consectetur adipiscing elit, sed do',
+                    control: AppListItemControl.badge,
+                    symbol: '9',
+                    onPressed: () => debugPrint('Badge pressed'),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Center(
+                child: SizedBox(
+                  width: 327,
+                  child: AppListItem(
+                    title: 'Title',
+                    description:
+                        'Description. Lorem ipsum dolor sit amet consectetur adipiscing elit, sed do',
+                    control: AppListItemControl.none,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Center(
+                child: SizedBox(
+                  width: 300,
+                  child: AppAccordion(
+                    title: 'Title',
+                    children: [
+                      AppAccordionText('Content. Lorem ipsum dolor sit amet'),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Center(child: SizedBox(width: 311, child: const AppDivider())),
+              const SizedBox(height: 16),
+              Center(
+                child: SizedBox(
+                  width: 300,
+                  child: AppCalendarMonthly(
+                    initialDate: DateTime.now(),
+                    onDatePressed: (date) => debugPrint('Date pressed: $date'),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Center(
+                child: SizedBox(
+                  width: 300,
+                  child: AppCalendarWeekly(
+                    initialDate: DateTime.now(),
+                    onDatePressed: (date) => debugPrint('Date pressed: $date'),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Center(
+                child: SizedBox(
+                  width: 300,
+                  child: AppStepper(
+                    stepCount: 5,
+                    currentStep: 0,
+                    stepTitles: List.generate(5, (_) => 'Step'),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Center(
+                child: SizedBox(
+                  width: 300,
+                  child: AppStepper(
+                    stepCount: 4,
+                    currentStep: 0,
+                    stepTitles: List.generate(4, (_) => 'Step'),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Center(
+                child: SizedBox(
+                  width: 300,
+                  child: AppStepper(
+                    stepCount: 3,
+                    currentStep: 0,
+                    stepTitles: List.generate(3, (_) => 'Step'),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Center(
+                child: SizedBox(
+                  width: 300,
+                  child: AppStepper(
+                    stepCount: 2,
+                    currentStep: 0,
+                    stepTitles: List.generate(2, (_) => 'Step'),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Center(
+                child: SizedBox(
+                  width: 300,
+                  child: AppStepper(
+                    stepCount: 5,
+                    currentStep: 0,
+                    stepTitles: List.generate(5, (_) => 'Step'),
+                    onStepTapped: (value) => debugPrint('Step tapped: $value'),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Center(
+                child: SizedBox(
+                  width: 300,
+                  child: AppStepper(
+                    stepCount: 4,
+                    currentStep: 0,
+                    stepTitles: List.generate(4, (_) => 'Step'),
+                    onStepTapped: (value) => debugPrint('Step tapped: $value'),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Center(
+                child: SizedBox(
+                  width: 300,
+                  child: AppStepper(
+                    stepCount: 3,
+                    currentStep: 0,
+                    stepTitles: List.generate(3, (_) => 'Step'),
+                    onStepTapped: (value) => debugPrint('Step tapped: $value'),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Center(
+                child: SizedBox(
+                  width: 300,
+                  child: AppStepper(
+                    stepCount: 2,
+                    currentStep: 0,
+                    stepTitles: List.generate(2, (_) => 'Step'),
+                    onStepTapped: (value) => debugPrint('Step tapped: $value'),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Center(
+                child: SizedBox(
+                  width: 300,
+                  child: AppStepper(
+                    stepCount: 4,
+                    currentStep: 2,
+                    stepTitles: List.generate(4, (_) => 'Step'),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Center(
+                child: SizedBox(
+                  width: 300,
+                  child: const AppProgressBar(value: 0),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Center(
+                child: SizedBox(
+                  width: 300,
+                  child: const AppProgressBar(value: 0.25),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Center(
+                child: SizedBox(
+                  width: 300,
+                  child: const AppProgressBar(value: 0.5),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Center(
+                child: SizedBox(
+                  width: 300,
+                  child: const AppProgressBar(value: 0.75),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Center(
+                child: SizedBox(
+                  width: 300,
+                  child: const AppProgressBar(value: 1),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Center(
+                child: SizedBox(
+                  width: 300,
+                  child: const AppProgressBar(value: 0.55, steps: 6),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Center(
+                child: SizedBox(width: 32, child: const AppLoader(value: 0)),
+              ),
+              const SizedBox(height: 16),
+              Center(
+                child: SizedBox(
+                  width: 32,
+                  child: const AppLoader(value: 0.125),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Center(
+                child: SizedBox(width: 32, child: const AppLoader(value: 0.25)),
+              ),
+              const SizedBox(height: 16),
+              Center(
+                child: SizedBox(
+                  width: 32,
+                  child: const AppLoader(value: 0.375),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Center(
+                child: SizedBox(width: 32, child: const AppLoader(value: 0.5)),
+              ),
+              const SizedBox(height: 16),
+              Center(
+                child: SizedBox(
+                  width: 32,
+                  child: const AppLoader(value: 0.625),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Center(
+                child: SizedBox(width: 32, child: const AppLoader(value: 0.75)),
+              ),
+              const SizedBox(height: 16),
+              Center(
+                child: SizedBox(
+                  width: 32,
+                  child: const AppLoader(value: 0.875),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Center(
+                child: SizedBox(width: 32, child: const AppLoader(value: 1)),
+              ),
+              const SizedBox(height: 16),
+              Center(
+                child: SizedBox(
+                  width: 72,
+                  child: const AppPaginationDots(dotCount: 5, activeIndex: 1),
+                ),
               ),
               const SizedBox(height: 16),
             ],

@@ -1,13 +1,13 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:test_app/src/widgets/common/styles.dart';
 
-class MyActionSheet extends StatelessWidget {
+class AppActionSheet extends StatelessWidget {
   final int actionCount;
   final List<String> actionTitles;
   final List<IconData?>? actionIcons;
   final List<VoidCallback> onActionPressed;
 
-  const MyActionSheet({
+  const AppActionSheet({
     super.key,
     required this.actionCount,
     required this.actionTitles,
@@ -28,7 +28,7 @@ class MyActionSheet extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: List.generate(actionCount, (index) {
-        return MyAction(
+        return AppAction(
           text: actionTitles[index],
           icon: actionIcons != null && actionIcons!.length > index
               ? actionIcons![index]
@@ -44,12 +44,12 @@ class MyActionSheet extends StatelessWidget {
   }
 }
 
-class MyAction extends StatelessWidget {
+class AppAction extends StatelessWidget {
   final String text;
   final IconData? icon;
   final VoidCallback? onPressed;
 
-  const MyAction({super.key, required this.text, this.icon, this.onPressed});
+  const AppAction({super.key, required this.text, this.icon, this.onPressed});
 
   @override
   Widget build(BuildContext context) {
@@ -60,11 +60,11 @@ class MyAction extends StatelessWidget {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.zero),
       ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.start,
         children: [
           if (icon != null) Icon(icon, size: 20),
-          if (icon != null) const SizedBox(width: 12),
-          if (icon == null) const SizedBox(width: 32),
+          if (icon != null) SizedBox(width: spacing12),
+          if (icon == null) SizedBox(width: spacing32),
           Text(text),
         ],
       ),
