@@ -1,5 +1,6 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:test_app/src/core/resources/app_icons.dart';
 import 'package:test_app/src/core/widgets/controller_listener.dart';
 import 'package:test_app/src/features/app/app_scope.dart';
@@ -20,12 +21,16 @@ import 'package:test_app/src/widgets/common/app_filter.dart';
 import 'package:test_app/src/widgets/common/app_list_item.dart';
 import 'package:test_app/src/widgets/common/app_list_title.dart';
 import 'package:test_app/src/widgets/common/app_loader.dart';
+import 'package:test_app/src/widgets/common/app_map.dart';
+import 'package:test_app/src/widgets/common/app_message_bubble.dart';
+import 'package:test_app/src/widgets/common/app_message_input.dart';
 import 'package:test_app/src/widgets/common/app_nav_bar.dart';
 import 'package:test_app/src/widgets/common/app_number_input.dart';
 import 'package:test_app/src/widgets/common/app_pagination_dots.dart';
 import 'package:test_app/src/widgets/common/app_progress_bar.dart';
 import 'package:test_app/src/widgets/common/app_radio_button.dart';
 import 'package:test_app/src/widgets/common/app_search_bar.dart';
+import 'package:test_app/src/widgets/common/app_shopping_cart_item.dart';
 import 'package:test_app/src/widgets/common/app_slider.dart';
 import 'package:test_app/src/widgets/common/app_star_rating.dart';
 import 'package:test_app/src/widgets/common/app_stepper.dart';
@@ -476,6 +481,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: AppTextField(
                     title: 'Title',
                     placeholder: 'Placeholder',
+                    onChanged: (value) =>
+                        debugPrint('Text field changed: $value'),
+                    onSubmitted: (value) =>
+                        debugPrint('Text field submitted: $value'),
                   ),
                 ),
               ),
@@ -483,7 +492,14 @@ class _HomeScreenState extends State<HomeScreen> {
               Center(
                 child: SizedBox(
                   width: 295,
-                  child: AppTextField(title: 'Title', text: 'Text'),
+                  child: AppTextField(
+                    title: 'Title',
+                    text: 'Text',
+                    onChanged: (value) =>
+                        debugPrint('Text field changed: $value'),
+                    onSubmitted: (value) =>
+                        debugPrint('Text field submitted: $value'),
+                  ),
                 ),
               ),
               const SizedBox(height: 16),
@@ -496,6 +512,10 @@ class _HomeScreenState extends State<HomeScreen> {
                     validator: (value) =>
                         value == 'Text' ? 'Cannot be "Text"' : null,
                     autovalidateMode: AutovalidateMode.always,
+                    onChanged: (value) =>
+                        debugPrint('Text field changed: $value'),
+                    onSubmitted: (value) =>
+                        debugPrint('Text field submitted: $value'),
                   ),
                 ),
               ),
@@ -507,6 +527,10 @@ class _HomeScreenState extends State<HomeScreen> {
                     title: 'Title',
                     text: 'Text',
                     enabled: false,
+                    onChanged: (value) =>
+                        debugPrint('Text field changed: $value'),
+                    onSubmitted: (value) =>
+                        debugPrint('Text field submitted: $value'),
                   ),
                 ),
               ),
@@ -520,6 +544,10 @@ class _HomeScreenState extends State<HomeScreen> {
                     supportText: 'Support text',
                     obscureText: false,
                     showIcon: true,
+                    onChanged: (value) =>
+                        debugPrint('Text field changed: $value'),
+                    onSubmitted: (value) =>
+                        debugPrint('Text field submitted: $value'),
                   ),
                 ),
               ),
@@ -531,6 +559,10 @@ class _HomeScreenState extends State<HomeScreen> {
                     title: 'Title',
                     placeholder: 'Placeholder',
                     unit: '€',
+                    onChanged: (value) =>
+                        debugPrint('Text field changed: $value'),
+                    onSubmitted: (value) =>
+                        debugPrint('Text field submitted: $value'),
                   ),
                 ),
               ),
@@ -541,6 +573,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: AppTextArea(
                     title: 'Title',
                     placeholder: 'Placeholder',
+                    onChanged: (value) =>
+                        debugPrint('Text area changed: $value'),
+                    onSubmitted: (value) =>
+                        debugPrint('Text area submitted: $value'),
                   ),
                 ),
               ),
@@ -548,7 +584,14 @@ class _HomeScreenState extends State<HomeScreen> {
               Center(
                 child: SizedBox(
                   width: 295,
-                  child: AppTextArea(title: 'Title', text: 'Text'),
+                  child: AppTextArea(
+                    title: 'Title',
+                    text: 'Text',
+                    onChanged: (value) =>
+                        debugPrint('Text area changed: $value'),
+                    onSubmitted: (value) =>
+                        debugPrint('Text area submitted: $value'),
+                  ),
                 ),
               ),
               const SizedBox(height: 16),
@@ -561,6 +604,10 @@ class _HomeScreenState extends State<HomeScreen> {
                     validator: (value) =>
                         value == 'Text' ? 'Cannot be "Text"' : null,
                     autovalidateMode: AutovalidateMode.always,
+                    onChanged: (value) =>
+                        debugPrint('Text area changed: $value'),
+                    onSubmitted: (value) =>
+                        debugPrint('Text area submitted: $value'),
                   ),
                 ),
               ),
@@ -572,6 +619,10 @@ class _HomeScreenState extends State<HomeScreen> {
                     title: 'Title',
                     text: 'Text',
                     enabled: false,
+                    onChanged: (value) =>
+                        debugPrint('Text area changed: $value'),
+                    onSubmitted: (value) =>
+                        debugPrint('Text area submitted: $value'),
                   ),
                 ),
               ),
@@ -583,6 +634,10 @@ class _HomeScreenState extends State<HomeScreen> {
                     title: 'Title',
                     placeholder: 'Placeholder',
                     supportText: 'Support text',
+                    onChanged: (value) =>
+                        debugPrint('Text area changed: $value'),
+                    onSubmitted: (value) =>
+                        debugPrint('Text area submitted: $value'),
                   ),
                 ),
               ),
@@ -594,6 +649,10 @@ class _HomeScreenState extends State<HomeScreen> {
                     title: 'Title',
                     placeholder: 'Placeholder',
                     unit: '€',
+                    onChanged: (value) =>
+                        debugPrint('Text area changed: $value'),
+                    onSubmitted: (value) =>
+                        debugPrint('Text area submitted: $value'),
                   ),
                 ),
               ),
@@ -674,10 +733,23 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
               const SizedBox(height: 16),
-              Center(child: SizedBox(width: 311, child: AppSearchBar())),
+              Center(
+                child: SizedBox(
+                  width: 311,
+                  child: AppSearchBar(
+                    onChanged: (value) => debugPrint('Search changed: $value'),
+                  ),
+                ),
+              ),
               const SizedBox(height: 16),
               Center(
-                child: SizedBox(width: 311, child: AppSearchBar(text: 'Text')),
+                child: SizedBox(
+                  width: 311,
+                  child: AppSearchBar(
+                    text: 'Text',
+                    onChanged: (value) => debugPrint('Search changed: $value'),
+                  ),
+                ),
               ),
               const SizedBox(height: 16),
               Center(
@@ -687,6 +759,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     tabCount: 5,
                     tabTitles: List.generate(5, (index) => 'Tab ${index + 1}'),
                     tabIcons: List.generate(5, (index) => AppIcons.record),
+                    onTabSelected: (value) =>
+                        debugPrint('Selected tab: $value'),
                   ),
                 ),
               ),
@@ -1508,6 +1582,133 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: SizedBox(
                   width: 72,
                   child: const AppPaginationDots(dotCount: 5, activeIndex: 1),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Center(
+                child: SizedBox(
+                  width: 226,
+                  child: const AppMessageBubble(
+                    body: 'Message. Lorem ipsum dolor.',
+                    isLastInSequence: false,
+                    messageType: MessageType.received,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Center(
+                child: SizedBox(
+                  width: 226,
+                  child: const AppMessageBubble(
+                    body: 'Message. Lorem ipsum dolor.',
+                    isLastInSequence: true,
+                    messageType: MessageType.received,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Center(
+                child: SizedBox(
+                  width: 226,
+                  child: const AppMessageBubble(
+                    body: 'Message. Lorem ipsum dolor.',
+                    isLastInSequence: false,
+                    messageType: MessageType.sent,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Center(
+                child: SizedBox(
+                  width: 226,
+                  child: const AppMessageBubble(
+                    body: 'Message. Lorem ipsum dolor.',
+                    isLastInSequence: true,
+                    messageType: MessageType.sent,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Center(
+                child: SizedBox(
+                  width: 285,
+                  child: AppMessageInput(
+                    onMorePressed: () => debugPrint('More pressed'),
+                    onSendPressed: (value) =>
+                        debugPrint('Send pressed with value: $value'),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Center(
+                child: SizedBox(
+                  width: 285,
+                  child: AppMessageInput(
+                    text: 'Message',
+                    onMorePressed: () => debugPrint('More pressed'),
+                    onSendPressed: (value) =>
+                        debugPrint('Send pressed with value: $value'),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Center(
+                child: SizedBox(
+                  width: 415,
+                  height: 415,
+                  child: AppMap(
+                    center: const LatLng(
+                      49.354842084182515,
+                      23.539965013265395,
+                    ),
+                    zoom: 13.0,
+                    markers: [
+                      AppMarker(
+                        id: 'marker1',
+                        position: const LatLng(
+                          49.354842084182515,
+                          23.539965013265395,
+                        ),
+                        title: 'Marker 1',
+                        description: 'Description for Marker 1',
+                      ),
+                      AppMarker(
+                        id: 'marker2',
+                        position: const LatLng(
+                          49.354842084182515,
+                          23.549965013265395,
+                        ),
+                        title: 'Marker 2',
+                        description: 'Description for Marker 2',
+                        size: MapMarkerSize.medium,
+                      ),
+                      AppMarker(
+                        id: 'marker3',
+                        position: const LatLng(
+                          49.354842084182515,
+                          23.559965013265395,
+                        ),
+                        title: 'Marker 3',
+                        description: 'Description for Marker 3',
+                        size: MapMarkerSize.large,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Center(
+                child: SizedBox(
+                  width: 335,
+                  child: AppShoppingCartItem(
+                    image: const PlaceholderImage(),
+                    productName: 'Product name',
+                    details: 'Details',
+                    quantity: 1,
+                    price: '€ 0.00',
+                    maxQuantity: 5,
+                    onPressed: () => debugPrint('Shopping cart item pressed'),
+                  ),
                 ),
               ),
               const SizedBox(height: 16),

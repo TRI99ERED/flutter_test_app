@@ -25,6 +25,8 @@ dependencies:
   firebase_core: ^4.4.0
   firebase_auth: ^6.1.4
   cloud_firestore: ^6.1.2
+  google_maps_flutter: ^2.14.2
+  geolocator: ^14.0.2
 
 dev_dependencies:
   flutter_test:
@@ -40,3 +42,6 @@ flutter:
     - family: AppIcons
       fonts:
         - asset: assets/fonts/AppIcons.ttf
+
+android:
+  minSdkVersion: 21

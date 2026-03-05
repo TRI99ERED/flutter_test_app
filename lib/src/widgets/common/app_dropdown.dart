@@ -97,6 +97,15 @@ class _AppDropdownState extends State<AppDropdown> {
   TextEditingController get _effectiveController =>
       widget.controller ?? _internalController;
 
+  @override
+  void didUpdateWidget(AppDropdown oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (widget.controller == null && widget.text != oldWidget.text) {
+      _internalController.text = widget.text ?? '';
+    }
+  }
+
   void _showOverlay() {
     if (_overlayEntry != null) {
       return;

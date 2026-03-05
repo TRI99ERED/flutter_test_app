@@ -13,6 +13,7 @@ class AppTextField extends StatefulWidget {
   final String? supportText;
   final String? unit;
   final ValueChanged<String>? onChanged;
+  final ValueChanged<String>? onSubmitted;
   final FormFieldValidator<String>? validator;
   final AutovalidateMode? autovalidateMode;
   final TextEditingController? controller;
@@ -29,6 +30,7 @@ class AppTextField extends StatefulWidget {
     this.supportText,
     this.unit,
     this.onChanged,
+    this.onSubmitted,
     this.validator,
     this.autovalidateMode,
     this.controller,
@@ -98,7 +100,7 @@ class _AppTextFieldState extends State<AppTextField> {
   }
 
   @override
-  void didUpdateWidget(covariant AppTextField oldWidget) {
+  void didUpdateWidget(AppTextField oldWidget) {
     super.didUpdateWidget(oldWidget);
 
     if (widget.controller == null && widget.text != oldWidget.text) {
@@ -142,6 +144,7 @@ class _AppTextFieldState extends State<AppTextField> {
             }
             widget.onChanged?.call(value);
           },
+          onFieldSubmitted: widget.onSubmitted,
           validator: (value) {
             final result = widget.validator?.call(value);
             _syncValidatorError(value);

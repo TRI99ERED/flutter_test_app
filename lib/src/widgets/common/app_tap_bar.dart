@@ -115,7 +115,6 @@ class _TabItem extends StatelessWidget {
             text,
             style: const TextStyle(fontSize: bXSSize, fontWeight: bXSWeight),
           ),
-          if (!selected) const SizedBox(height: 4),
         ],
       ),
     );

@@ -6,14 +6,16 @@ class AppSearchBar extends StatefulWidget {
   final String? text;
   final String? placeholder;
   final ValueChanged<String>? onChanged;
+  final ValueChanged<String>? onSubmitted;
   final TextEditingController? controller;
 
   const AppSearchBar({
     super.key,
     this.text,
     this.placeholder,
-    this.controller,
     this.onChanged,
+    this.onSubmitted,
+    this.controller,
   }) : assert(
          controller == null || text == null,
          'controller and text cannot both be provided',
@@ -39,7 +41,7 @@ class _AppSearchBarState extends State<AppSearchBar> {
   }
 
   @override
-  void didUpdateWidget(covariant AppSearchBar oldWidget) {
+  void didUpdateWidget(AppSearchBar oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.controller == null && widget.text != oldWidget.text) {
       _internalController.text = widget.text ?? '';
@@ -56,9 +58,10 @@ class _AppSearchBarState extends State<AppSearchBar> {
 
   @override
   Widget build(BuildContext context) {
-    return TextFormField(
+    return TextField(
       controller: _effectiveController,
       onChanged: widget.onChanged,
+      onSubmitted: widget.onSubmitted,
       cursorColor: HighlightColor.darkest.color,
       style: TextStyle(
         color: DarkColor.darkest.color,
