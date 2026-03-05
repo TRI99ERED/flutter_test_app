@@ -113,3 +113,4 @@ const spacing12 = 12.0;
 const spacing16 = 16.0;
 const spacing24 = 24.0;
 const spacing32 = 32.0;
+const spacing40 = 40.0;

@@ -6,10 +6,13 @@ class PlaceholderImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SvgPicture.asset(
-      'assets/images/placeholder_image.svg',
-      width: 375,
-      height: 375,
+    return AspectRatio(
+      aspectRatio: 1,
+      child: SvgPicture.asset(
+        'assets/images/placeholder_image.svg',
+        width: double.infinity,
+        fit: BoxFit.cover,
+      ),
     );
   }
 }
@@ -19,10 +22,13 @@ class PlaceholderVideo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SvgPicture.asset(
-      'assets/images/placeholder_video.svg',
-      width: 375,
-      height: 375,
+    return AspectRatio(
+      aspectRatio: 1,
+      child: SvgPicture.asset(
+        'assets/images/placeholder_video.svg',
+        width: double.infinity,
+        fit: BoxFit.cover,
+      ),
     );
   }
 }

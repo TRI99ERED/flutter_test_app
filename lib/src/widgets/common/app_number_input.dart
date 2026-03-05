@@ -37,7 +37,7 @@ class _AppNumberInputState extends State<AppNumberInput> {
   }
 
   @override
-  void didUpdateWidget(covariant AppNumberInput oldWidget) {
+  void didUpdateWidget(AppNumberInput oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.value != oldWidget.value) {
       _value = widget.value;
@@ -79,14 +79,18 @@ class _AppNumberInputState extends State<AppNumberInput> {
               ),
             ),
           ),
-          Text(
-            '$_value',
-            style: TextStyle(
-              color: widget.enabled
-                  ? widget.textColor ?? DarkColor.darkest.color
-                  : DarkColor.light.color,
-              fontSize: bMSize,
-              fontWeight: bMWeight,
+          ConstrainedBox(
+            constraints: const BoxConstraints(minWidth: spacing40),
+            child: Text(
+              '$_value',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: widget.enabled
+                    ? widget.textColor ?? DarkColor.darkest.color
+                    : DarkColor.light.color,
+                fontSize: bMSize,
+                fontWeight: bMWeight,
+              ),
             ),
           ),
           ConstrainedBox(

@@ -543,7 +543,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     placeholder: 'Placeholder',
                     supportText: 'Support text',
                     obscureText: false,
-                    showIcon: true,
+                    showVisibilityIcon: true,
                     onChanged: (value) =>
                         debugPrint('Text field changed: $value'),
                     onSubmitted: (value) =>
@@ -1206,6 +1206,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         'Description. Lorem ipsum dolor sit amet consectetur adipiscing elit, sed do',
                     icon: AppIcons.heartFilled,
                     control: AppListItemControl.none,
+                    onPressed: () => debugPrint('Item pressed'),
                   ),
                 ),
               ),
@@ -1279,6 +1280,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         'Description. Lorem ipsum dolor sit amet consectetur adipiscing elit, sed do',
                     avatar: const PlaceholderAvatar(size: AvatarSize.small),
                     control: AppListItemControl.none,
+                    onPressed: () => debugPrint('Item pressed'),
                   ),
                 ),
               ),
@@ -1347,6 +1349,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     description:
                         'Description. Lorem ipsum dolor sit amet consectetur adipiscing elit, sed do',
                     control: AppListItemControl.none,
+                    onPressed: () => debugPrint('Item pressed'),
                   ),
                 ),
               ),

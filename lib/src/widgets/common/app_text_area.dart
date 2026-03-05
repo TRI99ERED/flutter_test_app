@@ -2,7 +2,7 @@
 import 'package:test_app/src/widgets/common/styles.dart';
 
 class AppTextArea extends StatefulWidget {
-  final String title;
+  final String? title;
   final bool enabled;
   final int maxLines;
   final String? placeholder;
@@ -18,7 +18,7 @@ class AppTextArea extends StatefulWidget {
 
   AppTextArea({
     super.key,
-    required this.title,
+    this.title,
     this.enabled = true,
     this.maxLines = 2,
     this.placeholder,
@@ -113,17 +113,19 @@ class _AppTextAreaState extends State<AppTextArea> {
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
+      spacing: 8,
       children: [
-        Text(
-          widget.title,
-          style: TextStyle(
-            fontSize: bMSize,
-            fontWeight: bMWeight,
-            color: widget.enabled
-                ? DarkColor.darkest.color
-                : DarkColor.lightest.color,
+        if (widget.title != null)
+          Text(
+            widget.title!,
+            style: TextStyle(
+              fontSize: h5Size,
+              fontWeight: h5Weight,
+              color: widget.enabled
+                  ? DarkColor.darkest.color
+                  : DarkColor.lightest.color,
+            ),
           ),
-        ),
         TextFormField(
           controller: _effectiveController,
           onChanged: (value) {
@@ -187,28 +189,22 @@ class _AppTextAreaState extends State<AppTextArea> {
           ),
         ),
         if (displayErrorText != null && displayErrorText.isNotEmpty)
-          Padding(
-            padding: EdgeInsets.only(top: spacing4),
-            child: Text(
-              displayErrorText,
-              style: TextStyle(
-                fontSize: bSSize,
-                fontWeight: bSWeight,
-                color: ErrorColor.dark.color,
-              ),
+          Text(
+            displayErrorText,
+            style: TextStyle(
+              fontSize: bSSize,
+              fontWeight: bSWeight,
+              color: ErrorColor.dark.color,
             ),
           ),
         if (widget.supportText != null &&
             (displayErrorText == null || displayErrorText.isEmpty))
-          Padding(
-            padding: EdgeInsets.only(top: spacing4),
-            child: Text(
-              widget.supportText!,
-              style: TextStyle(
-                fontSize: bSSize,
-                fontWeight: bSWeight,
-                color: DarkColor.lightest.color,
-              ),
+          Text(
+            widget.supportText!,
+            style: TextStyle(
+              fontSize: bSSize,
+              fontWeight: bSWeight,
+              color: DarkColor.lightest.color,
             ),
           ),
       ],

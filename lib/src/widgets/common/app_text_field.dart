@@ -2,16 +2,128 @@
 import 'package:test_app/src/core/resources/app_icons.dart';
 import 'package:test_app/src/widgets/common/styles.dart';
 
+// Email validator
+String? _validateEmail(String? value) {
+  if (value == null || value.isEmpty) return 'Email is required';
+  final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+$');
+  if (!emailRegex.hasMatch(value)) return 'Invalid email format';
+  return null;
+}
+
+// Number validator
+String? _validateNumber(String? value) {
+  if (value == null || value.isEmpty) return 'Number is required';
+  if (int.tryParse(value) == null) return 'Must be a valid number';
+  return null;
+}
+
+// Decimal validator
+String? _validateDecimal(String? value) {
+  if (value == null || value.isEmpty) return 'Number is required';
+  if (double.tryParse(value) == null) return 'Must be a valid decimal';
+  return null;
+}
+
+// Phone validator
+String? _validatePhone(String? value) {
+  if (value == null || value.isEmpty) return 'Phone is required';
+  if (value.length < 10) return 'Phone must be at least 10 digits';
+  if (!RegExp(r'^[0-9+\-\s()]+$').hasMatch(value)) {
+    return 'Invalid phone format';
+  }
+  return null;
+}
+
+// URL validator
+String? _validateUrl(String? value) {
+  if (value == null || value.isEmpty) return 'URL is required';
+  if (!value.startsWith('http://') && !value.startsWith('https://')) {
+    return 'URL must start with http:// or https://';
+  }
+  return null;
+}
+
+// Text validator
+String? _validateText(String? value) {
+  if (value == null || value.isEmpty) return 'This field is required';
+  return null;
+}
+
+// Name validator
+String? _validateName(String? value) {
+  if (value == null || value.isEmpty) return 'Name is required';
+  if (value.length < 2) return 'Name must be at least 2 characters';
+  if (!RegExp(r'^[a-zA-Z\s\-\.]+$').hasMatch(value)) {
+    return 'Name can only contain letters, spaces, hyphens, and periods';
+  }
+  return null;
+}
+
+// Street address validator
+String? _validateStreetAddress(String? value) {
+  if (value == null || value.isEmpty) return 'Address is required';
+  if (value.length < 5) return 'Address must be at least 5 characters';
+  return null;
+}
+
+// Datetime validator
+String? _validateDatetime(String? value) {
+  if (value == null || value.isEmpty) return 'Date/time is required';
+  return null;
+}
+
+// Visible password validator
+String? _validateVisiblePassword(String? value) {
+  if (value == null || value.isEmpty) return 'Password is required';
+  if (value.length < 8) return 'Password must be at least 8 characters';
+  if (!RegExp(r'[A-Z]').hasMatch(value)) {
+    return 'Password must contain at least one uppercase letter';
+  }
+  if (!RegExp(r'[a-z]').hasMatch(value)) {
+    return 'Password must contain at least one lowercase letter';
+  }
+  if (!RegExp(r'[0-9]').hasMatch(value)) {
+    return 'Password must contain at least one number';
+  }
+  return null;
+}
+
+String? Function(String?)? getValidatorForKeyboardType(TextInputType? type) {
+  if (type == TextInputType.emailAddress) {
+    return _validateEmail;
+  } else if (type == TextInputType.number) {
+    return _validateNumber;
+  } else if (type == const TextInputType.numberWithOptions(decimal: true)) {
+    return _validateDecimal;
+  } else if (type == TextInputType.phone) {
+    return _validatePhone;
+  } else if (type == TextInputType.url) {
+    return _validateUrl;
+  } else if (type == TextInputType.text) {
+    return _validateText;
+  } else if (type == TextInputType.name) {
+    return _validateName;
+  } else if (type == TextInputType.streetAddress) {
+    return _validateStreetAddress;
+  } else if (type == TextInputType.datetime) {
+    return _validateDatetime;
+  } else if (type == TextInputType.visiblePassword) {
+    return _validateVisiblePassword;
+  }
+  return null;
+}
+
 class AppTextField extends StatefulWidget {
-  final String title;
+  final String? title;
   final bool enabled;
   final bool obscureText;
-  final bool showIcon;
+  final bool showVisibilityIcon;
   final String? placeholder;
   final String? text;
   final String? errorText;
   final String? supportText;
   final String? unit;
+  final TextInputType? keyboardType;
   final ValueChanged<String>? onChanged;
   final ValueChanged<String>? onSubmitted;
   final FormFieldValidator<String>? validator;
@@ -20,23 +132,24 @@ class AppTextField extends StatefulWidget {
 
   AppTextField({
     super.key,
-    required this.title,
+    this.title,
     this.enabled = true,
     this.obscureText = false,
-    this.showIcon = false,
+    this.showVisibilityIcon = false,
     this.placeholder,
     this.text,
     this.errorText,
     this.supportText,
     this.unit,
+    this.keyboardType,
     this.onChanged,
     this.onSubmitted,
     this.validator,
     this.autovalidateMode,
     this.controller,
   }) : assert(
-         !(obscureText && !showIcon),
-         'obscureText can only be true when showIcon is true',
+         !(obscureText && !showVisibilityIcon),
+         'obscureText can only be true when showVisibilityIcon is true',
        ),
        assert(
          controller == null || text == null,
@@ -122,19 +235,22 @@ class _AppTextFieldState extends State<AppTextField> {
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
+      spacing: 8,
       children: [
-        Text(
-          widget.title,
-          style: TextStyle(
-            fontSize: bMSize,
-            fontWeight: bMWeight,
-            color: widget.enabled
-                ? DarkColor.darkest.color
-                : DarkColor.lightest.color,
+        if (widget.title != null)
+          Text(
+            widget.title!,
+            style: TextStyle(
+              fontSize: h5Size,
+              fontWeight: h5Weight,
+              color: widget.enabled
+                  ? DarkColor.darkest.color
+                  : DarkColor.lightest.color,
+            ),
           ),
-        ),
         TextFormField(
           controller: _effectiveController,
+          keyboardType: widget.keyboardType,
           onChanged: (value) {
             final nextError = widget.validator?.call(value);
             if (nextError != _validatorErrorText) {
@@ -193,7 +309,7 @@ class _AppTextFieldState extends State<AppTextField> {
             fillColor: LightColor.darkest.color,
             filled: !widget.enabled,
             prefixText: widget.unit != null ? '${widget.unit} ' : null,
-            suffixIcon: widget.showIcon
+            suffixIcon: widget.showVisibilityIcon
                 ? IconButton(
                     onPressed: () {
                       setState(() {
@@ -204,34 +320,30 @@ class _AppTextFieldState extends State<AppTextField> {
                       _obscureText
                           ? AppIcons.eyeInvisible
                           : AppIcons.eyeVisible,
+                      size: 16,
+                      color: DarkColor.lightest.color,
                     ),
                   )
                 : null,
           ),
         ),
         if (displayErrorText != null && displayErrorText.isNotEmpty)
-          Padding(
-            padding: EdgeInsets.only(top: spacing4),
-            child: Text(
-              displayErrorText,
-              style: TextStyle(
-                fontSize: bSSize,
-                fontWeight: bSWeight,
-                color: ErrorColor.dark.color,
-              ),
+          Text(
+            displayErrorText,
+            style: TextStyle(
+              fontSize: bSSize,
+              fontWeight: bSWeight,
+              color: ErrorColor.dark.color,
             ),
           ),
         if (widget.supportText != null &&
             (displayErrorText == null || displayErrorText.isEmpty))
-          Padding(
-            padding: EdgeInsets.only(top: spacing4),
-            child: Text(
-              widget.supportText!,
-              style: TextStyle(
-                fontSize: bSSize,
-                fontWeight: bSWeight,
-                color: DarkColor.lightest.color,
-              ),
+          Text(
+            widget.supportText!,
+            style: TextStyle(
+              fontSize: bSSize,
+              fontWeight: bSWeight,
+              color: DarkColor.lightest.color,
             ),
           ),
       ],

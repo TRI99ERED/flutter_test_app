@@ -56,9 +56,22 @@ class AppListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: spacing16, vertical: spacing8),
-      color: LightColor.lightest.color,
+    return TextButton(
+      onPressed: switch (control) {
+        AppListItemControl.button => onPressed,
+        AppListItemControl.toggle => () => onChanged?.call(!(value ?? false)),
+        AppListItemControl.checkbox => () => onChanged?.call(!(value ?? false)),
+        AppListItemControl.badge => onPressed,
+        AppListItemControl.none => onPressed,
+      },
+      style: TextButton.styleFrom(
+        backgroundColor: LightColor.lightest.color,
+        padding: const EdgeInsets.symmetric(
+          horizontal: spacing16,
+          vertical: spacing8,
+        ),
+        shape: ContinuousRectangleBorder(borderRadius: BorderRadius.zero),
+      ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.start,
