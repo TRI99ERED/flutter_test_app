@@ -1,13 +1,22 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:test_app/src/features/app/data/models/user_model.dart';
 import 'package:test_app/src/features/app/data/repositories/firebase/firebase_auth_repository/ifirebase_auth_repository.dart';
 
 class FirebaseAuthRepositoryImpl implements IFirebaseAuthRepository {
+  FirebaseFunctions get _functions =>
+      FirebaseFunctions.instanceFor(region: 'europe-central2');
+
   @override
   Stream<UserEntity> get authStateChanges {
-    return FirebaseAuth.instance.authStateChanges().map(
-      (user) => _mapFirebaseUser(user),
-    );
+    // Wrap the Firebase stream to suppress non-fatal threading errors on Windows
+    return FirebaseAuth.instance
+        .authStateChanges()
+        .map((user) => _mapFirebaseUser(user))
+        .handleError((Object error) {
+          print('Auth state stream error (non-fatal): $error');
+          // Don't re-throw - just suppress the error and continue
+        });
   }
 
   @override
@@ -42,10 +51,17 @@ class FirebaseAuthRepositoryImpl implements IFirebaseAuthRepository {
       final credential = await FirebaseAuth.instance
           .createUserWithEmailAndPassword(email: email, password: password);
 
-      // Update display name
-      await credential.user!.updateDisplayName(name);
-      await credential.user!.reload();
+      final user = credential.user;
+      if (user != null && name.isNotEmpty) {
+        // Try to update display name, but don't block if it fails
+        try {
+          await user.updateDisplayName(name);
+        } catch (e) {
+          // Silently fail - the account is already created
+        }
+      }
 
+      // Return the current authenticated user
       return _mapFirebaseUserToAuthorized(FirebaseAuth.instance.currentUser!);
     } on FirebaseAuthException catch (e) {
       throw _handleAuthException(e);
@@ -164,7 +180,9 @@ class FirebaseAuthRepositoryImpl implements IFirebaseAuthRepository {
     }
 
     try {
-      await user.sendEmailVerification();
+      await _functions.httpsCallable('sendEmailVerificationCode').call();
+    } on FirebaseFunctionsException catch (e) {
+      throw _handleFunctionsException(e);
     } on FirebaseAuthException catch (e) {
       throw _handleAuthException(e);
     }
@@ -178,6 +196,45 @@ class FirebaseAuthRepositoryImpl implements IFirebaseAuthRepository {
     }
     await user.reload();
     return FirebaseAuth.instance.currentUser?.emailVerified ?? false;
+  }
+
+  @override
+  Future<void> verifyEmailCode({required String code}) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      throw Exception('No user is currently signed in');
+    }
+
+    try {
+      await _functions.httpsCallable('verifyEmailVerificationCode').call({
+        'code': code,
+      });
+
+      // Refresh the local auth user after backend marks email as verified.
+      await user.reload();
+    } on FirebaseFunctionsException catch (e) {
+      throw _handleFunctionsException(e);
+    } on FirebaseAuthException catch (e) {
+      throw _handleAuthException(e);
+    } catch (e) {
+      throw Exception('Email verification failed: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<void> resendEmailVerification() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      throw Exception('No user is currently signed in');
+    }
+
+    try {
+      await _functions.httpsCallable('sendEmailVerificationCode').call();
+    } on FirebaseFunctionsException catch (e) {
+      throw _handleFunctionsException(e);
+    } on FirebaseAuthException catch (e) {
+      throw _handleAuthException(e);
+    }
   }
 
   /// Maps Firebase User to UserEntity
@@ -223,6 +280,34 @@ class FirebaseAuthRepositoryImpl implements IFirebaseAuthRepository {
         );
       default:
         return Exception(e.message ?? 'An authentication error occurred.');
+    }
+  }
+
+  Exception _handleFunctionsException(FirebaseFunctionsException e) {
+    switch (e.code) {
+      case 'invalid-argument':
+        return Exception(e.message ?? 'The verification code is invalid.');
+      case 'not-found':
+        return Exception(
+          e.message ?? 'No active verification code found. Please resend.',
+        );
+      case 'deadline-exceeded':
+        return Exception(
+          e.message ??
+              'The verification code has expired. Please request a new code.',
+        );
+      case 'permission-denied':
+        return Exception(
+          e.message ??
+              'Too many failed attempts. Please request a new verification code.',
+        );
+      case 'unauthenticated':
+        return Exception(e.message ?? 'Please sign in again and try.');
+      default:
+        return Exception(
+          e.message ??
+              'A verification service error occurred. Please try again.',
+        );
     }
   }
 }

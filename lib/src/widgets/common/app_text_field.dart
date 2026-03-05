@@ -123,7 +123,11 @@ class AppTextField extends StatefulWidget {
   final String? errorText;
   final String? supportText;
   final String? unit;
+  final int? maxLength;
+  final bool showCounter;
+  final bool showErrorText;
   final TextInputType? keyboardType;
+  final TextAlign? textAlign;
   final ValueChanged<String>? onChanged;
   final ValueChanged<String>? onSubmitted;
   final FormFieldValidator<String>? validator;
@@ -142,6 +146,10 @@ class AppTextField extends StatefulWidget {
     this.supportText,
     this.unit,
     this.keyboardType,
+    this.textAlign,
+    this.maxLength,
+    this.showCounter = true,
+    this.showErrorText = true,
     this.onChanged,
     this.onSubmitted,
     this.validator,
@@ -232,6 +240,7 @@ class _AppTextFieldState extends State<AppTextField> {
   @override
   Widget build(BuildContext context) {
     final displayErrorText = _getDisplayErrorText();
+    final hasError = displayErrorText != null && displayErrorText.isNotEmpty;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -269,6 +278,8 @@ class _AppTextFieldState extends State<AppTextField> {
           autovalidateMode: widget.autovalidateMode,
           enabled: widget.enabled,
           obscureText: _obscureText,
+          textAlign: widget.textAlign ?? TextAlign.start,
+          maxLength: widget.maxLength,
           cursorColor: HighlightColor.darkest.color,
           cursorErrorColor: ErrorColor.dark.color,
           style: TextStyle(
@@ -285,16 +296,38 @@ class _AppTextFieldState extends State<AppTextField> {
               fontWeight: bMWeight,
               color: DarkColor.lightest.color,
             ),
-            errorText: displayErrorText == null ? null : '',
-            errorStyle: TextStyle(fontSize: 0, height: 0),
+            errorText: hasError && widget.showErrorText ? '' : null,
+            errorStyle: const TextStyle(height: 0.01),
+            errorMaxLines: 1,
+            counterText: widget.showCounter ? null : '',
+            counterStyle: TextStyle(
+              fontSize: widget.showCounter ? bSSize : 0,
+              height: widget.showCounter ? 1 : 0,
+            ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.all(Radius.circular(12)),
-              borderSide: BorderSide(color: LightColor.darkest.color, width: 2),
+              borderSide: BorderSide(
+                color: !widget.showErrorText && hasError
+                    ? ErrorColor.medium.color
+                    : LightColor.darkest.color,
+                width: 2,
+              ),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.all(Radius.circular(12)),
+              borderSide: BorderSide(
+                color: !widget.showErrorText && hasError
+                    ? ErrorColor.medium.color
+                    : LightColor.darkest.color,
+                width: 2,
+              ),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.all(Radius.circular(12)),
               borderSide: BorderSide(
-                color: HighlightColor.darkest.color,
+                color: !widget.showErrorText && hasError
+                    ? ErrorColor.dark.color
+                    : HighlightColor.darkest.color,
                 width: 2,
               ),
             ),
@@ -327,7 +360,9 @@ class _AppTextFieldState extends State<AppTextField> {
                 : null,
           ),
         ),
-        if (displayErrorText != null && displayErrorText.isNotEmpty)
+        if (widget.showErrorText &&
+            displayErrorText != null &&
+            displayErrorText.isNotEmpty)
           Text(
             displayErrorText,
             style: TextStyle(

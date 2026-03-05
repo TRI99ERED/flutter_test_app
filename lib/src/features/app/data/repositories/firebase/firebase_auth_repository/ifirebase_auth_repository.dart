@@ -69,4 +69,12 @@ abstract interface class IFirebaseAuthRepository {
 
   /// Check if current user's email is verified
   Future<bool> isEmailVerified();
+
+  /// Verify email with a confirmation code
+  /// Throws exception on failure or if user is not signed in
+  Future<void> verifyEmailCode({required String code});
+
+  /// Resend email verification code
+  /// Throws exception if user is not signed in
+  Future<void> resendEmailVerification();
 }

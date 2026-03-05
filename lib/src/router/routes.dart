@@ -1,15 +1,17 @@
 import 'package:go_router/go_router.dart';
 import 'package:test_app/src/features/app/app_controller/app_controller.dart';
 import 'package:test_app/src/features/app/app_scope.dart';
-import 'package:test_app/src/features/home/home_screen.dart';
-import 'package:test_app/src/features/onboarding/onboarding_screen.dart';
-import 'package:test_app/src/features/login/login_screen.dart';
-import 'package:test_app/src/features/register/register_screen.dart';
+import 'package:test_app/src/features/email_confirmation_screen/email_confirmation_screen.dart';
+import 'package:test_app/src/features/home_screen/home_screen.dart';
+import 'package:test_app/src/features/onboarding_screen/onboarding_screen.dart';
+import 'package:test_app/src/features/login_screen/login_screen.dart';
+import 'package:test_app/src/features/register_screen/register_screen.dart';
 
 const homePath = '/';
 const onboardingPath = '/onboarding';
 const loginPath = '/login';
 const registerPath = '/register';
+const emailConfirmationPath = '/email-confirmation';
 const forgotPasswordPath = '/forgot-password';
 
 GoRouter generateRouter(AppController appController) {
@@ -29,6 +31,10 @@ GoRouter generateRouter(AppController appController) {
       GoRoute(
         path: registerPath,
         builder: (context, state) => const RegisterScreen(),
+      ),
+      GoRoute(
+        path: emailConfirmationPath,
+        builder: (context, state) => const EmailConfirmationScreen(),
       ),
     ],
     redirect: (context, state) {

@@ -21,8 +21,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
-  bool _isFormValid = false;
-  bool? _termsAccepted = false;
+  final _isFormValid = ValueNotifier<bool>(false);
+  final _termsAccepted = ValueNotifier<bool?>(false);
 
   @override
   void initState() {
@@ -60,12 +60,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
         (passwordValidator == null || passwordValidator(password) == null) &&
         (passwordValidator == null ||
             passwordValidator(confirmPassword) == null) &&
-        (_termsAccepted == true);
+        (_termsAccepted.value == true);
 
-    if (isValid != _isFormValid) {
-      setState(() {
-        _isFormValid = isValid;
-      });
+    if (isValid != _isFormValid.value) {
+      _isFormValid.value = isValid;
     }
   }
 
@@ -74,148 +72,165 @@ class _RegisterScreenState extends State<RegisterScreen> {
     return ControllerListener(
       controller: context.appController,
       listenWhen: (previous, current) {
-        if (!previous.isFailed && current.isFailed) {
-          return true;
-        }
-        if (!previous.isAuthorized && current.isAuthorized) {
-          return true;
-        }
-        return false;
+        // Listen for registration success
+        return previous.isProcessing &&
+            !current.isProcessing &&
+            !current.isFailed &&
+            current.isAuthorized;
       },
       listener: (context, previous, current) {
-        if (current.isFailed) {
+        // Navigate after successful registration
+        context.go(emailConfirmationPath);
+      },
+      child: ControllerListener(
+        controller: context.appController,
+        listenWhen: (previous, current) {
+          return !previous.isFailed && current.isFailed;
+        },
+        listener: (context, previous, current) {
           ScaffoldMessenger.of(
             context,
           ).showSnackBar(SnackBar(content: Text('Error: ${current.message}')));
-        } else if (current.isAuthorized && !previous.isAuthorized) {
-          context.go(homePath);
-        }
-      },
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 375, maxHeight: 812),
-        child: Scaffold(
-          body: ListView(
-            children: [
-              Form(
-                key: _formKey,
-                autovalidateMode: AutovalidateMode.onUserInteraction,
-                child: Padding(
-                  padding: const EdgeInsets.all(spacing24),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    spacing: spacing24,
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        spacing: spacing8,
-                        children: [
-                          Text(
-                            'Sign up!',
-                            style: TextStyle(
-                              fontSize: h3Size,
-                              fontWeight: h3Weight,
-                              color: DarkColor.darkest.color,
+        },
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 375, maxHeight: 812),
+          child: Scaffold(
+            body: ListView(
+              children: [
+                Form(
+                  key: _formKey,
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
+                  child: Padding(
+                    padding: const EdgeInsets.all(spacing24),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      spacing: spacing24,
+                      children: [
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          spacing: spacing8,
+                          children: [
+                            Text(
+                              'Sign up!',
+                              style: TextStyle(
+                                fontSize: h3Size,
+                                fontWeight: h3Weight,
+                                color: DarkColor.darkest.color,
+                              ),
                             ),
-                          ),
-                          Text(
-                            'Create an account to get started',
-                            style: TextStyle(
-                              fontSize: bSSize,
-                              fontWeight: bSWeight,
-                              color: DarkColor.light.color,
+                            Text(
+                              'Create an account to get started',
+                              style: TextStyle(
+                                fontSize: bSSize,
+                                fontWeight: bSWeight,
+                                color: DarkColor.light.color,
+                              ),
                             ),
+                          ],
+                        ),
+                        AppTextField(
+                          title: 'Name',
+                          controller: _nameController,
+                          keyboardType: TextInputType.name,
+                          validator: getValidatorForKeyboardType(
+                            TextInputType.name,
                           ),
-                        ],
-                      ),
-                      AppTextField(
-                        title: 'Name',
-                        controller: _nameController,
-                        keyboardType: TextInputType.name,
-                        validator: getValidatorForKeyboardType(
-                          TextInputType.name,
                         ),
-                      ),
-                      AppTextField(
-                        title: 'Email Address',
-                        controller: _emailController,
-                        keyboardType: TextInputType.emailAddress,
-                        validator: getValidatorForKeyboardType(
-                          TextInputType.emailAddress,
-                        ),
-                      ),
-                      AppTextField(
-                        title: 'Password',
-                        controller: _passwordController,
-                        keyboardType: TextInputType.visiblePassword,
-                        validator: getValidatorForKeyboardType(
-                          TextInputType.visiblePassword,
-                        ),
-                        obscureText: true,
-                        showVisibilityIcon: true,
-                      ),
-                      AppTextField(
-                        title: 'Confirm Password',
-                        controller: _confirmPasswordController,
-                        keyboardType: TextInputType.visiblePassword,
-                        validator: getValidatorForKeyboardType(
-                          TextInputType.visiblePassword,
-                        ),
-                        obscureText: true,
-                        showVisibilityIcon: true,
-                      ),
-                      Row(
-                        children: [
-                          AppCheckbox(
-                            value: _termsAccepted ?? false,
-                            onChanged: (value) {
-                              setState(() {
-                                _termsAccepted = value;
-                              });
-                              _validateForm();
-                            },
+                        AppTextField(
+                          title: 'Email Address',
+                          controller: _emailController,
+                          keyboardType: TextInputType.emailAddress,
+                          validator: getValidatorForKeyboardType(
+                            TextInputType.emailAddress,
                           ),
-                          Expanded(
-                            child: const Text(
-                              'I\'ve read and agree with the Terms and Conditions and the Privacy Policy.',
-                            ),
+                        ),
+                        AppTextField(
+                          title: 'Password',
+                          controller: _passwordController,
+                          keyboardType: TextInputType.visiblePassword,
+                          validator: getValidatorForKeyboardType(
+                            TextInputType.visiblePassword,
                           ),
-                        ],
-                      ),
-                      SizedBox(
-                        width: double.infinity,
-                        child: AppButtonPrimary(
-                          onPressed: _isFormValid
-                              ? () async {
-                                  final name = _nameController.text;
-                                  final email = _emailController.text;
-                                  final password = _passwordController.text;
-                                  final confirmPassword =
-                                      _confirmPasswordController.text;
+                          obscureText: true,
+                          showVisibilityIcon: true,
+                        ),
+                        AppTextField(
+                          title: 'Confirm Password',
+                          controller: _confirmPasswordController,
+                          keyboardType: TextInputType.visiblePassword,
+                          validator: getValidatorForKeyboardType(
+                            TextInputType.visiblePassword,
+                          ),
+                          obscureText: true,
+                          showVisibilityIcon: true,
+                        ),
+                        ValueListenableBuilder<bool?>(
+                          valueListenable: _termsAccepted,
+                          builder: (context, termsAccepted, child) {
+                            return Row(
+                              children: [
+                                AppCheckbox(
+                                  value: termsAccepted ?? false,
+                                  onChanged: (value) {
+                                    _termsAccepted.value = value;
+                                    _validateForm();
+                                  },
+                                ),
+                                Expanded(
+                                  child: const Text(
+                                    'I\'ve read and agree with the Terms and Conditions and the Privacy Policy.',
+                                  ),
+                                ),
+                              ],
+                            );
+                          },
+                        ),
+                        ValueListenableBuilder<bool>(
+                          valueListenable: _isFormValid,
+                          builder: (context, isFormValid, child) {
+                            return SizedBox(
+                              width: double.infinity,
+                              child: AppButtonPrimary(
+                                onPressed: isFormValid
+                                    ? () {
+                                        final name = _nameController.text;
+                                        final email = _emailController.text;
+                                        final password =
+                                            _passwordController.text;
+                                        final confirmPassword =
+                                            _confirmPasswordController.text;
 
-                                  if (password != confirmPassword) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        content: Text('Passwords do not match'),
-                                      ),
-                                    );
-                                    return;
-                                  }
+                                        if (password != confirmPassword) {
+                                          ScaffoldMessenger.of(
+                                            context,
+                                          ).showSnackBar(
+                                            const SnackBar(
+                                              content: Text(
+                                                'Passwords do not match',
+                                              ),
+                                            ),
+                                          );
+                                          return;
+                                        }
 
-                                  await context.appController.register(
-                                    email,
-                                    password,
-                                    name,
-                                  );
-                                }
-                              : null,
-                          text: 'Register',
+                                        context.appController.register(
+                                          email,
+                                          password,
+                                          name,
+                                        );
+                                      }
+                                    : null,
+                                text: 'Register',
+                              ),
+                            );
+                          },
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -228,6 +243,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
     _emailController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
+    _isFormValid.dispose();
+    _termsAccepted.dispose();
     super.dispose();
   }
 }
