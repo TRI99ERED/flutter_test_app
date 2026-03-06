@@ -174,7 +174,7 @@ final class AppController extends BaseController<AppState> {
       } catch (error, stackTrace) {
         setState(
           AppState.failed(
-            message: 'Email verification failed',
+            message: 'Email verification failed: ${error.toString()}',
             user: state.user,
             error: error,
             stackTrace: stackTrace,

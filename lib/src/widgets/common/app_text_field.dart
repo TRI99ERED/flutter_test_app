@@ -1,8 +1,8 @@
 ﻿import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:test_app/src/core/resources/app_icons.dart';
 import 'package:test_app/src/widgets/common/styles.dart';
 
-// Email validator
 String? _validateEmail(String? value) {
   if (value == null || value.isEmpty) return 'Email is required';
   final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+$');
@@ -10,21 +10,18 @@ String? _validateEmail(String? value) {
   return null;
 }
 
-// Number validator
 String? _validateNumber(String? value) {
   if (value == null || value.isEmpty) return 'Number is required';
   if (int.tryParse(value) == null) return 'Must be a valid number';
   return null;
 }
 
-// Decimal validator
 String? _validateDecimal(String? value) {
   if (value == null || value.isEmpty) return 'Number is required';
   if (double.tryParse(value) == null) return 'Must be a valid decimal';
   return null;
 }
 
-// Phone validator
 String? _validatePhone(String? value) {
   if (value == null || value.isEmpty) return 'Phone is required';
   if (value.length < 10) return 'Phone must be at least 10 digits';
@@ -34,7 +31,6 @@ String? _validatePhone(String? value) {
   return null;
 }
 
-// URL validator
 String? _validateUrl(String? value) {
   if (value == null || value.isEmpty) return 'URL is required';
   if (!value.startsWith('http://') && !value.startsWith('https://')) {
@@ -43,13 +39,11 @@ String? _validateUrl(String? value) {
   return null;
 }
 
-// Text validator
 String? _validateText(String? value) {
   if (value == null || value.isEmpty) return 'This field is required';
   return null;
 }
 
-// Name validator
 String? _validateName(String? value) {
   if (value == null || value.isEmpty) return 'Name is required';
   if (value.length < 2) return 'Name must be at least 2 characters';
@@ -59,20 +53,17 @@ String? _validateName(String? value) {
   return null;
 }
 
-// Street address validator
 String? _validateStreetAddress(String? value) {
   if (value == null || value.isEmpty) return 'Address is required';
   if (value.length < 5) return 'Address must be at least 5 characters';
   return null;
 }
 
-// Datetime validator
 String? _validateDatetime(String? value) {
   if (value == null || value.isEmpty) return 'Date/time is required';
   return null;
 }
 
-// Visible password validator
 String? _validateVisiblePassword(String? value) {
   if (value == null || value.isEmpty) return 'Password is required';
   if (value.length < 8) return 'Password must be at least 8 characters';
@@ -128,6 +119,7 @@ class AppTextField extends StatefulWidget {
   final bool showErrorText;
   final TextInputType? keyboardType;
   final TextAlign? textAlign;
+  final FocusNode? focusNode;
   final ValueChanged<String>? onChanged;
   final ValueChanged<String>? onSubmitted;
   final FormFieldValidator<String>? validator;
@@ -150,6 +142,7 @@ class AppTextField extends StatefulWidget {
     this.maxLength,
     this.showCounter = true,
     this.showErrorText = true,
+    this.focusNode,
     this.onChanged,
     this.onSubmitted,
     this.validator,
@@ -260,6 +253,7 @@ class _AppTextFieldState extends State<AppTextField> {
         TextFormField(
           controller: _effectiveController,
           keyboardType: widget.keyboardType,
+          focusNode: widget.focusNode,
           onChanged: (value) {
             final nextError = widget.validator?.call(value);
             if (nextError != _validatorErrorText) {
@@ -273,7 +267,7 @@ class _AppTextFieldState extends State<AppTextField> {
           validator: (value) {
             final result = widget.validator?.call(value);
             _syncValidatorError(value);
-            return result;
+            return widget.showErrorText ? result : null;
           },
           autovalidateMode: widget.autovalidateMode,
           enabled: widget.enabled,
@@ -297,7 +291,7 @@ class _AppTextFieldState extends State<AppTextField> {
               color: DarkColor.lightest.color,
             ),
             errorText: hasError && widget.showErrorText ? '' : null,
-            errorStyle: const TextStyle(height: 0.01),
+            errorStyle: const TextStyle(fontSize: 0, height: 0),
             errorMaxLines: 1,
             counterText: widget.showCounter ? null : '',
             counterStyle: TextStyle(
