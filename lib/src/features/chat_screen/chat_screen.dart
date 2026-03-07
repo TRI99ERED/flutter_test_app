@@ -125,7 +125,7 @@ class _ChatScreenState extends State<ChatScreen> {
             ),
             AppMessageInput(
               onMorePressed: () {},
-              onSendPressed: (value) {
+              onSendPressed: (value) async {
                 context.appController.createMessage(
                   chatId: widget.chatId,
                   senderId: (context.appState.user as AuthorizedUser).id,
@@ -136,6 +136,14 @@ class _ChatScreenState extends State<ChatScreen> {
                 context.appController.updateChatLastMessage(
                   chatId: widget.chatId,
                   lastMessage: value,
+                );
+
+                context.appController.updateChatUnreadCount(
+                  chatId: widget.chatId,
+                  unreadCount: await context.appController
+                      .watchChatUnreadCount(widget.chatId)
+                      .first
+                      .then((count) => count + 1),
                 );
               },
             ),

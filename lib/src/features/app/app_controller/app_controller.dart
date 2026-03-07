@@ -241,6 +241,20 @@ final class AppController extends BaseController<AppState> {
     );
   }
 
+  Stream<int> watchChatUnreadCount(String chatId) {
+    return _firestoreRepository.watchChatUnreadCount(chatId);
+  }
+
+  Future<void> updateChatUnreadCount({
+    required String chatId,
+    required int unreadCount,
+  }) {
+    return _firestoreRepository.updateChatUnreadCount(
+      chatId: chatId,
+      unreadCount: unreadCount,
+    );
+  }
+
   @override
   void dispose() {
     super.dispose();

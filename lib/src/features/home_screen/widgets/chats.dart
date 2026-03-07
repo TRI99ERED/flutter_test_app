@@ -83,7 +83,7 @@ class _ChatsState extends State<Chats> {
     final user = context.appState.user;
 
     if (user is! AuthorizedUser) {
-      return const SizedBox.shrink();
+      return Scaffold(body: const SizedBox.shrink());
     }
 
     return Scaffold(
@@ -212,16 +212,99 @@ class _ChatsState extends State<Chats> {
                         itemBuilder: (context, index) {
                           final chat = filteredChats[index];
 
-                          return SizedBox(
-                            height: 72,
-                            child: AppListItem(
-                              title: otherName(chat),
-                              description: chat.lastMessage,
-                              avatar: PlaceholderAvatar(size: AvatarSize.small),
-                              onPressed: () {
-                                context.push('/chats/${chat.id}');
-                              },
-                            ),
+                          final messagesStream = context.appController
+                              .watchMessagesForChat(chat.id);
+
+                          return StreamBuilder(
+                            stream: messagesStream,
+                            builder: (context, snapshot) {
+                              if (snapshot.connectionState ==
+                                  ConnectionState.waiting) {
+                                return const Padding(
+                                  padding: EdgeInsets.symmetric(
+                                    vertical: spacing4,
+                                  ),
+                                  child: SizedBox(
+                                    width: 32,
+                                    child: AppLoader(),
+                                  ),
+                                );
+                              } else if (snapshot.hasError) {
+                                return Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: spacing4,
+                                  ),
+                                  child: Text(
+                                    'Error loading chat: ${snapshot.error}',
+                                    style: TextStyle(
+                                      fontSize: h1Size,
+                                      fontWeight: h1Weight,
+                                      color: ErrorColor.dark.color,
+                                    ),
+                                  ),
+                                );
+                              }
+
+                              final lastSenderId =
+                                  snapshot.data?.first.senderId;
+
+                              debugPrint(
+                                'Last sender: $lastSenderId, user: ${user.id}, Unread count: ${chat.unreadCount}',
+                              );
+
+                              if (lastSenderId != null &&
+                                  lastSenderId != user.id &&
+                                  chat.unreadCount > 0) {
+                                return Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: spacing4,
+                                  ),
+                                  child: SizedBox(
+                                    height: 72,
+                                    child: AppListItem(
+                                      title: otherName(chat),
+                                      description: chat.lastMessage,
+                                      avatar: PlaceholderAvatar(
+                                        size: AvatarSize.small,
+                                      ),
+                                      symbol: chat.unreadCount.toString(),
+                                      control: AppListItemControl.badge,
+                                      onPressed: () async {
+                                        context.push('/chats/${chat.id}');
+
+                                        if (mounted) {
+                                          await context.appController
+                                              .updateChatUnreadCount(
+                                                chatId: chat.id,
+                                                unreadCount: 0,
+                                              );
+                                        }
+                                      },
+                                    ),
+                                  ),
+                                );
+                              }
+
+                              return Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: spacing4,
+                                ),
+                                child: SizedBox(
+                                  height: 72,
+                                  child: AppListItem(
+                                    title: otherName(chat),
+                                    description: chat.lastMessage,
+                                    avatar: PlaceholderAvatar(
+                                      size: AvatarSize.small,
+                                    ),
+                                    control: AppListItemControl.none,
+                                    onPressed: () {
+                                      context.push('/chats/${chat.id}');
+                                    },
+                                  ),
+                                ),
+                              );
+                            },
                           );
                         },
                       );

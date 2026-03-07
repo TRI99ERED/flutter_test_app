@@ -109,4 +109,27 @@ class FirebaseFirestoreRepositoryImpl implements IFirebaseFirestoreRepository {
       'lastUpdated': FieldValue.serverTimestamp(),
     });
   }
+
+  @override
+  Stream<int> watchChatUnreadCount(String chatId) {
+    return FirebaseFirestore.instance
+        .collection('chats')
+        .doc(chatId)
+        .snapshots()
+        .map((snapshot) {
+          final data = snapshot.data();
+          if (data == null) return 0;
+          return data['unreadCount'] ?? 0;
+        });
+  }
+
+  @override
+  Future<void> updateChatUnreadCount({
+    required String chatId,
+    required int unreadCount,
+  }) {
+    return FirebaseFirestore.instance.collection('chats').doc(chatId).update({
+      'unreadCount': unreadCount,
+    });
+  }
 }

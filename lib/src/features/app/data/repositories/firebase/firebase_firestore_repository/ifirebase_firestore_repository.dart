@@ -29,4 +29,11 @@ abstract interface class IFirebaseFirestoreRepository {
     required String chatId,
     required String lastMessage,
   });
+
+  Stream<int> watchChatUnreadCount(String chatId);
+
+  Future<void> updateChatUnreadCount({
+    required String chatId,
+    required int unreadCount,
+  });
 }
