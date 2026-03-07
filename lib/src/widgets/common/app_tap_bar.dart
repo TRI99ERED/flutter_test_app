@@ -51,10 +51,12 @@ class _AppTapBarState extends State<AppTapBar> {
   @override
   Widget build(BuildContext context) {
     return Container(
+      height: 88,
       decoration: BoxDecoration(
         color: LightColor.lightest.color,
         borderRadius: BorderRadius.circular(16),
       ),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
       child: Row(
         spacing: 4,
         children: List.generate(widget.tabCount, (index) {
@@ -103,6 +105,7 @@ class _TabItem extends StatelessWidget {
         shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
       ),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
           Icon(
             icon,

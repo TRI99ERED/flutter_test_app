@@ -92,8 +92,8 @@ class AppListItem extends StatelessWidget {
                   Text(
                     title!,
                     style: TextStyle(
-                      fontSize: h4Size,
-                      fontWeight: h4Weight,
+                      fontSize: bMSize,
+                      fontWeight: bMWeight,
                       color: DarkColor.darkest.color,
                     ),
                   ),

@@ -1,6 +1,7 @@
 import 'package:go_router/go_router.dart';
 import 'package:test_app/src/features/app/app_controller/app_controller.dart';
 import 'package:test_app/src/features/app/app_scope.dart';
+import 'package:test_app/src/features/chat_screen/chat_screen.dart';
 import 'package:test_app/src/features/email_confirmation_screen/email_confirmation_screen.dart';
 import 'package:test_app/src/features/home_screen/home_screen.dart';
 import 'package:test_app/src/features/onboarding_screen/onboarding_screen.dart';
@@ -13,6 +14,7 @@ const loginPath = '/login';
 const registerPath = '/register';
 const emailConfirmationPath = '/email-confirmation';
 const forgotPasswordPath = '/forgot-password';
+const chatDetailPath = '/chats/:chatId';
 
 GoRouter generateRouter(AppController appController) {
   return GoRouter(
@@ -35,6 +37,13 @@ GoRouter generateRouter(AppController appController) {
       GoRoute(
         path: emailConfirmationPath,
         builder: (context, state) => const EmailConfirmationScreen(),
+      ),
+      GoRoute(
+        path: chatDetailPath,
+        builder: (context, state) {
+          final chatId = state.pathParameters['chatId'] ?? '';
+          return ChatScreen(chatId: chatId);
+        },
       ),
     ],
     redirect: (context, state) {

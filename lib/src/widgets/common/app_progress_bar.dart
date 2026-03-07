@@ -15,8 +15,8 @@ class AppProgressBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CustomPaint(
-      size: const Size(double.infinity, 8),
       painter: _AppProgressBarPainter(value: value, steps: steps),
+      child: const SizedBox(height: 8),
     );
   }
 }
@@ -48,13 +48,19 @@ class _AppProgressBarPainter extends CustomPainter {
       ..color = HighlightColor.darkest.color
       ..strokeWidth = size.height;
 
+    final centerY = size.height / 2;
+
     if (_steps == null) {
-      canvas.drawLine(Offset.zero, Offset(size.width, 0), railPaint);
+      canvas.drawLine(
+        Offset(0, centerY),
+        Offset(size.width, centerY),
+        railPaint,
+      );
 
       if (_value > 0) {
         canvas.drawLine(
-          Offset.zero,
-          Offset(size.width * _value, 0),
+          Offset(0, centerY),
+          Offset(size.width * _value, centerY),
           trackPaint,
         );
       }
@@ -70,26 +76,26 @@ class _AppProgressBarPainter extends CustomPainter {
 
         if (fillProgress >= stepEnd) {
           canvas.drawLine(
-            Offset(startX, 0),
-            Offset(startX + stepWidth, 0),
+            Offset(startX, centerY),
+            Offset(startX + stepWidth, centerY),
             trackPaint,
           );
         } else if (fillProgress > i) {
           final fillAmount = fillProgress - i;
           canvas.drawLine(
-            Offset(startX, 0),
-            Offset(startX + stepWidth, 0),
+            Offset(startX, centerY),
+            Offset(startX + stepWidth, centerY),
             railPaint,
           );
           canvas.drawLine(
-            Offset(startX, 0),
-            Offset(startX + stepWidth * fillAmount, 0),
+            Offset(startX, centerY),
+            Offset(startX + stepWidth * fillAmount, centerY),
             trackPaint,
           );
         } else {
           canvas.drawLine(
-            Offset(startX, 0),
-            Offset(startX + stepWidth, 0),
+            Offset(startX, centerY),
+            Offset(startX + stepWidth, centerY),
             railPaint,
           );
         }

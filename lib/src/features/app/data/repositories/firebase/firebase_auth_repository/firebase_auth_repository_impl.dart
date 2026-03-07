@@ -249,8 +249,11 @@ class FirebaseAuthRepositoryImpl implements IFirebaseAuthRepository {
   AuthorizedUser _mapFirebaseUserToAuthorized(User user) {
     return AuthorizedUser(
       id: user.uid,
-      name: user.displayName ?? '',
+      name: user.displayName ?? 'user_${user.uid.substring(0, 8)}',
       email: user.email ?? '',
+      handle: user.displayName != null
+          ? user.displayName!.toLowerCase().replaceAll(' ', '')
+          : 'user_${user.uid.substring(0, 8)}',
       avatarUrl: user.photoURL ?? '',
     );
   }

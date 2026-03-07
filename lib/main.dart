@@ -17,6 +17,8 @@ void main() {
       await Firebase.initializeApp(
         options: DefaultFirebaseOptions.currentPlatform,
       );
+      // Preload Inter font to avoid blocking the UI thread
+      GoogleFonts.inter();
       runApp(const App());
     },
     (error, stackTrace) {
@@ -63,6 +65,9 @@ class _AppState extends State<App> {
           seedColor: HighlightColor.darkest.color,
         ),
         textTheme: GoogleFonts.interTextTheme(Theme.of(context).textTheme),
+        primaryTextTheme: GoogleFonts.interTextTheme(
+          Theme.of(context).primaryTextTheme,
+        ),
         visualDensity: VisualDensity.adaptivePlatformDensity,
         iconTheme: IconThemeData(color: HighlightColor.darkest.color),
         scaffoldBackgroundColor: LightColor.lightest.color,

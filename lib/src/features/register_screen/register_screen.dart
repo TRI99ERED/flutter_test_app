@@ -92,10 +92,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
             context,
           ).showSnackBar(SnackBar(content: Text('Error: ${current.message}')));
         },
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 375, maxHeight: 812),
-          child: Scaffold(
-            body: ListView(
+        child: Scaffold(
+          body: SafeArea(
+            child: ListView(
               children: [
                 Form(
                   key: _formKey,

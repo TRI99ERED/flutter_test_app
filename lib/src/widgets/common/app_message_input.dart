@@ -73,7 +73,10 @@ class _AppMessageInputState extends State<AppMessageInput> {
         Expanded(
           child: TextField(
             controller: _effectiveController,
-            onSubmitted: (value) => widget.onSendPressed?.call(value),
+            onSubmitted: (value) {
+              widget.onSendPressed?.call(value);
+              _effectiveController.clear();
+            },
             cursorColor: HighlightColor.darkest.color,
             style: TextStyle(
               color: DarkColor.darkest.color,
@@ -98,8 +101,10 @@ class _AppMessageInputState extends State<AppMessageInput> {
                 fontWeight: bMWeight,
               ),
               suffixIcon: IconButton(
-                onPressed: () =>
-                    widget.onSendPressed?.call(_effectiveController.text),
+                onPressed: () {
+                  widget.onSendPressed?.call(_effectiveController.text);
+                  _effectiveController.clear();
+                },
                 style: IconButton.styleFrom(
                   backgroundColor: HighlightColor.darkest.color,
                   foregroundColor: LightColor.lightest.color,

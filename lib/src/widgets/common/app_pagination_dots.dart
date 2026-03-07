@@ -18,7 +18,6 @@ class AppPaginationDots extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
       spacing: spacing8,
       children: List.generate(dotCount, (index) {
         return _AppPaginationDot(isActive: index == activeIndex);

@@ -2,7 +2,7 @@
 import 'package:test_app/src/core/resources/app_icons.dart';
 import 'package:test_app/src/widgets/common/styles.dart';
 
-class AppNavBar extends StatelessWidget {
+class AppNavBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
   final String? leftText;
   final IconData? leftIcon;
@@ -25,6 +25,9 @@ class AppNavBar extends StatelessWidget {
     this.onPressedLeft,
     this.onPressedRight,
   });
+
+  @override
+  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
 
   @override
   Widget build(BuildContext context) {

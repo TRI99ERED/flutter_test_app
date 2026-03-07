@@ -4,10 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:test_app/src/widgets/common/styles.dart';
 
 class AppLoader extends StatelessWidget {
-  final double value;
+  final double? value;
 
-  const AppLoader({super.key, required this.value})
-    : assert(value >= 0 && value <= 1, 'Value must be between 0 and 1');
+  const AppLoader({super.key, this.value})
+    : assert(
+        value == null || (value >= 0 && value <= 1),
+        'Value must be between 0 and 1',
+      );
 
   @override
   Widget build(BuildContext context) {
@@ -22,11 +25,14 @@ class AppLoader extends StatelessWidget {
 }
 
 class _AppLoaderPainter extends CustomPainter {
-  final double _value;
+  final double? _value;
 
-  _AppLoaderPainter({required double value})
+  _AppLoaderPainter({required double? value})
     : _value = value,
-      assert(value >= 0 && value <= 1, 'Value must be between 0 and 1');
+      assert(
+        value == null || (value >= 0 && value <= 1),
+        'Value must be between 0 and 1',
+      );
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -52,7 +58,7 @@ class _AppLoaderPainter extends CustomPainter {
       railPaint,
     );
 
-    if (_value > 0) {
+    if (_value != null && _value > 0) {
       canvas.drawArc(
         Rect.fromCenter(center: center, width: size.width, height: size.height),
         -pi / 2,

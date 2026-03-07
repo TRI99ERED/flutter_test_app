@@ -79,10 +79,9 @@ class _LoginScreenState extends State<LoginScreen> {
           context.go(homePath);
         }
       },
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 375, maxHeight: 812),
-        child: Scaffold(
-          body: ListView(
+      child: Scaffold(
+        body: SafeArea(
+          child: ListView(
             children: [
               const PlaceholderImage(),
               Form(
