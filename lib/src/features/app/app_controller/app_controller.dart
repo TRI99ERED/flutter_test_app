@@ -325,8 +325,26 @@ final class AppController extends BaseController<AppState> {
     );
   }
 
+  Future<void> deleteChat(String chatId) async {
+    return _firestoreRepository.deleteChat(chatId);
+  }
+
   @override
   void dispose() {
     super.dispose();
+  }
+
+  Stream<List<AuthorizedUser>> watchAllUsersExcludingFriends(String userId) {
+    return _firestoreRepository.watchAllUsers().asyncMap((users) async {
+      final friends = await _firestoreRepository
+          .watchFriendsForUser(userId: userId)
+          .first;
+
+      final friendIds = friends.map((friend) => friend.id).toSet();
+
+      return users
+          .where((user) => user.id != userId && !friendIds.contains(user.id))
+          .toList();
+    });
   }
 }

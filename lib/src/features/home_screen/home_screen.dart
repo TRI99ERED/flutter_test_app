@@ -5,9 +5,9 @@ import 'package:test_app/src/core/widgets/controller_listener.dart';
 import 'package:test_app/src/features/app/app_scope.dart';
 import 'package:test_app/src/features/home_screen/widgets/chats.dart';
 import 'package:test_app/src/features/home_screen/widgets/friends.dart';
+import 'package:test_app/src/features/home_screen/widgets/projects.dart';
 import 'package:test_app/src/features/home_screen/widgets/settings.dart';
 import 'package:test_app/src/router/routes.dart';
-import 'package:test_app/src/widgets/common/app_loader.dart';
 import 'package:test_app/src/widgets/common/app_tap_bar.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -19,21 +19,10 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final _selectedTabIndex = ValueNotifier<int>(0);
+  final _editPressed = ValueNotifier<bool>(false);
 
   @override
   Widget build(BuildContext context) {
-    // Guard: Only allow authorized users to access HomeScreen
-    if (!context.appState.isAuthorized) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (context.mounted) {
-          context.go(loginPath);
-        }
-      });
-      return const Scaffold(
-        body: Center(child: SizedBox(width: 32, child: AppLoader())),
-      );
-    }
-
     return ControllerListener(
       controller: context.appController,
       listenWhen: (previous, current) {
@@ -56,36 +45,35 @@ class _HomeScreenState extends State<HomeScreen> {
       },
       child: ValueListenableBuilder(
         valueListenable: _selectedTabIndex,
-        builder: (context, value, child) {
+        builder: (context, index, child) {
           return Scaffold(
-            appBar: switch (value) {
-              0 => const ChatsAppBar(),
-              1 => const FriendsAppBar(),
-              2 => const SettingsAppBar(),
+            appBar: switch (index) {
+              0 => ChatsAppBar(editPressed: _editPressed),
+              1 => FriendsAppBar(editPressed: _editPressed),
+              2 => ProjectsAppBar(editPressed: _editPressed),
+              3 => const SettingsAppBar(),
               _ => null,
             },
-            bottomNavigationBar: ValueListenableBuilder(
-              valueListenable: _selectedTabIndex,
-              builder: (context, value, child) {
-                return AppTapBar(
-                  tabCount: 3,
-                  selectedIndex: value,
-                  tabTitles: ['Chats', 'Friends', 'Settings'],
-                  tabIcons: [
-                    AppIcons.chat,
-                    AppIcons.profile,
-                    AppIcons.settings,
-                  ],
-                  onTabSelected: (value) {
-                    _selectedTabIndex.value = value;
-                  },
-                );
+            bottomNavigationBar: AppTapBar(
+              tabCount: 4,
+              selectedIndex: index,
+              tabTitles: ['Chats', 'Friends', 'Projects', 'Settings'],
+              tabIcons: [
+                AppIcons.chat,
+                AppIcons.profile,
+                AppIcons.edit,
+                AppIcons.settings,
+              ],
+              onTabSelected: (value) {
+                _selectedTabIndex.value = value;
+                _editPressed.value = false;
               },
             ),
-            body: switch (_selectedTabIndex.value) {
-              0 => Chats(selectedTabIndex: _selectedTabIndex),
-              1 => Friends(selectedTabIndex: _selectedTabIndex),
-              2 => Settings(selectedTabIndex: _selectedTabIndex),
+            body: switch (index) {
+              0 => Chats(editPressed: _editPressed),
+              1 => Friends(editPressed: _editPressed),
+              2 => Projects(editPressed: _editPressed),
+              3 => const Settings(),
               _ => SizedBox.shrink(),
             },
           );

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:test_app/src/core/resources/app_icons.dart';
 import 'package:test_app/src/features/app/app_scope.dart';
 import 'package:test_app/src/features/app/data/models/user_model.dart';
 import 'package:test_app/src/features/home_screen/widgets/user_picker.dart';
@@ -16,9 +17,9 @@ import 'package:test_app/src/widgets/common/styles.dart';
 enum FriendsSectionType { friends, incomingRequests, outgoingRequests }
 
 class Friends extends StatefulWidget {
-  final ValueNotifier<int> selectedTabIndex;
+  final ValueNotifier<bool> editPressed;
 
-  const Friends({super.key, required this.selectedTabIndex});
+  const Friends({super.key, required this.editPressed});
 
   @override
   State<Friends> createState() => _FriendsState();
@@ -73,14 +74,17 @@ class _FriendsState extends State<Friends> {
                   0 => FriendsSection(
                     sectionType: FriendsSectionType.friends,
                     searchQuery: _searchQuery,
+                    editPressed: widget.editPressed,
                   ),
                   1 => FriendsSection(
                     sectionType: FriendsSectionType.incomingRequests,
                     searchQuery: _searchQuery,
+                    editPressed: widget.editPressed,
                   ),
                   2 => FriendsSection(
                     sectionType: FriendsSectionType.outgoingRequests,
                     searchQuery: _searchQuery,
+                    editPressed: widget.editPressed,
                   ),
                   _ => ErrorState(message: 'Invalid section index: $value'),
                 };
@@ -103,11 +107,13 @@ class _FriendsState extends State<Friends> {
 class FriendsSection extends StatefulWidget {
   final FriendsSectionType sectionType;
   final ValueNotifier<String> searchQuery;
+  final ValueNotifier<bool> editPressed;
 
   const FriendsSection({
     super.key,
     required this.sectionType,
     required this.searchQuery,
+    required this.editPressed,
   });
 
   @override
@@ -174,7 +180,10 @@ class _FriendsSectionState extends State<FriendsSection> {
                 ? () async {
                     final user = context.appState.user as AuthorizedUser;
                     final appController = context.appController;
-                    final selectedUser = await showUserPicker(context);
+                    final selectedUser = await showUserPicker(
+                      context,
+                      UserPickerMode.excludeFriends,
+                    );
                     if (selectedUser == null) return;
 
                     await appController.sendFriendRequest(
@@ -188,8 +197,8 @@ class _FriendsSectionState extends State<FriendsSection> {
 
         return ValueListenableBuilder(
           valueListenable: widget.searchQuery,
-          builder: (context, value, child) {
-            final q = value.trim().toLowerCase();
+          builder: (context, query, child) {
+            final q = query.trim().toLowerCase();
 
             final filteredFriends = q.isEmpty
                 ? friends
@@ -250,68 +259,93 @@ class _FriendsSectionState extends State<FriendsSection> {
                       padding: const EdgeInsets.symmetric(vertical: spacing4),
                       child: SizedBox(
                         height: 72,
-                        child: AppCardSmall(
-                          title: friend.name,
-                          subtitle: '@${friend.handle}',
-                          avatar: PlaceholderAvatar(size: AvatarSize.small),
-                          onAvatarPressed: () {},
-                          leftButtonText: switch (widget.sectionType) {
-                            FriendsSectionType.incomingRequests => 'Decline',
-                            _ => null,
-                          },
-                          rightButtonText: switch (widget.sectionType) {
-                            FriendsSectionType.friends => 'Message',
-                            FriendsSectionType.incomingRequests => 'Accept',
-                            FriendsSectionType.outgoingRequests => 'Cancel',
-                          },
-                          onPressedLeft: switch (widget.sectionType) {
-                            FriendsSectionType.incomingRequests => () async {
-                              final user =
-                                  context.appState.user as AuthorizedUser;
-                              final appController = context.appController;
-                              await appController.declineFriendRequest(
-                                currentUserId: user.id,
-                                friendUserId: friend.id,
-                              );
-                            },
-                            _ => null,
-                          },
-                          onPressedRight: switch (widget.sectionType) {
-                            FriendsSectionType.friends => () async {
-                              final user =
-                                  context.appState.user as AuthorizedUser;
-                              final appController = context.appController;
+                        child: ValueListenableBuilder(
+                          valueListenable: widget.editPressed,
+                          builder: (context, editPressed, child) {
+                            return AppCardSmall(
+                              title: friend.name,
+                              subtitle: '@${friend.handle}',
+                              avatar: PlaceholderAvatar(size: AvatarSize.small),
+                              onAvatarPressed: () {},
+                              leftButtonText: switch (widget.sectionType) {
+                                FriendsSectionType.incomingRequests =>
+                                  'Decline',
+                                _ => null,
+                              },
+                              rightButtonText: switch (widget.sectionType) {
+                                FriendsSectionType.friends =>
+                                  editPressed ? 'Remove' : 'Message',
+                                FriendsSectionType.incomingRequests => 'Accept',
+                                FriendsSectionType.outgoingRequests => 'Cancel',
+                              },
+                              onPressedLeft: switch (widget.sectionType) {
+                                FriendsSectionType.incomingRequests =>
+                                  () async {
+                                    final user =
+                                        context.appState.user as AuthorizedUser;
+                                    final appController = context.appController;
+                                    await appController.declineFriendRequest(
+                                      currentUserId: user.id,
+                                      friendUserId: friend.id,
+                                    );
+                                  },
+                                _ => null,
+                              },
+                              onPressedRight: switch (widget.sectionType) {
+                                FriendsSectionType.friends =>
+                                  editPressed
+                                      ? () async {
+                                          final user =
+                                              context.appState.user
+                                                  as AuthorizedUser;
+                                          final appController =
+                                              context.appController;
+                                          await appController.removeFriend(
+                                            currentUserId: user.id,
+                                            friendUserId: friend.id,
+                                          );
+                                        }
+                                      : () async {
+                                          final user =
+                                              context.appState.user
+                                                  as AuthorizedUser;
+                                          final appController =
+                                              context.appController;
 
-                              if (!mounted) return;
-                              final chatId = await appController
-                                  .createOrGetDirectChat(
-                                    currentUserId: user.id,
-                                    currentUserName: user.name,
-                                    otherUserId: friend.id,
-                                    otherUserName: friend.name,
-                                  );
+                                          if (!mounted) return;
+                                          final chatId = await appController
+                                              .createOrGetDirectChat(
+                                                currentUserId: user.id,
+                                                currentUserName: user.name,
+                                                otherUserId: friend.id,
+                                                otherUserName: friend.name,
+                                              );
 
-                              if (!mounted) return;
-                              context.push('/chats/$chatId');
-                            },
-                            FriendsSectionType.incomingRequests => () async {
-                              final user =
-                                  context.appState.user as AuthorizedUser;
-                              final appController = context.appController;
-                              await appController.acceptFriendRequest(
-                                currentUserId: user.id,
-                                friendUserId: friend.id,
-                              );
-                            },
-                            FriendsSectionType.outgoingRequests => () async {
-                              final user =
-                                  context.appState.user as AuthorizedUser;
-                              final appController = context.appController;
-                              await appController.cancelFriendRequest(
-                                currentUserId: user.id,
-                                friendUserId: friend.id,
-                              );
-                            },
+                                          if (!mounted) return;
+                                          context.push('/chats/$chatId');
+                                        },
+                                FriendsSectionType.incomingRequests =>
+                                  () async {
+                                    final user =
+                                        context.appState.user as AuthorizedUser;
+                                    final appController = context.appController;
+                                    await appController.acceptFriendRequest(
+                                      currentUserId: user.id,
+                                      friendUserId: friend.id,
+                                    );
+                                  },
+                                FriendsSectionType.outgoingRequests =>
+                                  () async {
+                                    final user =
+                                        context.appState.user as AuthorizedUser;
+                                    final appController = context.appController;
+                                    await appController.cancelFriendRequest(
+                                      currentUserId: user.id,
+                                      friendUserId: friend.id,
+                                    );
+                                  },
+                              },
+                            );
                           },
                         ),
                       ),
@@ -327,28 +361,45 @@ class _FriendsSectionState extends State<FriendsSection> {
   }
 }
 
-class FriendsAppBar extends StatelessWidget implements PreferredSizeWidget {
-  const FriendsAppBar({super.key});
+class FriendsAppBar extends StatefulWidget implements PreferredSizeWidget {
+  final ValueNotifier<bool> editPressed;
+
+  const FriendsAppBar({super.key, required this.editPressed});
 
   @override
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
 
   @override
+  State<FriendsAppBar> createState() => _FriendsAppBarState();
+}
+
+class _FriendsAppBarState extends State<FriendsAppBar> {
+  @override
   Widget build(BuildContext context) {
     return SafeArea(
-      child: AppNavBar(
-        title: 'Friends',
-        leftText: 'Add',
-        rightText: 'Manage',
-        onPressedLeft: () async {
-          final user = context.appState.user as AuthorizedUser;
-          final appController = context.appController;
-          final selectedUser = await showUserPicker(context);
-          if (selectedUser == null) return;
+      child: ValueListenableBuilder(
+        valueListenable: widget.editPressed,
+        builder: (context, value, child) {
+          return AppNavBar(
+            title: 'Friends',
+            leftText: widget.editPressed.value ? 'Done' : 'Edit',
+            rightIcon: AppIcons.add,
+            onPressedLeft: () {
+              widget.editPressed.value = !widget.editPressed.value;
+            },
+            onPressedRight: () async {
+              final user = context.appState.user as AuthorizedUser;
+              final appController = context.appController;
+              final selectedUser = await showUserPicker(
+                context,
+                UserPickerMode.excludeFriends,
+              );
+              if (selectedUser == null) return;
 
-          await appController.sendFriendRequest(user.id, selectedUser.id);
+              await appController.sendFriendRequest(user.id, selectedUser.id);
+            },
+          );
         },
-        onPressedRight: () {},
       ),
     );
   }

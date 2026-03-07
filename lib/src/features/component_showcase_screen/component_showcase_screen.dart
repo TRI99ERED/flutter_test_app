@@ -1169,7 +1169,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     description:
                         'Description. Lorem ipsum dolor sit amet consectetur adipiscing elit, sed do',
                     icon: AppIcons.heartFilled,
-                    control: AppListItemControl.button,
+                    control: AppListItemControl.smallButton,
                     onPressed: () => debugPrint('Button pressed'),
                   ),
                 ),
@@ -1243,7 +1243,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     description:
                         'Description. Lorem ipsum dolor sit amet consectetur adipiscing elit, sed do',
                     avatar: const PlaceholderAvatar(size: AvatarSize.small),
-                    control: AppListItemControl.button,
+                    control: AppListItemControl.smallButton,
                     onPressed: () => debugPrint('Button pressed'),
                   ),
                 ),
@@ -1316,7 +1316,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     title: 'Title',
                     description:
                         'Description. Lorem ipsum dolor sit amet consectetur adipiscing elit, sed do',
-                    control: AppListItemControl.button,
+                    control: AppListItemControl.smallButton,
                     onPressed: () => debugPrint('Button pressed'),
                   ),
                 ),

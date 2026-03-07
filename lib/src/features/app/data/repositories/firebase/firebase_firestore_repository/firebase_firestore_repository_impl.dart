@@ -12,60 +12,68 @@ class FirebaseFirestoreRepositoryImpl implements IFirebaseFirestoreRepository {
   Future<void> acceptFriendRequest({
     required String currentUserId,
     required String friendUserId,
-  }) {
-    final currentUserDoc = _users.doc(currentUserId);
-    final friendUserDoc = _users.doc(friendUserId);
+  }) async {
+    try {
+      final currentUserDoc = _users.doc(currentUserId);
+      final friendUserDoc = _users.doc(friendUserId);
 
-    return FirebaseFirestore.instance.runTransaction((tx) async {
-      final currentUserSnapshot = await tx.get(currentUserDoc);
-      final friendUserSnapshot = await tx.get(friendUserDoc);
+      await FirebaseFirestore.instance.runTransaction((tx) async {
+        final currentUserSnapshot = await tx.get(currentUserDoc);
+        final friendUserSnapshot = await tx.get(friendUserDoc);
 
-      if (!currentUserSnapshot.exists || !friendUserSnapshot.exists) {
-        throw Exception('One or both users do not exist');
-      }
+        if (!currentUserSnapshot.exists || !friendUserSnapshot.exists) {
+          throw Exception('One or both users do not exist');
+        }
 
-      tx.set(currentUserDoc.collection('friends').doc(friendUserId), {
-        'id': friendUserId,
+        tx.set(currentUserDoc.collection('friends').doc(friendUserId), {
+          'id': friendUserId,
+        });
+
+        tx.set(friendUserDoc.collection('friends').doc(currentUserId), {
+          'id': currentUserId,
+        });
+
+        tx.delete(
+          currentUserDoc.collection('friendIncomingRequests').doc(friendUserId),
+        );
+
+        tx.delete(
+          friendUserDoc.collection('friendOutgoingRequests').doc(currentUserId),
+        );
       });
-
-      tx.set(friendUserDoc.collection('friends').doc(currentUserId), {
-        'id': currentUserId,
-      });
-
-      tx.delete(
-        currentUserDoc.collection('friendIncomingRequests').doc(friendUserId),
-      );
-
-      tx.delete(
-        friendUserDoc.collection('friendOutgoingRequests').doc(currentUserId),
-      );
-    });
+    } catch (e) {
+      throw Exception('Failed to accept friend request: $e');
+    }
   }
 
   @override
   Future<void> cancelFriendRequest({
     required String currentUserId,
     required String friendUserId,
-  }) {
-    final currentUserDoc = _users.doc(currentUserId);
-    final friendUserDoc = _users.doc(friendUserId);
+  }) async {
+    try {
+      final currentUserDoc = _users.doc(currentUserId);
+      final friendUserDoc = _users.doc(friendUserId);
 
-    return FirebaseFirestore.instance.runTransaction((tx) async {
-      final currentUserSnapshot = await tx.get(currentUserDoc);
-      final friendUserSnapshot = await tx.get(friendUserDoc);
+      await FirebaseFirestore.instance.runTransaction((tx) async {
+        final currentUserSnapshot = await tx.get(currentUserDoc);
+        final friendUserSnapshot = await tx.get(friendUserDoc);
 
-      if (!currentUserSnapshot.exists || !friendUserSnapshot.exists) {
-        throw Exception('One or both users do not exist');
-      }
+        if (!currentUserSnapshot.exists || !friendUserSnapshot.exists) {
+          throw Exception('One or both users do not exist');
+        }
 
-      tx.delete(
-        currentUserDoc.collection('friendOutgoingRequests').doc(friendUserId),
-      );
+        tx.delete(
+          currentUserDoc.collection('friendOutgoingRequests').doc(friendUserId),
+        );
 
-      tx.delete(
-        friendUserDoc.collection('friendIncomingRequests').doc(currentUserId),
-      );
-    });
+        tx.delete(
+          friendUserDoc.collection('friendIncomingRequests').doc(currentUserId),
+        );
+      });
+    } catch (e) {
+      throw Exception('Failed to cancel friend request: $e');
+    }
   }
 
   @override
@@ -74,17 +82,21 @@ class FirebaseFirestoreRepositoryImpl implements IFirebaseFirestoreRepository {
     required String senderId,
     required String senderName,
     required String body,
-  }) {
-    final doc = _chats.doc(chatId).collection('messages').doc();
+  }) async {
+    try {
+      final doc = _chats.doc(chatId).collection('messages').doc();
 
-    final message = Message(
-      id: doc.id,
-      senderId: senderId,
-      senderName: senderName,
-      body: body,
-      timestamp: DateTime.now(),
-    );
-    return doc.set(message.toFirestore());
+      final message = Message(
+        id: doc.id,
+        senderId: senderId,
+        senderName: senderName,
+        body: body,
+        timestamp: DateTime.now(),
+      );
+      await doc.set(message.toFirestore());
+    } catch (e) {
+      throw Exception('Failed to create message: $e');
+    }
   }
 
   @override
@@ -94,129 +106,180 @@ class FirebaseFirestoreRepositoryImpl implements IFirebaseFirestoreRepository {
     required String otherUserId,
     required String otherUserName,
   }) async {
-    final ids = [currentUserId, otherUserId]..sort();
-    final chatId = ids.join('_');
-    final doc = _chats.doc(chatId);
+    try {
+      final ids = [currentUserId, otherUserId]..sort();
+      final chatId = ids.join('_');
+      final doc = _chats.doc(chatId);
 
-    await FirebaseFirestore.instance.runTransaction((tx) async {
-      final snapshot = await tx.get(doc);
-      if (snapshot.exists) {
-        return;
-      }
+      await FirebaseFirestore.instance.runTransaction((tx) async {
+        final snapshot = await tx.get(doc);
+        if (snapshot.exists) {
+          return;
+        }
 
-      tx.set(doc, {
-        'participants': ids,
-        'participantNames': {
-          currentUserId: currentUserName,
-          otherUserId: otherUserName,
-        },
-        'lastMessage': '',
-        'lastUpdated': FieldValue.serverTimestamp(),
+        tx.set(doc, {
+          'participants': ids,
+          'participantNames': {
+            currentUserId: currentUserName,
+            otherUserId: otherUserName,
+          },
+          'lastMessage': '',
+          'lastUpdated': FieldValue.serverTimestamp(),
+        });
       });
-    });
 
-    return chatId;
+      return chatId;
+    } catch (e) {
+      throw Exception('Failed to create or get direct chat: $e');
+    }
   }
 
   @override
   Future<void> createUser({required AuthorizedUser user}) {
     final doc = _users.doc(user.id);
-    return doc.set(user.toFirestore());
+    try {
+      return doc.set(user.toFirestore());
+    } catch (e) {
+      throw Exception('Failed to create user: $e');
+    }
   }
 
   @override
   Future<void> declineFriendRequest({
     required String currentUserId,
     required String friendUserId,
-  }) {
-    final currentUserDoc = _users.doc(currentUserId);
-    final friendUserDoc = _users.doc(friendUserId);
+  }) async {
+    try {
+      final currentUserDoc = _users.doc(currentUserId);
+      final friendUserDoc = _users.doc(friendUserId);
 
-    return FirebaseFirestore.instance.runTransaction((tx) async {
-      final currentUserSnapshot = await tx.get(currentUserDoc);
-      final friendUserSnapshot = await tx.get(friendUserDoc);
+      await FirebaseFirestore.instance.runTransaction((tx) async {
+        final currentUserSnapshot = await tx.get(currentUserDoc);
+        final friendUserSnapshot = await tx.get(friendUserDoc);
 
-      if (!currentUserSnapshot.exists || !friendUserSnapshot.exists) {
-        throw Exception('One or both users do not exist');
-      }
+        if (!currentUserSnapshot.exists || !friendUserSnapshot.exists) {
+          throw Exception('One or both users do not exist');
+        }
 
-      tx.delete(
-        currentUserDoc.collection('friendIncomingRequests').doc(friendUserId),
-      );
+        tx.delete(
+          currentUserDoc.collection('friendIncomingRequests').doc(friendUserId),
+        );
 
-      tx.delete(
-        friendUserDoc.collection('friendOutgoingRequests').doc(currentUserId),
-      );
-    });
+        tx.delete(
+          friendUserDoc.collection('friendOutgoingRequests').doc(currentUserId),
+        );
+      });
+    } catch (e) {
+      throw Exception('Failed to decline friend request: $e');
+    }
+  }
+
+  @override
+  Future<void> deleteChat(String chatId) async {
+    final doc = _chats.doc(chatId);
+    try {
+      await FirebaseFirestore.instance.runTransaction((tx) async {
+        final snapshot = await tx.get(doc);
+
+        if (!snapshot.exists) {
+          throw Exception('Chat does not exist');
+        }
+
+        final messagesSnapshot = await doc.collection('messages').get();
+        for (final messageDoc in messagesSnapshot.docs) {
+          tx.delete(messageDoc.reference);
+        }
+
+        tx.delete(doc);
+      });
+    } catch (e) {
+      throw Exception('Failed to delete chat: $e');
+    }
   }
 
   @override
   Future<void> removeFriend({
     required String currentUserId,
     required String friendUserId,
-  }) {
-    final currentUserDoc = _users.doc(currentUserId);
-    final friendUserDoc = _users.doc(friendUserId);
+  }) async {
+    try {
+      final currentUserDoc = _users.doc(currentUserId);
+      final friendUserDoc = _users.doc(friendUserId);
 
-    return FirebaseFirestore.instance.runTransaction((tx) async {
-      final currentUserSnapshot = await tx.get(currentUserDoc);
-      final friendUserSnapshot = await tx.get(friendUserDoc);
+      await FirebaseFirestore.instance.runTransaction((tx) async {
+        final currentUserSnapshot = await tx.get(currentUserDoc);
+        final friendUserSnapshot = await tx.get(friendUserDoc);
 
-      if (!currentUserSnapshot.exists || !friendUserSnapshot.exists) {
-        throw Exception('One or both users do not exist');
-      }
+        if (!currentUserSnapshot.exists || !friendUserSnapshot.exists) {
+          throw Exception('One or both users do not exist');
+        }
 
-      tx.delete(currentUserDoc.collection('friends').doc(friendUserId));
+        tx.delete(currentUserDoc.collection('friends').doc(friendUserId));
 
-      tx.delete(friendUserDoc.collection('friends').doc(currentUserId));
-    });
+        tx.delete(friendUserDoc.collection('friends').doc(currentUserId));
+      });
+    } catch (e) {
+      throw Exception('Failed to remove friend: $e');
+    }
   }
 
   @override
   Future<void> sendFriendRequest({
     required String currentUserId,
     required String friendUserId,
-  }) {
-    final currentUserDoc = _users.doc(currentUserId);
-    final friendUserDoc = _users.doc(friendUserId);
+  }) async {
+    try {
+      final currentUserDoc = _users.doc(currentUserId);
+      final friendUserDoc = _users.doc(friendUserId);
 
-    return FirebaseFirestore.instance.runTransaction((tx) async {
-      final currentUserSnapshot = await tx.get(currentUserDoc);
-      final friendUserSnapshot = await tx.get(friendUserDoc);
+      await FirebaseFirestore.instance.runTransaction((tx) async {
+        final currentUserSnapshot = await tx.get(currentUserDoc);
+        final friendUserSnapshot = await tx.get(friendUserDoc);
 
-      if (!currentUserSnapshot.exists || !friendUserSnapshot.exists) {
-        throw Exception('One or both users do not exist');
-      }
+        if (!currentUserSnapshot.exists || !friendUserSnapshot.exists) {
+          throw Exception('One or both users do not exist');
+        }
 
-      tx.set(
-        currentUserDoc.collection('friendOutgoingRequests').doc(friendUserId),
-        {'id': friendUserId},
-      );
+        tx.set(
+          currentUserDoc.collection('friendOutgoingRequests').doc(friendUserId),
+          {'id': friendUserId},
+        );
 
-      tx.set(
-        friendUserDoc.collection('friendIncomingRequests').doc(currentUserId),
-        {'id': currentUserId},
-      );
-    });
+        tx.set(
+          friendUserDoc.collection('friendIncomingRequests').doc(currentUserId),
+          {'id': currentUserId},
+        );
+      });
+    } catch (e) {
+      throw Exception('Failed to send friend request: $e');
+    }
   }
 
   @override
   Future<void> updateChatLastMessage({
     required String chatId,
     required String lastMessage,
-  }) {
-    return _chats.doc(chatId).update({
-      'lastMessage': lastMessage,
-      'lastUpdated': FieldValue.serverTimestamp(),
-    });
+  }) async {
+    try {
+      await _chats.doc(chatId).update({
+        'lastMessage': lastMessage,
+        'lastUpdated': FieldValue.serverTimestamp(),
+      });
+    } catch (e) {
+      throw Exception('Failed to update chat last message: $e');
+    }
   }
 
   @override
   Future<void> updateChatUnreadCount({
     required String chatId,
     required int unreadCount,
-  }) {
-    return _chats.doc(chatId).update({'unreadCount': unreadCount});
+  }) async {
+    try {
+      await _chats.doc(chatId).update({'unreadCount': unreadCount});
+    } catch (e) {
+      throw Exception('Failed to update chat unread count: $e');
+    }
   }
 
   @override

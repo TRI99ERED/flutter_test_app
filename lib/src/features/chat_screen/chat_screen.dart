@@ -125,40 +125,48 @@ class _ChatScreenState extends State<ChatScreen> {
                   ),
                 ),
               ),
-              AppMessageInput(
-                onMorePressed: () {},
-                onSendPressed: (value) async {
-                  final user = context.appState.user as AuthorizedUser;
-                  await context.appController.createMessage(
-                    chatId: widget.chatId,
-                    senderId: user.id,
-                    senderName: user.name,
-                    body: value,
-                  );
+              StreamBuilder(
+                stream: context.appController.watchChatUnreadCount(
+                  widget.chatId,
+                ),
+                builder: (context, asyncSnapshot) {
+                  final unreadCount = asyncSnapshot.data ?? 0;
 
-                  await context.appController.updateChatLastMessage(
-                    chatId: widget.chatId,
-                    lastMessage: value,
-                  );
+                  return AppMessageInput(
+                    onMorePressed: () {},
+                    onSendPressed: (value) async {
+                      final user = context.appState.user as AuthorizedUser;
+                      final appController = context.appController;
 
-                  final chat = await context.appController
-                      .watchChatsForUser(user.id)
-                      .first;
-                  final currentChat = chat.firstWhere(
-                    (c) => c.id == widget.chatId,
-                  );
-
-                  for (final participantId in currentChat.participants) {
-                    if (participantId != user.id) {
-                      final unreadCount = await context.appController
-                          .watchChatUnreadCount(widget.chatId)
-                          .first;
-                      await context.appController.updateChatUnreadCount(
+                      await appController.createMessage(
                         chatId: widget.chatId,
-                        unreadCount: unreadCount + 1,
+                        senderId: user.id,
+                        senderName: user.name,
+                        body: value,
                       );
-                    }
-                  }
+
+                      await appController.updateChatLastMessage(
+                        chatId: widget.chatId,
+                        lastMessage: value,
+                      );
+
+                      final chat = await appController
+                          .watchChatsForUser(user.id)
+                          .first;
+                      final currentChat = chat.firstWhere(
+                        (c) => c.id == widget.chatId,
+                      );
+
+                      for (final participantId in currentChat.participants) {
+                        if (participantId != user.id) {
+                          await appController.updateChatUnreadCount(
+                            chatId: widget.chatId,
+                            unreadCount: unreadCount + 1,
+                          );
+                        }
+                      }
+                    },
+                  );
                 },
               ),
             ],

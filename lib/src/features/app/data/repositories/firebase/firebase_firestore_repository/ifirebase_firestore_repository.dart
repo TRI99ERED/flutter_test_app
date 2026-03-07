@@ -34,6 +34,8 @@ abstract interface class IFirebaseFirestoreRepository {
     required String friendUserId,
   });
 
+  Future<void> deleteChat(String chatId);
+
   Future<void> removeFriend({
     required String currentUserId,
     required String friendUserId,

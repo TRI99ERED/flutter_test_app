@@ -8,33 +8,40 @@ import 'package:test_app/src/widgets/common/app_list_title.dart';
 import 'package:test_app/src/widgets/common/app_search_bar.dart';
 import 'package:test_app/src/widgets/common/styles.dart';
 
+enum UserPickerMode { allUsers, friendsOnly, excludeFriends }
+
 Future<AuthorizedUser?> showUserPicker(
   BuildContext context, [
-  bool friendsOnly = false,
+  UserPickerMode mode = UserPickerMode.allUsers,
 ]) async {
   return await showDialog<AuthorizedUser>(
     context: context,
     barrierColor: Colors.black.withAlpha(216),
     builder: (context) {
-      final usersStream = friendsOnly
-          ? context.appController.watchFriendsForUser(
-              (context.appState.user as AuthorizedUser).id,
-            )
-          : context.appController.watchAllUsers();
+      final usersStream = switch (mode) {
+        UserPickerMode.friendsOnly => context.appController.watchFriendsForUser(
+          (context.appState.user as AuthorizedUser).id,
+        ),
+        UserPickerMode.allUsers => context.appController.watchAllUsers(),
+        UserPickerMode.excludeFriends =>
+          context.appController.watchAllUsersExcludingFriends(
+            (context.appState.user as AuthorizedUser).id,
+          ),
+      };
 
-      return UserPicker(usersStream: usersStream, friendsOnly: friendsOnly);
+      return UserPicker(usersStream: usersStream, mode: mode);
     },
   );
 }
 
 class UserPicker extends StatefulWidget {
   final Stream<List<AuthorizedUser>> usersStream;
-  final bool friendsOnly;
+  final UserPickerMode mode;
 
   const UserPicker({
     super.key,
     required this.usersStream,
-    this.friendsOnly = false,
+    this.mode = UserPickerMode.allUsers,
   });
 
   @override
@@ -63,7 +70,11 @@ class _UserPickerState extends State<UserPicker> {
                 spacing: spacing8,
                 children: [
                   AppListTitle(
-                    title: 'Select a ${widget.friendsOnly ? 'friend' : 'user'}',
+                    title:
+                        'Select a ${switch (widget.mode) {
+                          UserPickerMode.friendsOnly => 'friend',
+                          _ => 'user',
+                        }}',
                   ),
                   AppSearchBar(
                     onChanged: (value) {
@@ -87,7 +98,10 @@ class _UserPickerState extends State<UserPicker> {
                               );
                             } else if (snapshot.hasError) {
                               return Text(
-                                'Error loading ${widget.friendsOnly ? 'friends' : 'users'}: ${snapshot.error}',
+                                'Error loading ${switch (widget.mode) {
+                                  UserPickerMode.friendsOnly => 'friends',
+                                  _ => 'users',
+                                }}: ${snapshot.error}',
                               );
                             }
                             final users = (snapshot.data ?? [])
@@ -102,7 +116,10 @@ class _UserPickerState extends State<UserPicker> {
                             if (users.isEmpty) {
                               return Center(
                                 child: Text(
-                                  'No ${widget.friendsOnly ? 'friends' : 'users'} found',
+                                  'No ${switch (widget.mode) {
+                                    UserPickerMode.friendsOnly => 'friends',
+                                    _ => 'users',
+                                  }} found',
                                 ),
                               );
                             }
@@ -116,7 +133,10 @@ class _UserPickerState extends State<UserPicker> {
                             if (filteredUsers.isEmpty) {
                               return Center(
                                 child: Text(
-                                  'No ${widget.friendsOnly ? 'friends' : 'users'} match your search',
+                                  'No ${switch (widget.mode) {
+                                    UserPickerMode.friendsOnly => 'friends',
+                                    _ => 'users',
+                                  }} match your search',
                                 ),
                               );
                             }

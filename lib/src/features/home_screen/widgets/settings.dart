@@ -11,9 +11,7 @@ import 'package:test_app/src/widgets/common/placeholders.dart';
 import 'package:test_app/src/widgets/common/styles.dart';
 
 class Settings extends StatelessWidget {
-  final ValueNotifier<int> selectedTabIndex;
-
-  const Settings({super.key, required this.selectedTabIndex});
+  const Settings({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -73,7 +71,7 @@ class Settings extends StatelessWidget {
         Center(
           child: AppListItem(
             title: 'Saved messages',
-            control: AppListItemControl.button,
+            control: AppListItemControl.smallButton,
             onPressed: () {},
           ),
         ),
@@ -81,7 +79,7 @@ class Settings extends StatelessWidget {
         Center(
           child: AppListItem(
             title: 'Recent calls',
-            control: AppListItemControl.button,
+            control: AppListItemControl.smallButton,
             onPressed: () {},
           ),
         ),
@@ -89,7 +87,7 @@ class Settings extends StatelessWidget {
         Center(
           child: AppListItem(
             title: 'Devices',
-            control: AppListItemControl.button,
+            control: AppListItemControl.smallButton,
             onPressed: () {},
           ),
         ),
@@ -97,7 +95,7 @@ class Settings extends StatelessWidget {
         Center(
           child: AppListItem(
             title: 'Notifications',
-            control: AppListItemControl.button,
+            control: AppListItemControl.smallButton,
             onPressed: () {},
           ),
         ),
@@ -105,7 +103,7 @@ class Settings extends StatelessWidget {
         Center(
           child: AppListItem(
             title: 'Appearance',
-            control: AppListItemControl.button,
+            control: AppListItemControl.smallButton,
             onPressed: () {},
           ),
         ),
@@ -113,7 +111,7 @@ class Settings extends StatelessWidget {
         Center(
           child: AppListItem(
             title: 'Language',
-            control: AppListItemControl.button,
+            control: AppListItemControl.smallButton,
             onPressed: () {},
           ),
         ),
@@ -121,7 +119,7 @@ class Settings extends StatelessWidget {
         Center(
           child: AppListItem(
             title: 'Privacy & Security',
-            control: AppListItemControl.button,
+            control: AppListItemControl.smallButton,
             onPressed: () {},
           ),
         ),
@@ -129,7 +127,7 @@ class Settings extends StatelessWidget {
         Center(
           child: AppListItem(
             title: 'Storage',
-            control: AppListItemControl.button,
+            control: AppListItemControl.smallButton,
             onPressed: () {},
           ),
         ),
@@ -137,7 +135,7 @@ class Settings extends StatelessWidget {
         Center(
           child: AppListItem(
             title: 'Log out',
-            control: AppListItemControl.button,
+            control: AppListItemControl.smallButton,
             onPressed: () {
               AppDialog2.show(
                 context: context,

@@ -1,11 +1,19 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:test_app/src/core/resources/app_icons.dart';
 import 'package:test_app/src/widgets/common/app_badge.dart';
+import 'package:test_app/src/widgets/common/app_button.dart';
 import 'package:test_app/src/widgets/common/app_checkbox.dart';
 import 'package:test_app/src/widgets/common/app_toggle.dart';
 import 'package:test_app/src/widgets/common/styles.dart';
 
-enum AppListItemControl { none, button, toggle, checkbox, badge }
+enum AppListItemControl {
+  none,
+  smallButton,
+  largeButton,
+  toggle,
+  checkbox,
+  badge,
+}
 
 class AppListItem extends StatelessWidget {
   final String? title;
@@ -14,6 +22,7 @@ class AppListItem extends StatelessWidget {
   final Widget? avatar;
   final bool? value;
   final String? symbol;
+  final String? largeButtonText;
   final VoidCallback? onPressed;
   final ValueChanged<bool?>? onChanged;
   final AppListItemControl control;
@@ -26,12 +35,17 @@ class AppListItem extends StatelessWidget {
     this.avatar,
     this.value,
     this.symbol,
+    this.largeButtonText,
     this.onPressed,
     this.onChanged,
     this.control = AppListItemControl.none,
   }) : assert(
-         control != AppListItemControl.button || onPressed != null,
-         'If control is button, onPressed must be provided',
+         control != AppListItemControl.smallButton || onPressed != null,
+         'If control is smallButton, onPressed must be provided',
+       ),
+       assert(
+         control != AppListItemControl.largeButton || onPressed != null,
+         'If control is largeButton, onPressed must be provided',
        ),
        assert(
          (control == AppListItemControl.toggle ||
@@ -58,7 +72,8 @@ class AppListItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return TextButton(
       onPressed: switch (control) {
-        AppListItemControl.button => onPressed,
+        AppListItemControl.smallButton => onPressed,
+        AppListItemControl.largeButton => onPressed,
         AppListItemControl.toggle => () => onChanged?.call(!(value ?? false)),
         AppListItemControl.checkbox => () => onChanged?.call(!(value ?? false)),
         AppListItemControl.badge => onPressed,
@@ -111,13 +126,17 @@ class AppListItem extends StatelessWidget {
             ),
           ),
           switch (control) {
-            AppListItemControl.button => IconButton(
+            AppListItemControl.smallButton => IconButton(
               onPressed: onPressed,
               icon: Icon(
                 AppIcons.arrowRight,
                 size: 12,
                 color: DarkColor.lightest.color,
               ),
+            ),
+            AppListItemControl.largeButton => AppButtonSecondary(
+              text: largeButtonText,
+              onPressed: onPressed,
             ),
             AppListItemControl.toggle => AppToggle(
               value: value ?? false,
@@ -132,7 +151,7 @@ class AppListItem extends StatelessWidget {
               onPressed: onPressed,
               icon: AppBadgeSymbol(symbol: symbol ?? ''),
             ),
-            _ => const SizedBox.shrink(),
+            AppListItemControl.none => const SizedBox.shrink(),
           },
         ],
       ),

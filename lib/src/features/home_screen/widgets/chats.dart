@@ -15,9 +15,9 @@ import 'package:test_app/src/widgets/common/placeholders.dart';
 import 'package:test_app/src/widgets/common/styles.dart';
 
 class Chats extends StatefulWidget {
-  final ValueNotifier<int> selectedTabIndex;
+  final ValueNotifier<bool> editPressed;
 
-  const Chats({super.key, required this.selectedTabIndex});
+  const Chats({super.key, required this.editPressed});
 
   @override
   State<Chats> createState() => _ChatsState();
@@ -73,7 +73,10 @@ class _ChatsState extends State<Chats> {
                     onButtonPressed: () async {
                       final user = context.appState.user as AuthorizedUser;
                       final appController = context.appController;
-                      final selectedUser = await showUserPicker(context, true);
+                      final selectedUser = await showUserPicker(
+                        context,
+                        UserPickerMode.friendsOnly,
+                      );
                       if (selectedUser == null) return;
 
                       if (!mounted) return;
@@ -92,8 +95,8 @@ class _ChatsState extends State<Chats> {
 
                 return ValueListenableBuilder(
                   valueListenable: _searchQuery,
-                  builder: (context, value, child) {
-                    final q = value.trim().toLowerCase();
+                  builder: (context, query, child) {
+                    final q = query.trim().toLowerCase();
 
                     String otherName(Chat chat) {
                       final names = chat.participantNames.entries
@@ -150,15 +153,38 @@ class _ChatsState extends State<Chats> {
                                 ),
                                 child: SizedBox(
                                   height: 72,
-                                  child: AppListItem(
-                                    title: otherName(chat),
-                                    description: 'No messages yet',
-                                    avatar: PlaceholderAvatar(
-                                      size: AvatarSize.small,
-                                    ),
-                                    control: AppListItemControl.none,
-                                    onPressed: () {
-                                      context.push('/chats/${chat.id}');
+                                  child: ValueListenableBuilder(
+                                    valueListenable: widget.editPressed,
+                                    builder: (context, editPressed, child) {
+                                      if (editPressed) {
+                                        return AppListItem(
+                                          title: otherName(chat),
+                                          description: 'No messages yet',
+                                          avatar: PlaceholderAvatar(
+                                            size: AvatarSize.small,
+                                          ),
+                                          control:
+                                              AppListItemControl.largeButton,
+                                          largeButtonText: 'Delete',
+                                          onPressed: () {
+                                            context.appController.deleteChat(
+                                              chat.id,
+                                            );
+                                          },
+                                        );
+                                      } else {
+                                        return AppListItem(
+                                          title: otherName(chat),
+                                          description: 'No messages yet',
+                                          avatar: PlaceholderAvatar(
+                                            size: AvatarSize.small,
+                                          ),
+                                          control: AppListItemControl.none,
+                                          onPressed: () {
+                                            context.push('/chats/${chat.id}');
+                                          },
+                                        );
+                                      }
                                     },
                                   ),
                                 ),
@@ -170,54 +196,115 @@ class _ChatsState extends State<Chats> {
                             if (lastSenderId != null &&
                                 lastSenderId != user.id &&
                                 chat.unreadCount > 0) {
-                              return Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: spacing4,
-                                ),
-                                child: SizedBox(
-                                  height: 72,
-                                  child: AppListItem(
-                                    title: otherName(chat),
-                                    description: chat.lastMessage,
-                                    avatar: PlaceholderAvatar(
-                                      size: AvatarSize.small,
-                                    ),
-                                    symbol: chat.unreadCount.toString(),
-                                    control: AppListItemControl.badge,
-                                    onPressed: () async {
-                                      context.push('/chats/${chat.id}');
-
-                                      if (mounted) {
-                                        await context.appController
-                                            .updateChatUnreadCount(
-                                              chatId: chat.id,
-                                              unreadCount: 0,
+                              return ValueListenableBuilder(
+                                valueListenable: widget.editPressed,
+                                builder: (context, editPressed, child) {
+                                  if (editPressed) {
+                                    return Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: spacing4,
+                                      ),
+                                      child: SizedBox(
+                                        height: 72,
+                                        child: AppListItem(
+                                          title: otherName(chat),
+                                          description: chat.lastMessage,
+                                          avatar: PlaceholderAvatar(
+                                            size: AvatarSize.small,
+                                          ),
+                                          control:
+                                              AppListItemControl.largeButton,
+                                          largeButtonText: 'Delete',
+                                          onPressed: () {
+                                            context.appController.deleteChat(
+                                              chat.id,
                                             );
-                                      }
-                                    },
-                                  ),
-                                ),
+                                          },
+                                        ),
+                                      ),
+                                    );
+                                  } else {
+                                    return Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: spacing4,
+                                      ),
+                                      child: SizedBox(
+                                        height: 72,
+                                        child: AppListItem(
+                                          title: otherName(chat),
+                                          description: chat.lastMessage,
+                                          avatar: PlaceholderAvatar(
+                                            size: AvatarSize.small,
+                                          ),
+                                          symbol: chat.unreadCount.toString(),
+                                          control: AppListItemControl.badge,
+                                          onPressed: () async {
+                                            context.push('/chats/${chat.id}');
+
+                                            if (mounted) {
+                                              await context.appController
+                                                  .updateChatUnreadCount(
+                                                    chatId: chat.id,
+                                                    unreadCount: 0,
+                                                  );
+                                            }
+                                          },
+                                        ),
+                                      ),
+                                    );
+                                  }
+                                },
                               );
                             }
 
-                            return Padding(
-                              padding: const EdgeInsets.symmetric(
-                                vertical: spacing4,
-                              ),
-                              child: SizedBox(
-                                height: 72,
-                                child: AppListItem(
-                                  title: otherName(chat),
-                                  description: chat.lastMessage,
-                                  avatar: PlaceholderAvatar(
-                                    size: AvatarSize.small,
-                                  ),
-                                  control: AppListItemControl.none,
-                                  onPressed: () {
-                                    context.push('/chats/${chat.id}');
-                                  },
-                                ),
-                              ),
+                            return ValueListenableBuilder(
+                              valueListenable: widget.editPressed,
+                              builder: (context, editPressed, child) {
+                                if (editPressed) {
+                                  return Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: spacing4,
+                                    ),
+                                    child: SizedBox(
+                                      height: 72,
+                                      child: AppListItem(
+                                        title: otherName(chat),
+                                        description: chat.lastMessage,
+                                        avatar: PlaceholderAvatar(
+                                          size: AvatarSize.small,
+                                        ),
+                                        control: AppListItemControl.largeButton,
+                                        largeButtonText: 'Delete',
+                                        onPressed: () {
+                                          context.appController.deleteChat(
+                                            chat.id,
+                                          );
+                                        },
+                                      ),
+                                    ),
+                                  );
+                                } else {
+                                  return Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: spacing4,
+                                    ),
+                                    child: SizedBox(
+                                      height: 72,
+                                      child: AppListItem(
+                                        title: otherName(chat),
+                                        description: chat.lastMessage,
+                                        avatar: PlaceholderAvatar(
+                                          size: AvatarSize.small,
+                                        ),
+                                        control: AppListItemControl.none,
+                                        onPressed: () {
+                                          context.push('/chats/${chat.id}');
+                                        },
+                                      ),
+                                    ),
+                                  );
+                                }
+                              },
                             );
                           },
                         );
@@ -241,7 +328,9 @@ class _ChatsState extends State<Chats> {
 }
 
 class ChatsAppBar extends StatefulWidget implements PreferredSizeWidget {
-  const ChatsAppBar({super.key});
+  final ValueNotifier<bool> editPressed;
+
+  const ChatsAppBar({super.key, required this.editPressed});
 
   @override
   State<ChatsAppBar> createState() => _ChatsAppBarState();
@@ -254,27 +343,37 @@ class _ChatsAppBarState extends State<ChatsAppBar> {
   @override
   Widget build(BuildContext context) {
     return SafeArea(
-      child: AppNavBar(
-        title: 'Chats',
-        leftText: 'Edit',
-        rightIcon: AppIcons.create,
-        onPressedLeft: () {},
-        onPressedRight: () async {
-          final user = context.appState.user as AuthorizedUser;
-          final appController = context.appController;
-          final selectedUser = await showUserPicker(context, true);
-          if (selectedUser == null) return;
+      child: ValueListenableBuilder(
+        valueListenable: widget.editPressed,
+        builder: (context, value, child) {
+          return AppNavBar(
+            title: 'Chats',
+            leftText: widget.editPressed.value ? 'Done' : 'Edit',
+            rightIcon: AppIcons.create,
+            onPressedLeft: () {
+              widget.editPressed.value = !widget.editPressed.value;
+            },
+            onPressedRight: () async {
+              final user = context.appState.user as AuthorizedUser;
+              final appController = context.appController;
+              final selectedUser = await showUserPicker(
+                context,
+                UserPickerMode.friendsOnly,
+              );
+              if (selectedUser == null) return;
 
-          if (!mounted) return;
-          final chatId = await appController.createOrGetDirectChat(
-            currentUserId: user.id,
-            currentUserName: user.name,
-            otherUserId: selectedUser.id,
-            otherUserName: selectedUser.name,
+              if (!mounted) return;
+              final chatId = await appController.createOrGetDirectChat(
+                currentUserId: user.id,
+                currentUserName: user.name,
+                otherUserId: selectedUser.id,
+                otherUserName: selectedUser.name,
+              );
+
+              if (!mounted) return;
+              context.push('/chats/$chatId');
+            },
           );
-
-          if (!mounted) return;
-          context.push('/chats/$chatId');
         },
       ),
     );
