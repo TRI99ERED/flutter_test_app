@@ -1,5 +1,6 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:test_app/src/core/resources/app_icons.dart';
 import 'package:test_app/src/core/widgets/controller_listener.dart';
 import 'package:test_app/src/features/app/app_scope.dart';
 import 'package:test_app/src/features/home_screen/widgets/chats.dart';
@@ -7,6 +8,7 @@ import 'package:test_app/src/features/home_screen/widgets/friends.dart';
 import 'package:test_app/src/features/home_screen/widgets/settings.dart';
 import 'package:test_app/src/router/routes.dart';
 import 'package:test_app/src/widgets/common/app_loader.dart';
+import 'package:test_app/src/widgets/common/app_tap_bar.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -55,12 +57,38 @@ class _HomeScreenState extends State<HomeScreen> {
       child: ValueListenableBuilder(
         valueListenable: _selectedTabIndex,
         builder: (context, value, child) {
-          return switch (_selectedTabIndex.value) {
-            0 => Chats(selectedTabIndex: _selectedTabIndex),
-            1 => Friends(selectedTabIndex: _selectedTabIndex),
-            2 => Settings(selectedTabIndex: _selectedTabIndex),
-            _ => SizedBox.shrink(),
-          };
+          return Scaffold(
+            appBar: switch (value) {
+              0 => const ChatsAppBar(),
+              1 => const FriendsAppBar(),
+              2 => const SettingsAppBar(),
+              _ => null,
+            },
+            bottomNavigationBar: ValueListenableBuilder(
+              valueListenable: _selectedTabIndex,
+              builder: (context, value, child) {
+                return AppTapBar(
+                  tabCount: 3,
+                  selectedIndex: value,
+                  tabTitles: ['Chats', 'Friends', 'Settings'],
+                  tabIcons: [
+                    AppIcons.chat,
+                    AppIcons.profile,
+                    AppIcons.settings,
+                  ],
+                  onTabSelected: (value) {
+                    _selectedTabIndex.value = value;
+                  },
+                );
+              },
+            ),
+            body: switch (_selectedTabIndex.value) {
+              0 => Chats(selectedTabIndex: _selectedTabIndex),
+              1 => Friends(selectedTabIndex: _selectedTabIndex),
+              2 => Settings(selectedTabIndex: _selectedTabIndex),
+              _ => SizedBox.shrink(),
+            },
+          );
         },
       ),
     );

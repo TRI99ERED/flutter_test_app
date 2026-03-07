@@ -982,9 +982,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: AppCardSmall(
                     title: 'Title',
                     subtitle: 'Subtitle',
-                    buttonText: 'Button',
+                    rightButtonText: 'Button',
                     image: const PlaceholderImage(),
-                    onPressed: () => debugPrint('Button pressed'),
+                    onPressedRight: () => debugPrint('Button pressed'),
                   ),
                 ),
               ),
@@ -996,7 +996,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     title: 'Title',
                     subtitle: 'Subtitle',
                     image: const PlaceholderImage(),
-                    onPressed: () => debugPrint('Button pressed'),
+                    onPressedRight: () => debugPrint('Button pressed'),
                   ),
                 ),
               ),
@@ -1018,23 +1018,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: AppCardSmall(
                     title: 'Title',
                     subtitle: 'Subtitle',
-                    buttonText: 'Button',
+                    rightButtonText: 'Button',
                     avatar: const PlaceholderAvatar(size: AvatarSize.small),
                     onAvatarPressed: () => debugPrint('Avatar button pressed'),
-                    onPressed: () => debugPrint('Button pressed'),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              Center(
-                child: SizedBox(
-                  width: 300,
-                  child: AppCardSmall(
-                    title: 'Title',
-                    subtitle: 'Subtitle',
-                    avatar: const PlaceholderAvatar(size: AvatarSize.small),
-                    onAvatarPressed: () => debugPrint('Avatar button pressed'),
-                    onPressed: () => debugPrint('Button pressed'),
+                    onPressedRight: () => debugPrint('Button pressed'),
                   ),
                 ),
               ),
@@ -1047,6 +1034,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     subtitle: 'Subtitle',
                     avatar: const PlaceholderAvatar(size: AvatarSize.small),
                     onAvatarPressed: () => debugPrint('Avatar button pressed'),
+                    onPressedRight: () => debugPrint('Button pressed'),
                   ),
                 ),
               ),
@@ -1057,25 +1045,23 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: AppCardSmall(
                     title: 'Title',
                     subtitle: 'Subtitle',
-                    buttonText: 'Button',
+                    avatar: const PlaceholderAvatar(size: AvatarSize.small),
+                    onAvatarPressed: () => debugPrint('Avatar button pressed'),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Center(
+                child: SizedBox(
+                  width: 300,
+                  child: AppCardSmall(
+                    title: 'Title',
+                    subtitle: 'Subtitle',
+                    rightButtonText: 'Button',
                     icon: AppIcons.heartFilled,
                     onIconButtonPressed: () =>
                         debugPrint('Icon button pressed'),
-                    onPressed: () => debugPrint('Button pressed'),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              Center(
-                child: SizedBox(
-                  width: 300,
-                  child: AppCardSmall(
-                    title: 'Title',
-                    subtitle: 'Subtitle',
-                    icon: AppIcons.heartFilled,
-                    onIconButtonPressed: () =>
-                        debugPrint('Icon button pressed'),
-                    onPressed: () => debugPrint('Button pressed'),
+                    onPressedRight: () => debugPrint('Button pressed'),
                   ),
                 ),
               ),
@@ -1089,6 +1075,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     icon: AppIcons.heartFilled,
                     onIconButtonPressed: () =>
                         debugPrint('Icon button pressed'),
+                    onPressedRight: () => debugPrint('Button pressed'),
                   ),
                 ),
               ),
@@ -1099,8 +1086,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: AppCardSmall(
                     title: 'Title',
                     subtitle: 'Subtitle',
-                    buttonText: 'Button',
-                    onPressed: () => debugPrint('Button pressed'),
+                    icon: AppIcons.heartFilled,
+                    onIconButtonPressed: () =>
+                        debugPrint('Icon button pressed'),
                   ),
                 ),
               ),
@@ -1111,7 +1099,19 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: AppCardSmall(
                     title: 'Title',
                     subtitle: 'Subtitle',
-                    onPressed: () => debugPrint('Button pressed'),
+                    rightButtonText: 'Button',
+                    onPressedRight: () => debugPrint('Button pressed'),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Center(
+                child: SizedBox(
+                  width: 300,
+                  child: AppCardSmall(
+                    title: 'Title',
+                    subtitle: 'Subtitle',
+                    onPressedRight: () => debugPrint('Button pressed'),
                   ),
                 ),
               ),

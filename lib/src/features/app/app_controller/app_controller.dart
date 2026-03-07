@@ -47,7 +47,7 @@ final class AppController extends BaseController<AppState> {
         password: password,
         name: name,
       );
-      await _firestoreRepository.createUser(user);
+      await _firestoreRepository.createUser(user: user);
       setState(AppState.idle(message: 'Registration successful', user: user));
     } catch (error, stackTrace) {
       setState(
@@ -214,7 +214,7 @@ final class AppController extends BaseController<AppState> {
   }
 
   Stream<List<Message>> watchMessagesForChat(String chatId) {
-    return _firestoreRepository.watchMessagesForChat(chatId);
+    return _firestoreRepository.watchMessagesForChat(chatId: chatId);
   }
 
   Future<void> createMessage({
@@ -242,7 +242,7 @@ final class AppController extends BaseController<AppState> {
   }
 
   Stream<int> watchChatUnreadCount(String chatId) {
-    return _firestoreRepository.watchChatUnreadCount(chatId);
+    return _firestoreRepository.watchChatUnreadCount(chatId: chatId);
   }
 
   Future<void> updateChatUnreadCount({
@@ -252,6 +252,76 @@ final class AppController extends BaseController<AppState> {
     return _firestoreRepository.updateChatUnreadCount(
       chatId: chatId,
       unreadCount: unreadCount,
+    );
+  }
+
+  Stream<List<AuthorizedUser>> watchFriendsForUser(String userId) {
+    return _firestoreRepository.watchFriendsForUser(userId: userId);
+  }
+
+  Future<void> sendFriendRequest(
+    String currentUserId,
+    String friendUserId,
+  ) async {
+    return _firestoreRepository.sendFriendRequest(
+      currentUserId: currentUserId,
+      friendUserId: friendUserId,
+    );
+  }
+
+  Stream<List<AuthorizedUser>> watchFriendIncomingRequestsForUser(
+    String userId,
+  ) {
+    return _firestoreRepository.watchFriendIncomingRequestsForUser(
+      userId: userId,
+    );
+  }
+
+  Stream<List<AuthorizedUser>> watchFriendOutgoingRequestsForUser(
+    String userId,
+  ) {
+    return _firestoreRepository.watchFriendOutgoingRequestsForUser(
+      userId: userId,
+    );
+  }
+
+  Future<void> acceptFriendRequest({
+    required String currentUserId,
+    required String friendUserId,
+  }) async {
+    return _firestoreRepository.acceptFriendRequest(
+      currentUserId: currentUserId,
+      friendUserId: friendUserId,
+    );
+  }
+
+  Future<void> declineFriendRequest({
+    required String currentUserId,
+    required String friendUserId,
+  }) async {
+    return _firestoreRepository.declineFriendRequest(
+      currentUserId: currentUserId,
+      friendUserId: friendUserId,
+    );
+  }
+
+  Future<void> cancelFriendRequest({
+    required String currentUserId,
+    required String friendUserId,
+  }) async {
+    return _firestoreRepository.cancelFriendRequest(
+      currentUserId: currentUserId,
+      friendUserId: friendUserId,
+    );
+  }
+
+  Future<void> removeFriend({
+    required String currentUserId,
+    required String friendUserId,
+  }) async {
+    return _firestoreRepository.removeFriend(
+      currentUserId: currentUserId,
+      friendUserId: friendUserId,
     );
   }
 

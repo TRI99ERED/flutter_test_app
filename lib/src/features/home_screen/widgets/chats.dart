@@ -4,13 +4,13 @@ import 'package:test_app/src/core/resources/app_icons.dart';
 import 'package:test_app/src/features/app/app_scope.dart';
 import 'package:test_app/src/features/app/data/models/chat_model.dart';
 import 'package:test_app/src/features/app/data/models/user_model.dart';
-import 'package:test_app/src/widgets/common/app_button.dart';
+import 'package:test_app/src/widgets/common/empty_state.dart';
+import 'package:test_app/src/widgets/common/error_state.dart';
+import 'package:test_app/src/features/home_screen/widgets/user_picker.dart';
 import 'package:test_app/src/widgets/common/app_list_item.dart';
-import 'package:test_app/src/widgets/common/app_list_title.dart';
 import 'package:test_app/src/widgets/common/app_loader.dart';
 import 'package:test_app/src/widgets/common/app_nav_bar.dart';
 import 'package:test_app/src/widgets/common/app_search_bar.dart';
-import 'package:test_app/src/widgets/common/app_tap_bar.dart';
 import 'package:test_app/src/widgets/common/placeholders.dart';
 import 'package:test_app/src/widgets/common/styles.dart';
 
@@ -26,80 +26,6 @@ class Chats extends StatefulWidget {
 class _ChatsState extends State<Chats> {
   final _searchQuery = ValueNotifier<String>('');
 
-  Future<AuthorizedUser?> _showUserPicker(
-    BuildContext context,
-    AuthorizedUser currentUser,
-  ) async {
-    return await showDialog<AuthorizedUser>(
-      context: context,
-      barrierColor: Colors.black.withAlpha(216),
-      builder: (context) {
-        final usersStream = context.appController.watchAllUsers();
-
-        return Center(
-          child: SizedBox(
-            width: 200,
-            height: 300,
-            child: Container(
-              padding: const EdgeInsets.all(spacing16),
-              decoration: BoxDecoration(
-                color: LightColor.lightest.color,
-                borderRadius: const BorderRadius.all(Radius.circular(16)),
-              ),
-              child: Center(
-                child: Column(
-                  children: [
-                    AppListTitle(title: 'Select a user'),
-                    Expanded(
-                      child: StreamBuilder<List<AuthorizedUser>>(
-                        stream: usersStream,
-                        builder: (context, snapshot) {
-                          if (snapshot.connectionState ==
-                              ConnectionState.waiting) {
-                            return const Center(
-                              child: CircularProgressIndicator(),
-                            );
-                          } else if (snapshot.hasError) {
-                            return Text(
-                              'Error loading users: ${snapshot.error}',
-                            );
-                          }
-
-                          final users = (snapshot.data ?? [])
-                              .where((user) => user.id != currentUser.id)
-                              .toList();
-                          if (users.isEmpty) {
-                            return const Text('No users found');
-                          }
-
-                          return ListView.builder(
-                            itemCount: users.length,
-                            itemBuilder: (context, index) {
-                              final user = users[index];
-                              return AppListItem(
-                                title: user.name,
-                                description: '@${user.handle}',
-                                onPressed: () => context.pop(user),
-                              );
-                            },
-                          );
-                        },
-                      ),
-                    ),
-                    AppButtonPrimary(
-                      text: 'Cancel',
-                      onPressed: () => context.pop(),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final user = context.appState.user;
@@ -108,206 +34,142 @@ class _ChatsState extends State<Chats> {
       return Scaffold(body: const SizedBox.shrink());
     }
 
-    return Scaffold(
-      appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(kToolbarHeight),
-        child: SafeArea(
-          child: AppNavBar(
-            title: 'Chats',
-            leftText: 'Edit',
-            rightIcon: AppIcons.create,
-            onPressedLeft: () {},
-            onPressedRight: () async {
-              final user = context.appState.user as AuthorizedUser;
-              final selectedUser = await _showUserPicker(context, user);
-              if (selectedUser == null) return;
-
-              if (!mounted) return;
-              final appController = context.appController;
-              final chatId = await appController.createOrGetDirectChat(
-                currentUserId: user.id,
-                currentUserName: user.name,
-                otherUserId: selectedUser.id,
-                otherUserName: selectedUser.name,
-              );
-
-              if (!mounted) return;
-              context.push('/chats/$chatId');
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: spacing8,
+        vertical: spacing16,
+      ),
+      child: Column(
+        children: [
+          AppSearchBar(
+            onChanged: (value) {
+              _searchQuery.value = value;
+            },
+            onSubmitted: (value) {
+              _searchQuery.value = value;
             },
           ),
-        ),
-      ),
-      bottomNavigationBar: ValueListenableBuilder(
-        valueListenable: widget.selectedTabIndex,
-        builder: (context, value, child) {
-          return AppTapBar(
-            tabCount: 3,
-            selectedIndex: value,
-            tabTitles: ['Chats', 'Friends', 'Settings'],
-            tabIcons: [AppIcons.chat, AppIcons.profile, AppIcons.settings],
-            onTabSelected: (value) {
-              widget.selectedTabIndex.value = value;
-            },
-          );
-        },
-      ),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: spacing8,
-          vertical: spacing16,
-        ),
-        child: Column(
-          children: [
-            AppSearchBar(
-              placeholder: 'Search',
-              onChanged: (value) {
-                _searchQuery.value = value;
-              },
-              onSubmitted: (value) {
-                _searchQuery.value = value;
-              },
-            ),
-            Expanded(
-              child: StreamBuilder<List<Chat>>(
-                stream: context.appController.watchChatsForUser(user.id),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(
-                      child: SizedBox(width: 32, child: AppLoader()),
-                    );
-                  } else if (snapshot.hasError) {
-                    return Center(
-                      child: Text(
-                        'Error loading chats: ${snapshot.error}',
-                        style: TextStyle(
-                          fontSize: h4Size,
-                          fontWeight: h4Weight,
-                          color: ErrorColor.dark.color,
-                        ),
-                      ),
-                    );
-                  }
+          Expanded(
+            child: StreamBuilder(
+              stream: context.appController.watchChatsForUser(user.id),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(
+                    child: SizedBox(width: 32, child: AppLoader()),
+                  );
+                } else if (snapshot.hasError) {
+                  return ErrorState(
+                    message: 'Error loading chats: ${snapshot.error}',
+                  );
+                }
 
-                  final chats = snapshot.data ?? const [];
+                final chats = snapshot.data ?? const [];
 
-                  if (chats.isEmpty) {
-                    return Center(
-                      child: Text(
-                        'No chats found',
-                        style: TextStyle(
-                          fontSize: h4Size,
-                          fontWeight: h4Weight,
-                          color: DarkColor.darkest.color,
-                        ),
-                      ),
-                    );
-                  }
+                if (chats.isEmpty) {
+                  return EmptyState(
+                    title: 'No chats found.',
+                    body: 'This is where your chats go.',
+                    buttonText: 'Start a chat',
+                    onButtonPressed: () async {
+                      final user = context.appState.user as AuthorizedUser;
+                      final appController = context.appController;
+                      final selectedUser = await showUserPicker(context, true);
+                      if (selectedUser == null) return;
 
-                  return ValueListenableBuilder(
-                    valueListenable: _searchQuery,
-                    builder: (context, value, child) {
-                      final q = value.trim().toLowerCase();
+                      if (!mounted) return;
+                      final chatId = await appController.createOrGetDirectChat(
+                        currentUserId: user.id,
+                        currentUserName: user.name,
+                        otherUserId: selectedUser.id,
+                        otherUserName: selectedUser.name,
+                      );
 
-                      String otherName(Chat chat) {
-                        final names = chat.participantNames.entries
-                            .where((entry) => entry.key != user.id)
-                            .map((entry) => entry.value.toString())
-                            .toList();
-                        return names.isNotEmpty ? names.first : 'Unknown';
-                      }
+                      if (!mounted) return;
+                      context.push('/chats/$chatId');
+                    },
+                  );
+                }
 
-                      final filteredChats = q.isEmpty
-                          ? chats
-                          : chats.where((chat) {
-                              return otherName(chat).toLowerCase().contains(q);
-                            }).toList();
+                return ValueListenableBuilder(
+                  valueListenable: _searchQuery,
+                  builder: (context, value, child) {
+                    final q = value.trim().toLowerCase();
 
-                      if (filteredChats.isEmpty) {
-                        return Center(
-                          child: Text(
-                            'No chats found',
-                            style: TextStyle(
-                              fontSize: h4Size,
-                              fontWeight: h4Weight,
-                              color: DarkColor.darkest.color,
-                            ),
-                          ),
-                        );
-                      }
-                      return ListView.builder(
-                        itemCount: filteredChats.length,
-                        itemBuilder: (context, index) {
-                          final chat = filteredChats[index];
+                    String otherName(Chat chat) {
+                      final names = chat.participantNames.entries
+                          .where((entry) => entry.key != user.id)
+                          .map((entry) => entry.value.toString())
+                          .toList();
+                      return names.isNotEmpty ? names.first : 'Unknown';
+                    }
 
-                          final messagesStream = context.appController
-                              .watchMessagesForChat(chat.id);
+                    final filteredChats = q.isEmpty
+                        ? chats
+                        : chats.where((chat) {
+                            return otherName(chat).toLowerCase().contains(q);
+                          }).toList();
 
-                          return StreamBuilder(
-                            stream: messagesStream,
-                            builder: (context, snapshot) {
-                              if (snapshot.connectionState ==
-                                  ConnectionState.waiting) {
-                                return const Padding(
-                                  padding: EdgeInsets.symmetric(
-                                    vertical: spacing4,
-                                  ),
-                                  child: SizedBox(
-                                    width: 32,
-                                    child: AppLoader(),
-                                  ),
-                                );
-                              } else if (snapshot.hasError) {
-                                return Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: spacing4,
-                                  ),
-                                  child: Text(
+                    if (filteredChats.isEmpty) {
+                      return const EmptyState(
+                        title: 'No chats found.',
+                        body: 'Try adjusting your search query.',
+                      );
+                    }
+
+                    return ListView.builder(
+                      itemCount: filteredChats.length,
+                      itemBuilder: (context, index) {
+                        final chat = filteredChats[index];
+
+                        final messagesStream = context.appController
+                            .watchMessagesForChat(chat.id);
+
+                        return StreamBuilder(
+                          stream: messagesStream,
+                          builder: (context, snapshot) {
+                            if (snapshot.connectionState ==
+                                ConnectionState.waiting) {
+                              return const Padding(
+                                padding: EdgeInsets.symmetric(
+                                  vertical: spacing4,
+                                ),
+                                child: SizedBox(width: 32, child: AppLoader()),
+                              );
+                            } else if (snapshot.hasError) {
+                              return ErrorState(
+                                message:
                                     'Error loading chat: ${snapshot.error}',
-                                    style: TextStyle(
-                                      fontSize: h1Size,
-                                      fontWeight: h1Weight,
-                                      color: ErrorColor.dark.color,
+                              );
+                            }
+
+                            if (snapshot.data == null ||
+                                snapshot.data!.isEmpty) {
+                              return Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: spacing4,
+                                ),
+                                child: SizedBox(
+                                  height: 72,
+                                  child: AppListItem(
+                                    title: otherName(chat),
+                                    description: 'No messages yet',
+                                    avatar: PlaceholderAvatar(
+                                      size: AvatarSize.small,
                                     ),
+                                    control: AppListItemControl.none,
+                                    onPressed: () {
+                                      context.push('/chats/${chat.id}');
+                                    },
                                   ),
-                                );
-                              }
+                                ),
+                              );
+                            }
 
-                              final lastSenderId =
-                                  snapshot.data?.first.senderId;
+                            final lastSenderId = snapshot.data?.first.senderId;
 
-                              if (lastSenderId != null &&
-                                  lastSenderId != user.id &&
-                                  chat.unreadCount > 0) {
-                                return Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: spacing4,
-                                  ),
-                                  child: SizedBox(
-                                    height: 72,
-                                    child: AppListItem(
-                                      title: otherName(chat),
-                                      description: chat.lastMessage,
-                                      avatar: PlaceholderAvatar(
-                                        size: AvatarSize.small,
-                                      ),
-                                      symbol: chat.unreadCount.toString(),
-                                      control: AppListItemControl.badge,
-                                      onPressed: () async {
-                                        context.push('/chats/${chat.id}');
-
-                                        if (mounted) {
-                                          await context.appController
-                                              .updateChatUnreadCount(
-                                                chatId: chat.id,
-                                                unreadCount: 0,
-                                              );
-                                        }
-                                      },
-                                    ),
-                                  ),
-                                );
-                              }
-
+                            if (lastSenderId != null &&
+                                lastSenderId != user.id &&
+                                chat.unreadCount > 0) {
                               return Padding(
                                 padding: const EdgeInsets.symmetric(
                                   vertical: spacing4,
@@ -320,24 +182,53 @@ class _ChatsState extends State<Chats> {
                                     avatar: PlaceholderAvatar(
                                       size: AvatarSize.small,
                                     ),
-                                    control: AppListItemControl.none,
-                                    onPressed: () {
+                                    symbol: chat.unreadCount.toString(),
+                                    control: AppListItemControl.badge,
+                                    onPressed: () async {
                                       context.push('/chats/${chat.id}');
+
+                                      if (mounted) {
+                                        await context.appController
+                                            .updateChatUnreadCount(
+                                              chatId: chat.id,
+                                              unreadCount: 0,
+                                            );
+                                      }
                                     },
                                   ),
                                 ),
                               );
-                            },
-                          );
-                        },
-                      );
-                    },
-                  );
-                },
-              ),
+                            }
+
+                            return Padding(
+                              padding: const EdgeInsets.symmetric(
+                                vertical: spacing4,
+                              ),
+                              child: SizedBox(
+                                height: 72,
+                                child: AppListItem(
+                                  title: otherName(chat),
+                                  description: chat.lastMessage,
+                                  avatar: PlaceholderAvatar(
+                                    size: AvatarSize.small,
+                                  ),
+                                  control: AppListItemControl.none,
+                                  onPressed: () {
+                                    context.push('/chats/${chat.id}');
+                                  },
+                                ),
+                              ),
+                            );
+                          },
+                        );
+                      },
+                    );
+                  },
+                );
+              },
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -346,5 +237,46 @@ class _ChatsState extends State<Chats> {
   void dispose() {
     _searchQuery.dispose();
     super.dispose();
+  }
+}
+
+class ChatsAppBar extends StatefulWidget implements PreferredSizeWidget {
+  const ChatsAppBar({super.key});
+
+  @override
+  State<ChatsAppBar> createState() => _ChatsAppBarState();
+
+  @override
+  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
+}
+
+class _ChatsAppBarState extends State<ChatsAppBar> {
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: AppNavBar(
+        title: 'Chats',
+        leftText: 'Edit',
+        rightIcon: AppIcons.create,
+        onPressedLeft: () {},
+        onPressedRight: () async {
+          final user = context.appState.user as AuthorizedUser;
+          final appController = context.appController;
+          final selectedUser = await showUserPicker(context, true);
+          if (selectedUser == null) return;
+
+          if (!mounted) return;
+          final chatId = await appController.createOrGetDirectChat(
+            currentUserId: user.id,
+            currentUserName: user.name,
+            otherUserId: selectedUser.id,
+            otherUserName: selectedUser.name,
+          );
+
+          if (!mounted) return;
+          context.push('/chats/$chatId');
+        },
+      ),
+    );
   }
 }

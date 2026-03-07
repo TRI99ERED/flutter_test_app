@@ -173,10 +173,12 @@ class AppCardSmall extends StatelessWidget {
   final IconData? icon;
   final String? title;
   final String? subtitle;
-  final String? buttonText;
+  final String? leftButtonText;
+  final String? rightButtonText;
   final VoidCallback? onIconButtonPressed;
   final VoidCallback? onAvatarPressed;
-  final VoidCallback? onPressed;
+  final VoidCallback? onPressedLeft;
+  final VoidCallback? onPressedRight;
 
   const AppCardSmall({
     super.key,
@@ -185,10 +187,12 @@ class AppCardSmall extends StatelessWidget {
     this.icon,
     this.title,
     this.subtitle,
-    this.buttonText,
+    this.leftButtonText,
+    this.rightButtonText,
     this.onIconButtonPressed,
     this.onAvatarPressed,
-    this.onPressed,
+    this.onPressedLeft,
+    this.onPressedRight,
   }) : assert(
          (icon != null && onIconButtonPressed != null) ||
              (icon == null && onIconButtonPressed == null),
@@ -205,6 +209,16 @@ class AppCardSmall extends StatelessWidget {
              (icon == null && avatar != null && image == null) ||
              (icon == null && avatar == null && image != null),
          'At most one of icon, avatar, or image can be provided',
+       ),
+       assert(
+         (leftButtonText != null && onPressedLeft != null) ||
+             (leftButtonText == null && onPressedLeft == null),
+         'leftButtonText and onPressedLeft must both be provided or both be null',
+       ),
+       assert(
+         (rightButtonText != null && onPressedRight != null) ||
+             (rightButtonText == null && onPressedRight == null),
+         'rightButtonText and onPressedRight must both be provided or both be null',
        );
 
   @override
@@ -215,6 +229,7 @@ class AppCardSmall extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
       ),
       child: Row(
+        spacing: spacing8,
         children: [
           if (image != null)
             SizedBox(
@@ -274,16 +289,30 @@ class AppCardSmall extends StatelessWidget {
               ),
             ),
           ),
-          if (onPressed != null && buttonText != null)
+          if (onPressedLeft != null && leftButtonText != null)
             Padding(
               padding: EdgeInsets.all(spacing8),
-              child: AppButtonSecondary(text: buttonText, onPressed: onPressed),
+              child: AppButtonSecondary(
+                text: leftButtonText,
+                onPressed: onPressedLeft,
+              ),
             ),
-          if (onPressed != null && buttonText == null)
+          if (onPressedRight != null && rightButtonText != null)
+            Padding(
+              padding: EdgeInsets.all(spacing8),
+              child: AppButtonSecondary(
+                text: rightButtonText,
+                onPressed: onPressedRight,
+              ),
+            ),
+          if (onPressedRight != null &&
+              rightButtonText == null &&
+              onPressedLeft == null &&
+              leftButtonText == null)
             Padding(
               padding: EdgeInsets.all(spacing8),
               child: IconButton(
-                onPressed: onPressed,
+                onPressed: onPressedRight,
                 icon: Icon(
                   AppIcons.arrowRight,
                   size: 12,

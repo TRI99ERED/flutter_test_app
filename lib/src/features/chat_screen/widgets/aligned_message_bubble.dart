@@ -29,15 +29,20 @@ class AlignedMessageBubble extends StatelessWidget {
           : Alignment.centerLeft,
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: spacing4),
-        child: AppMessageBubble(
-          name: isFirstInSequence ? messages[index].senderName : null,
-          body: messages[index].body,
-          isLastInSequence: isLastInSequence,
-          messageType:
-              messages[index].senderId ==
-                  (context.appState.user as AuthorizedUser).id
-              ? MessageType.sent
-              : MessageType.received,
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxWidth: MediaQuery.sizeOf(context).width * 0.5,
+          ),
+          child: AppMessageBubble(
+            name: isFirstInSequence ? messages[index].senderName : null,
+            body: messages[index].body,
+            isLastInSequence: isLastInSequence,
+            messageType:
+                messages[index].senderId ==
+                    (context.appState.user as AuthorizedUser).id
+                ? MessageType.sent
+                : MessageType.received,
+          ),
         ),
       ),
     );

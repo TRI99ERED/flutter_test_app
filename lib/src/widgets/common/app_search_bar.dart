@@ -4,7 +4,7 @@ import 'package:test_app/src/widgets/common/styles.dart';
 
 class AppSearchBar extends StatefulWidget {
   final String? text;
-  final String? placeholder;
+  final String placeholder;
   final ValueChanged<String>? onChanged;
   final ValueChanged<String>? onSubmitted;
   final TextEditingController? controller;
@@ -12,7 +12,7 @@ class AppSearchBar extends StatefulWidget {
   const AppSearchBar({
     super.key,
     this.text,
-    this.placeholder,
+    this.placeholder = 'Search',
     this.onChanged,
     this.onSubmitted,
     this.controller,
@@ -69,7 +69,7 @@ class _AppSearchBarState extends State<AppSearchBar> {
         fontWeight: bMWeight,
       ),
       decoration: InputDecoration(
-        hintText: widget.placeholder ?? 'Search',
+        hintText: widget.placeholder,
         hintStyle: TextStyle(
           color: DarkColor.lightest.color,
           fontSize: bMSize,

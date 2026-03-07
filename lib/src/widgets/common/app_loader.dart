@@ -14,11 +14,17 @@ class AppLoader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AspectRatio(
-      aspectRatio: 1,
-      child: CustomPaint(
-        size: const Size(double.infinity, 8),
-        painter: _AppLoaderPainter(value: value),
+    return Center(
+      child: SizedBox(
+        width: 32,
+        height: 32,
+        child: AspectRatio(
+          aspectRatio: 1,
+          child: CustomPaint(
+            size: const Size(32, 32),
+            painter: _AppLoaderPainter(value: value),
+          ),
+        ),
       ),
     );
   }

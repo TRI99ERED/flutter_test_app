@@ -1,0 +1,29 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Flutter Debug - Device 1",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "args": []
+    },
+    {
+      "name": "Flutter Debug - Device 2",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "args": []
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Flutter Multi-Device Debug",
+      "configurations": [
+        "Flutter Debug - Device 1",
+        "Flutter Debug - Device 2"
+      ],
+      "preLaunchTask": ""
+    }
+  ]
+}

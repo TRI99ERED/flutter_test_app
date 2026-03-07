@@ -1,28 +1,117 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_functions/cloud_functions.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:test_app/src/features/app/data/models/user_model.dart';
 import 'package:test_app/src/features/app/data/repositories/firebase/firebase_auth_repository/ifirebase_auth_repository.dart';
 
 class FirebaseAuthRepositoryImpl implements IFirebaseAuthRepository {
-  FirebaseFunctions get _functions =>
-      FirebaseFunctions.instanceFor(region: 'europe-central2');
-
   @override
   Stream<UserEntity> get authStateChanges {
-    // Wrap the Firebase stream to suppress non-fatal threading errors on Windows
     return FirebaseAuth.instance
         .authStateChanges()
         .map((user) => _mapFirebaseUser(user))
         .handleError((Object error) {
-          print('Auth state stream error (non-fatal): $error');
-          // Don't re-throw - just suppress the error and continue
+          debugPrint('Auth state stream error (non-fatal): $error');
         });
+  }
+
+  FirebaseFunctions get _functions =>
+      FirebaseFunctions.instanceFor(region: 'europe-central2');
+
+  @override
+  Future<void> deleteAccount() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      throw Exception('No user is currently signed in');
+    }
+
+    try {
+      await user.delete();
+    } on FirebaseAuthException catch (e) {
+      throw _handleAuthException(e);
+    }
   }
 
   @override
   Future<UserEntity> getCurrentUser() async {
     final user = FirebaseAuth.instance.currentUser;
     return _mapFirebaseUser(user);
+  }
+
+  @override
+  Future<bool> isEmailVerified() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      return false;
+    }
+    await user.reload();
+    return FirebaseAuth.instance.currentUser?.emailVerified ?? false;
+  }
+
+  @override
+  Future<void> reauthenticateWithPassword({required String password}) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null || user.email == null) {
+      throw Exception('No user is currently signed in');
+    }
+
+    try {
+      final credential = EmailAuthProvider.credential(
+        email: user.email!,
+        password: password,
+      );
+      await user.reauthenticateWithCredential(credential);
+    } on FirebaseAuthException catch (e) {
+      throw _handleAuthException(e);
+    }
+  }
+
+  @override
+  Future<void> resendEmailVerification() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      throw Exception('No user is currently signed in');
+    }
+
+    try {
+      await _functions.httpsCallable('sendEmailVerificationCode').call();
+    } on FirebaseFunctionsException catch (e) {
+      throw _handleFunctionsException(e);
+    } on FirebaseAuthException catch (e) {
+      throw _handleAuthException(e);
+    }
+  }
+
+  @override
+  Future<void> sendEmailVerification() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      throw Exception('No user is currently signed in');
+    }
+
+    try {
+      await _functions.httpsCallable('sendEmailVerificationCode').call();
+    } on FirebaseFunctionsException catch (e) {
+      throw _handleFunctionsException(e);
+    } on FirebaseAuthException catch (e) {
+      throw _handleAuthException(e);
+    }
+  }
+
+  @override
+  Future<void> sendPasswordResetEmail({required String email}) async {
+    try {
+      await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
+    } on FirebaseAuthException catch (e) {
+      throw _handleAuthException(e);
+    }
+  }
+
+  @override
+  Future<AuthorizedUser> signInWithApple() async {
+    throw UnimplementedError(
+      'Apple Sign-In requires sign_in_with_apple package',
+    );
   }
 
   @override
@@ -42,6 +131,23 @@ class FirebaseAuthRepositoryImpl implements IFirebaseAuthRepository {
   }
 
   @override
+  Future<AuthorizedUser> signInWithFacebook() async {
+    throw UnimplementedError(
+      'Facebook Sign-In requires flutter_facebook_auth package',
+    );
+  }
+
+  @override
+  Future<AuthorizedUser> signInWithGoogle() async {
+    throw UnimplementedError('Google Sign-In requires google_sign_in package');
+  }
+
+  @override
+  Future<void> signOut() async {
+    await FirebaseAuth.instance.signOut();
+  }
+
+  @override
   Future<AuthorizedUser> signUpWithEmailAndPassword({
     required String email,
     required String password,
@@ -53,64 +159,14 @@ class FirebaseAuthRepositoryImpl implements IFirebaseAuthRepository {
 
       final user = credential.user;
       if (user != null && name.isNotEmpty) {
-        // Try to update display name, but don't block if it fails
         try {
           await user.updateDisplayName(name);
         } catch (e) {
-          // Silently fail - the account is already created
+          debugPrint('Failed to set display name: $e');
         }
       }
 
-      // Return the current authenticated user
       return _mapFirebaseUserToAuthorized(FirebaseAuth.instance.currentUser!);
-    } on FirebaseAuthException catch (e) {
-      throw _handleAuthException(e);
-    }
-  }
-
-  @override
-  Future<AuthorizedUser> signInWithGoogle() async {
-    // TODO: Implement Google Sign-In
-    // You'll need to add google_sign_in package and configure it
-    // Example:
-    // final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
-    // final GoogleSignInAuthentication googleAuth = await googleUser!.authentication;
-    // final credential = GoogleAuthProvider.credential(
-    //   accessToken: googleAuth.accessToken,
-    //   idToken: googleAuth.idToken,
-    // );
-    // final userCredential = await _auth.signInWithCredential(credential);
-    // return _mapFirebaseUserToAuthorized(userCredential.user!);
-    throw UnimplementedError('Google Sign-In requires google_sign_in package');
-  }
-
-  @override
-  Future<AuthorizedUser> signInWithFacebook() async {
-    // TODO: Implement Facebook Sign-In
-    // You'll need to add flutter_facebook_auth package and configure it
-    throw UnimplementedError(
-      'Facebook Sign-In requires flutter_facebook_auth package',
-    );
-  }
-
-  @override
-  Future<AuthorizedUser> signInWithApple() async {
-    // TODO: Implement Apple Sign-In
-    // You'll need to add sign_in_with_apple package and configure it
-    throw UnimplementedError(
-      'Apple Sign-In requires sign_in_with_apple package',
-    );
-  }
-
-  @override
-  Future<void> signOut() async {
-    await FirebaseAuth.instance.signOut();
-  }
-
-  @override
-  Future<void> sendPasswordResetEmail({required String email}) async {
-    try {
-      await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
     } on FirebaseAuthException catch (e) {
       throw _handleAuthException(e);
     }
@@ -141,64 +197,6 @@ class FirebaseAuthRepositoryImpl implements IFirebaseAuthRepository {
   }
 
   @override
-  Future<void> deleteAccount() async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
-      throw Exception('No user is currently signed in');
-    }
-
-    try {
-      await user.delete();
-    } on FirebaseAuthException catch (e) {
-      throw _handleAuthException(e);
-    }
-  }
-
-  @override
-  Future<void> reauthenticateWithPassword({required String password}) async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null || user.email == null) {
-      throw Exception('No user is currently signed in');
-    }
-
-    try {
-      final credential = EmailAuthProvider.credential(
-        email: user.email!,
-        password: password,
-      );
-      await user.reauthenticateWithCredential(credential);
-    } on FirebaseAuthException catch (e) {
-      throw _handleAuthException(e);
-    }
-  }
-
-  @override
-  Future<void> sendEmailVerification() async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
-      throw Exception('No user is currently signed in');
-    }
-
-    try {
-      await _functions.httpsCallable('sendEmailVerificationCode').call();
-    } on FirebaseFunctionsException catch (e) {
-      throw _handleFunctionsException(e);
-    } on FirebaseAuthException catch (e) {
-      throw _handleAuthException(e);
-    }
-  }
-
-  @override
-  Future<bool> isEmailVerified() async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
-      return false;
-    }
-    await user.reload();
-    return FirebaseAuth.instance.currentUser?.emailVerified ?? false;
-  }
-
-  @override
   Future<void> verifyEmailCode({required String code}) async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
@@ -210,7 +208,6 @@ class FirebaseAuthRepositoryImpl implements IFirebaseAuthRepository {
         'code': code,
       });
 
-      // Refresh the local auth user after backend marks email as verified.
       await user.reload();
     } on FirebaseFunctionsException catch (e) {
       throw _handleFunctionsException(e);
@@ -221,44 +218,6 @@ class FirebaseAuthRepositoryImpl implements IFirebaseAuthRepository {
     }
   }
 
-  @override
-  Future<void> resendEmailVerification() async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
-      throw Exception('No user is currently signed in');
-    }
-
-    try {
-      await _functions.httpsCallable('sendEmailVerificationCode').call();
-    } on FirebaseFunctionsException catch (e) {
-      throw _handleFunctionsException(e);
-    } on FirebaseAuthException catch (e) {
-      throw _handleAuthException(e);
-    }
-  }
-
-  /// Maps Firebase User to UserEntity
-  UserEntity _mapFirebaseUser(User? user) {
-    if (user == null) {
-      return const UnauthorizedUser();
-    }
-    return _mapFirebaseUserToAuthorized(user);
-  }
-
-  /// Maps Firebase User to AuthorizedUser
-  AuthorizedUser _mapFirebaseUserToAuthorized(User user) {
-    return AuthorizedUser(
-      id: user.uid,
-      name: user.displayName ?? 'user_${user.uid.substring(0, 8)}',
-      email: user.email ?? '',
-      handle: user.displayName != null
-          ? user.displayName!.toLowerCase().replaceAll(' ', '')
-          : 'user_${user.uid.substring(0, 8)}',
-      avatarUrl: user.photoURL ?? '',
-    );
-  }
-
-  /// Handles Firebase Auth exceptions and converts them to more readable messages
   Exception _handleAuthException(FirebaseAuthException e) {
     switch (e.code) {
       case 'user-not-found':
@@ -312,5 +271,24 @@ class FirebaseAuthRepositoryImpl implements IFirebaseAuthRepository {
               'A verification service error occurred. Please try again.',
         );
     }
+  }
+
+  UserEntity _mapFirebaseUser(User? user) {
+    if (user == null) {
+      return const UnauthorizedUser();
+    }
+    return _mapFirebaseUserToAuthorized(user);
+  }
+
+  AuthorizedUser _mapFirebaseUserToAuthorized(User user) {
+    return AuthorizedUser(
+      id: user.uid,
+      name: user.displayName ?? 'user_${user.uid.substring(0, 8)}',
+      email: user.email ?? '',
+      handle: user.displayName != null
+          ? user.displayName!.toLowerCase().replaceAll(' ', '')
+          : 'user_${user.uid.substring(0, 8)}',
+      avatarUrl: user.photoURL ?? '',
+    );
   }
 }

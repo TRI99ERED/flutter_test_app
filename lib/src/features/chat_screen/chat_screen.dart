@@ -7,6 +7,8 @@ import 'package:test_app/src/features/chat_screen/widgets/aligned_message_bubble
 import 'package:test_app/src/widgets/common/app_loader.dart';
 import 'package:test_app/src/widgets/common/app_message_input.dart';
 import 'package:test_app/src/widgets/common/app_nav_bar.dart';
+import 'package:test_app/src/widgets/common/empty_state.dart';
+import 'package:test_app/src/widgets/common/error_state.dart';
 import 'package:test_app/src/widgets/common/placeholders.dart';
 import 'package:test_app/src/widgets/common/styles.dart';
 
@@ -64,29 +66,15 @@ class _ChatScreenState extends State<ChatScreen> {
                           child: SizedBox(width: 32, child: AppLoader()),
                         );
                       } else if (snapshot.hasError) {
-                        return Text(
-                          'Error loading messages: ${snapshot.error}',
-                          style: TextStyle(
-                            fontSize: h1Size,
-                            fontWeight: h1Weight,
-                            color: ErrorColor.dark.color,
-                          ),
+                        return ErrorState(
+                          message: 'Error loading messages: ${snapshot.error}',
                         );
                       }
 
                       final messages = snapshot.data ?? [];
 
                       if (messages.isEmpty) {
-                        return Center(
-                          child: Text(
-                            'No messages yet',
-                            style: TextStyle(
-                              fontSize: h1Size,
-                              fontWeight: h1Weight,
-                              color: DarkColor.darkest.color,
-                            ),
-                          ),
-                        );
+                        return const EmptyState(title: 'No messages yet');
                       }
 
                       return ListView.builder(
@@ -140,25 +128,37 @@ class _ChatScreenState extends State<ChatScreen> {
               AppMessageInput(
                 onMorePressed: () {},
                 onSendPressed: (value) async {
-                  context.appController.createMessage(
+                  final user = context.appState.user as AuthorizedUser;
+                  await context.appController.createMessage(
                     chatId: widget.chatId,
-                    senderId: (context.appState.user as AuthorizedUser).id,
-                    senderName: (context.appState.user as AuthorizedUser).name,
+                    senderId: user.id,
+                    senderName: user.name,
                     body: value,
                   );
 
-                  context.appController.updateChatLastMessage(
+                  await context.appController.updateChatLastMessage(
                     chatId: widget.chatId,
                     lastMessage: value,
                   );
 
-                  context.appController.updateChatUnreadCount(
-                    chatId: widget.chatId,
-                    unreadCount: await context.appController
-                        .watchChatUnreadCount(widget.chatId)
-                        .first
-                        .then((count) => count + 1),
+                  final chat = await context.appController
+                      .watchChatsForUser(user.id)
+                      .first;
+                  final currentChat = chat.firstWhere(
+                    (c) => c.id == widget.chatId,
                   );
+
+                  for (final participantId in currentChat.participants) {
+                    if (participantId != user.id) {
+                      final unreadCount = await context.appController
+                          .watchChatUnreadCount(widget.chatId)
+                          .first;
+                      await context.appController.updateChatUnreadCount(
+                        chatId: widget.chatId,
+                        unreadCount: unreadCount + 1,
+                      );
+                    }
+                  }
                 },
               ),
             ],
