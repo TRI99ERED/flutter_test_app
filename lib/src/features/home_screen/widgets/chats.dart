@@ -4,7 +4,9 @@ import 'package:test_app/src/core/resources/app_icons.dart';
 import 'package:test_app/src/features/app/app_scope.dart';
 import 'package:test_app/src/features/app/data/models/chat_model.dart';
 import 'package:test_app/src/features/app/data/models/user_model.dart';
+import 'package:test_app/src/widgets/common/app_button.dart';
 import 'package:test_app/src/widgets/common/app_list_item.dart';
+import 'package:test_app/src/widgets/common/app_list_title.dart';
 import 'package:test_app/src/widgets/common/app_loader.dart';
 import 'package:test_app/src/widgets/common/app_nav_bar.dart';
 import 'package:test_app/src/widgets/common/app_search_bar.dart';
@@ -34,45 +36,65 @@ class _ChatsState extends State<Chats> {
       builder: (context) {
         final usersStream = context.appController.watchAllUsers();
 
-        return AlertDialog(
-          title: const Text('Select User'),
-          content: SizedBox(
-            width: double.maxFinite,
-            child: StreamBuilder<List<AuthorizedUser>>(
-              stream: usersStream,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                } else if (snapshot.hasError) {
-                  return Text('Error loading users: ${snapshot.error}');
-                }
+        return Center(
+          child: SizedBox(
+            width: 200,
+            height: 300,
+            child: Container(
+              padding: const EdgeInsets.all(spacing16),
+              decoration: BoxDecoration(
+                color: LightColor.lightest.color,
+                borderRadius: const BorderRadius.all(Radius.circular(16)),
+              ),
+              child: Center(
+                child: Column(
+                  children: [
+                    AppListTitle(title: 'Select a user'),
+                    Expanded(
+                      child: StreamBuilder<List<AuthorizedUser>>(
+                        stream: usersStream,
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
+                            return const Center(
+                              child: CircularProgressIndicator(),
+                            );
+                          } else if (snapshot.hasError) {
+                            return Text(
+                              'Error loading users: ${snapshot.error}',
+                            );
+                          }
 
-                final users = (snapshot.data ?? [])
-                    .where((user) => user.id != currentUser.id)
-                    .toList();
-                if (users.isEmpty) {
-                  return const Text('No users found');
-                }
+                          final users = (snapshot.data ?? [])
+                              .where((user) => user.id != currentUser.id)
+                              .toList();
+                          if (users.isEmpty) {
+                            return const Text('No users found');
+                          }
 
-                return ListView.builder(
-                  itemCount: users.length,
-                  itemBuilder: (context, index) {
-                    final user = users[index];
-                    return ListTile(
-                      title: Text(user.name),
-                      onTap: () => context.pop(user),
-                    );
-                  },
-                );
-              },
+                          return ListView.builder(
+                            itemCount: users.length,
+                            itemBuilder: (context, index) {
+                              final user = users[index];
+                              return AppListItem(
+                                title: user.name,
+                                description: '@${user.handle}',
+                                onPressed: () => context.pop(user),
+                              );
+                            },
+                          );
+                        },
+                      ),
+                    ),
+                    AppButtonPrimary(
+                      text: 'Cancel',
+                      onPressed: () => context.pop(),
+                    ),
+                  ],
+                ),
+              ),
             ),
           ),
-          actions: [
-            TextButton(
-              onPressed: () => context.pop(),
-              child: const Text('Cancel'),
-            ),
-          ],
         );
       },
     );
@@ -87,28 +109,33 @@ class _ChatsState extends State<Chats> {
     }
 
     return Scaffold(
-      appBar: AppNavBar(
-        title: 'Chats',
-        leftText: 'Edit',
-        rightIcon: AppIcons.create,
-        onPressedLeft: () {},
-        onPressedRight: () async {
-          final user = context.appState.user as AuthorizedUser;
-          final selectedUser = await _showUserPicker(context, user);
-          if (selectedUser == null) return;
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(kToolbarHeight),
+        child: SafeArea(
+          child: AppNavBar(
+            title: 'Chats',
+            leftText: 'Edit',
+            rightIcon: AppIcons.create,
+            onPressedLeft: () {},
+            onPressedRight: () async {
+              final user = context.appState.user as AuthorizedUser;
+              final selectedUser = await _showUserPicker(context, user);
+              if (selectedUser == null) return;
 
-          if (!mounted) return;
-          final appController = context.appController;
-          final chatId = await appController.createOrGetDirectChat(
-            currentUserId: user.id,
-            currentUserName: user.name,
-            otherUserId: selectedUser.id,
-            otherUserName: selectedUser.name,
-          );
+              if (!mounted) return;
+              final appController = context.appController;
+              final chatId = await appController.createOrGetDirectChat(
+                currentUserId: user.id,
+                currentUserName: user.name,
+                otherUserId: selectedUser.id,
+                otherUserName: selectedUser.name,
+              );
 
-          if (!mounted) return;
-          context.push('/chats/$chatId');
-        },
+              if (!mounted) return;
+              context.push('/chats/$chatId');
+            },
+          ),
+        ),
       ),
       bottomNavigationBar: ValueListenableBuilder(
         valueListenable: widget.selectedTabIndex,
@@ -247,10 +274,6 @@ class _ChatsState extends State<Chats> {
 
                               final lastSenderId =
                                   snapshot.data?.first.senderId;
-
-                              debugPrint(
-                                'Last sender: $lastSenderId, user: ${user.id}, Unread count: ${chat.unreadCount}',
-                              );
 
                               if (lastSenderId != null &&
                                   lastSenderId != user.id &&

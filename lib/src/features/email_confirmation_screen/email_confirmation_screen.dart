@@ -41,30 +41,30 @@ class _EmailConfirmationScreenState extends State<EmailConfirmationScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: ControllerListener(
-        controller: context.appController,
-        listenWhen: (previous, current) {
-          return previous.isProcessing &&
-              previous.message == 'Verifying email code...' &&
-              !current.isProcessing &&
-              !current.isFailed &&
-              current.message == 'Email verified successfully';
-        },
-        listener: (context, previous, current) {
-          // Navigate to home after successful verification
-          context.go(homePath);
-        },
+      body: SafeArea(
         child: ControllerListener(
           controller: context.appController,
           listenWhen: (previous, current) {
-            return !previous.isFailed && current.isFailed;
+            return previous.isProcessing &&
+                previous.message == 'Verifying email code...' &&
+                !current.isProcessing &&
+                !current.isFailed &&
+                current.message == 'Email verified successfully';
           },
           listener: (context, previous, current) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Error: ${current.message}')),
-            );
+            // Navigate to home after successful verification
+            context.go(homePath);
           },
-          child: SafeArea(
+          child: ControllerListener(
+            controller: context.appController,
+            listenWhen: (previous, current) {
+              return !previous.isFailed && current.isFailed;
+            },
+            listener: (context, previous, current) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Error: ${current.message}')),
+              );
+            },
             child: SingleChildScrollView(
               padding: EdgeInsets.all(spacing24),
               child: Column(

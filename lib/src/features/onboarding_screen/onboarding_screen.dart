@@ -57,97 +57,98 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         ).showSnackBar(SnackBar(content: Text('Error: ${current.message}')));
       },
       child: Scaffold(
-        body: ValueListenableBuilder(
-          valueListenable: _selectedSubScreen,
-          builder: (context, value, child) {
-            return switch (value) {
-              0 => Column(
-                children: [
-                  Expanded(child: PlaceholderImage()),
-                  Container(
-                    height: 350,
-                    color: LightColor.lightest.color,
-                    child: Padding(
-                      padding: const EdgeInsets.all(spacing24),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        spacing: spacing32,
-                        children: [
-                          ValueListenableBuilder(
-                            valueListenable: _selectedSection,
-                            builder: (context, selectedSection, child) {
-                              return AppPaginationDots(
-                                dotCount: 3,
-                                activeIndex: selectedSection,
-                              );
-                            },
-                          ),
-                          ValueListenableBuilder(
-                            valueListenable: _selectedSection,
-                            builder: (context, value, child) {
-                              return Text(
-                                switch (_selectedSection.value) {
-                                  0 =>
-                                    'Create a prototype in just a few minutes',
-                                  1 => 'Collaborate with your team seamlessly',
-                                  2 => 'Launch your product with confidence',
-                                  _ =>
-                                    'Create a prototype in just a few minutes',
-                                },
-                                style: TextStyle(
-                                  fontSize: h1Size,
-                                  fontWeight: h1Weight,
-                                  color: DarkColor.darkest.color,
-                                ),
-                                textAlign: TextAlign.start,
-                              );
-                            },
-                          ),
-                          ValueListenableBuilder(
-                            valueListenable: _selectedSection,
-                            builder: (context, value, child) {
-                              return Text(
-                                switch (_selectedSection.value) {
-                                  0 =>
-                                    'Enjoy these pre-made components and worry only about creating the best product ever.',
-                                  1 =>
-                                    'Work together with your team seamlessly and efficiently.',
-                                  2 =>
-                                    'Launch your product with confidence and ease.',
-                                  _ =>
-                                    'Enjoy these pre-made components and worry only about creating the best product ever.',
-                                },
-                                style: TextStyle(
-                                  fontSize: bSSize,
-                                  fontWeight: bSWeight,
-                                  color: DarkColor.light.color,
-                                ),
-                                textAlign: TextAlign.start,
-                              );
-                            },
-                          ),
-                          Spacer(),
-                          SizedBox(
-                            width: double.infinity,
-                            child: AppButtonPrimary(
-                              onPressed: () {
-                                if (_selectedSection.value < 2) {
-                                  _selectedSection.value++;
-                                } else {
-                                  _selectedSubScreen.value = 1;
-                                }
+        body: SafeArea(
+          child: ValueListenableBuilder(
+            valueListenable: _selectedSubScreen,
+            builder: (context, value, child) {
+              return switch (value) {
+                0 => Column(
+                  children: [
+                    Expanded(child: PlaceholderImage()),
+                    Container(
+                      height: 350,
+                      color: LightColor.lightest.color,
+                      child: Padding(
+                        padding: const EdgeInsets.all(spacing24),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          spacing: spacing32,
+                          children: [
+                            ValueListenableBuilder(
+                              valueListenable: _selectedSection,
+                              builder: (context, selectedSection, child) {
+                                return AppPaginationDots(
+                                  dotCount: 3,
+                                  activeIndex: selectedSection,
+                                );
                               },
-                              text: 'Next',
                             ),
-                          ),
-                        ],
+                            ValueListenableBuilder(
+                              valueListenable: _selectedSection,
+                              builder: (context, value, child) {
+                                return Text(
+                                  switch (_selectedSection.value) {
+                                    0 =>
+                                      'Create a prototype in just a few minutes',
+                                    1 =>
+                                      'Collaborate with your team seamlessly',
+                                    2 => 'Launch your product with confidence',
+                                    _ =>
+                                      'Create a prototype in just a few minutes',
+                                  },
+                                  style: TextStyle(
+                                    fontSize: h1Size,
+                                    fontWeight: h1Weight,
+                                    color: DarkColor.darkest.color,
+                                  ),
+                                  textAlign: TextAlign.start,
+                                );
+                              },
+                            ),
+                            ValueListenableBuilder(
+                              valueListenable: _selectedSection,
+                              builder: (context, value, child) {
+                                return Text(
+                                  switch (_selectedSection.value) {
+                                    0 =>
+                                      'Enjoy these pre-made components and worry only about creating the best product ever.',
+                                    1 =>
+                                      'Work together with your team seamlessly and efficiently.',
+                                    2 =>
+                                      'Launch your product with confidence and ease.',
+                                    _ =>
+                                      'Enjoy these pre-made components and worry only about creating the best product ever.',
+                                  },
+                                  style: TextStyle(
+                                    fontSize: bSSize,
+                                    fontWeight: bSWeight,
+                                    color: DarkColor.light.color,
+                                  ),
+                                  textAlign: TextAlign.start,
+                                );
+                              },
+                            ),
+                            Spacer(),
+                            SizedBox(
+                              width: double.infinity,
+                              child: AppButtonPrimary(
+                                onPressed: () {
+                                  if (_selectedSection.value < 2) {
+                                    _selectedSection.value++;
+                                  } else {
+                                    _selectedSubScreen.value = 1;
+                                  }
+                                },
+                                text: 'Next',
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                ],
-              ),
-              1 => SafeArea(
-                child: Padding(
+                  ],
+                ),
+                1 => Padding(
                   padding: const EdgeInsets.all(spacing24),
                   child: Column(
                     spacing: spacing40,
@@ -236,10 +237,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     ],
                   ),
                 ),
-              ),
-              _ => SizedBox.shrink(),
-            };
-          },
+                _ => SizedBox.shrink(),
+              };
+            },
+          ),
         ),
       ),
     );

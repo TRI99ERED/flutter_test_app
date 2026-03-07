@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:test_app/src/core/resources/app_icons.dart';
 import 'package:test_app/src/features/app/app_scope.dart';
 import 'package:test_app/src/features/app/data/models/user_model.dart';
@@ -18,7 +19,10 @@ class Settings extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppNavBar(title: 'Settings'),
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(kToolbarHeight),
+        child: SafeArea(child: AppNavBar(title: 'Settings')),
+      ),
       bottomNavigationBar: ValueListenableBuilder(
         valueListenable: selectedTabIndex,
         builder: (context, value, child) {
@@ -162,9 +166,9 @@ class Settings extends StatelessWidget {
                       'Are you sure you want to log out? You\'ll need to login again to use the app.',
                   buttonText1: 'Cancel',
                   buttonText2: 'Log out',
-                  onPressed1: () => Navigator.of(context).pop(),
+                  onPressed1: () => context.pop(),
                   onPressed2: () {
-                    Navigator.of(context).pop();
+                    context.pop();
                     context.appController.logout();
                   },
                 );

@@ -1,4 +1,5 @@
 ﻿import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:test_app/src/widgets/common/app_button.dart';
 import 'package:test_app/src/widgets/common/styles.dart';
 
@@ -41,6 +42,8 @@ class AppListTitle extends StatelessWidget {
               fontSize: h4Size,
               fontWeight: h4Weight,
               color: DarkColor.darkest.color,
+              fontFamily: GoogleFonts.inter().fontFamily,
+              decoration: TextDecoration.none,
             ),
           ),
           if (buttonText != null && onPressed != null && icon == null)

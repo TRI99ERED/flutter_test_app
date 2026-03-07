@@ -52,18 +52,16 @@ class _HomeScreenState extends State<HomeScreen> {
           context.go(loginPath);
         }
       },
-      child: SafeArea(
-        child: ValueListenableBuilder(
-          valueListenable: _selectedTabIndex,
-          builder: (context, value, child) {
-            return switch (_selectedTabIndex.value) {
-              0 => Chats(selectedTabIndex: _selectedTabIndex),
-              1 => Friends(selectedTabIndex: _selectedTabIndex),
-              2 => Settings(selectedTabIndex: _selectedTabIndex),
-              _ => SizedBox.shrink(),
-            };
-          },
-        ),
+      child: ValueListenableBuilder(
+        valueListenable: _selectedTabIndex,
+        builder: (context, value, child) {
+          return switch (_selectedTabIndex.value) {
+            0 => Chats(selectedTabIndex: _selectedTabIndex),
+            1 => Friends(selectedTabIndex: _selectedTabIndex),
+            2 => Settings(selectedTabIndex: _selectedTabIndex),
+            _ => SizedBox.shrink(),
+          };
+        },
       ),
     );
   }

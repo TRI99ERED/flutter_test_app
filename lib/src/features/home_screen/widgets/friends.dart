@@ -12,12 +12,17 @@ class Friends extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppNavBar(
-        title: 'Friends',
-        leftText: 'Add',
-        rightText: 'Manage',
-        onPressedLeft: () {},
-        onPressedRight: () {},
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(kToolbarHeight),
+        child: SafeArea(
+          child: AppNavBar(
+            title: 'Friends',
+            leftText: 'Add',
+            rightText: 'Manage',
+            onPressedLeft: () {},
+            onPressedRight: () {},
+          ),
+        ),
       ),
       bottomNavigationBar: ValueListenableBuilder(
         valueListenable: selectedTabIndex,
