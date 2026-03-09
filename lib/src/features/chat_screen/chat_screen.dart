@@ -31,7 +31,18 @@ class _ChatScreenState extends State<ChatScreen> {
           child: FutureBuilder<String>(
             future: context.appController.getOtherName(widget.chatId),
             builder: (context, snapshot) {
-              final title = snapshot.data ?? 'Unknown';
+              final title = snapshot.data;
+
+              if (title == null) {
+                return AppNavBar(
+                  title: 'Chat not found',
+                  leftIcon: AppIcons.arrowLeft,
+                  onPressedLeft: () {
+                    context.pop();
+                  },
+                );
+              }
+
               return AppNavBar(
                 title: title,
                 leftIcon: AppIcons.arrowLeft,
@@ -47,10 +58,7 @@ class _ChatScreenState extends State<ChatScreen> {
       ),
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: spacing8,
-            vertical: spacing8,
-          ),
+          padding: const EdgeInsets.all(spacing8),
           child: Column(
             children: [
               Expanded(

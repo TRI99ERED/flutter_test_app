@@ -11,7 +11,7 @@ class AppDropdown extends StatefulWidget {
   final String? text;
   final String? errorText;
   final String? supportText;
-  final ValueChanged<String?>? onSelected;
+  final ValueChanged<(String, int)>? onSelected;
   final FormFieldValidator<String>? validator;
   final AutovalidateMode? autovalidateMode;
   final TextEditingController? controller;
@@ -204,7 +204,11 @@ class _AppDropdownState extends State<AppDropdown> {
                                   ) {
                                     if (mounted) {
                                       _effectiveController.clear();
-                                      widget.onSelected?.call(entry.value);
+                                      widget.onSelected?.call((
+                                        entry.value,
+                                        _selectedIndex,
+                                      ));
+                                      _effectiveController.text = entry.label;
                                     }
                                   });
                                 },

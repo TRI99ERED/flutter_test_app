@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:test_app/src/features/app/data/models/chat_model.dart';
 import 'package:test_app/src/features/app/data/models/message_model.dart';
+import 'package:test_app/src/features/app/data/models/project_model.dart';
 import 'package:test_app/src/features/app/data/models/user_model.dart';
 import 'package:test_app/src/features/app/data/repositories/firebase/firebase_firestore_repository/ifirebase_firestore_repository.dart';
 
@@ -135,6 +136,34 @@ class FirebaseFirestoreRepositoryImpl implements IFirebaseFirestoreRepository {
   }
 
   @override
+  Future<Project> createProjectForUser(
+    String ownerId,
+    String projectName,
+    String projectDescription,
+    List<String> participants,
+  ) async {
+    try {
+      final doc = FirebaseFirestore.instance.collection('projects').doc();
+      final project = Project(
+        id: doc.id,
+        ownerId: ownerId,
+        name: projectName,
+        description: projectDescription,
+        participants: participants,
+        status: ProjectStatus.todo,
+        createdAt: DateTime.now(),
+        lastUpdated: DateTime.now(),
+      );
+
+      await doc.set(project.toFirestore());
+
+      return project;
+    } catch (e) {
+      throw Exception('Failed to create project: $e');
+    }
+  }
+
+  @override
   Future<void> createUser({required AuthorizedUser user}) {
     final doc = _users.doc(user.id);
     try {
@@ -194,6 +223,18 @@ class FirebaseFirestoreRepositoryImpl implements IFirebaseFirestoreRepository {
       });
     } catch (e) {
       throw Exception('Failed to delete chat: $e');
+    }
+  }
+
+  @override
+  Future<void> deleteProject(String projectId) {
+    final doc = FirebaseFirestore.instance
+        .collection('projects')
+        .doc(projectId);
+    try {
+      return doc.delete();
+    } catch (e) {
+      throw Exception('Failed to delete project: $e');
     }
   }
 
@@ -279,6 +320,18 @@ class FirebaseFirestoreRepositoryImpl implements IFirebaseFirestoreRepository {
       await _chats.doc(chatId).update({'unreadCount': unreadCount});
     } catch (e) {
       throw Exception('Failed to update chat unread count: $e');
+    }
+  }
+
+  @override
+  Future<void> updateProject(Project project) {
+    try {
+      return FirebaseFirestore.instance
+          .collection('projects')
+          .doc(project.id)
+          .update(project.toFirestore());
+    } catch (e) {
+      throw Exception('Failed to update project: $e');
     }
   }
 
@@ -394,5 +447,24 @@ class FirebaseFirestoreRepositoryImpl implements IFirebaseFirestoreRepository {
         .orderBy('timestamp', descending: true)
         .snapshots()
         .map((snapshot) => snapshot.docs.map(Message.fromFirestore).toList());
+  }
+
+  @override
+  Stream<List<Project>> watchProjectsForUser(String userId) {
+    return FirebaseFirestore.instance
+        .collection('projects')
+        .where('participants', arrayContains: userId)
+        .orderBy('lastUpdated', descending: true)
+        .snapshots()
+        .map((snapshot) => snapshot.docs.map(Project.fromFirestore).toList());
+  }
+
+  @override
+  Stream<Project> watchProjectWithId(String projectId) {
+    return FirebaseFirestore.instance
+        .collection('projects')
+        .doc(projectId)
+        .snapshots()
+        .map((snapshot) => Project.fromFirestore(snapshot));
   }
 }

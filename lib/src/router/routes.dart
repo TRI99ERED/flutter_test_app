@@ -6,6 +6,7 @@ import 'package:test_app/src/features/email_confirmation_screen/email_confirmati
 import 'package:test_app/src/features/home_screen/home_screen.dart';
 import 'package:test_app/src/features/onboarding_screen/onboarding_screen.dart';
 import 'package:test_app/src/features/login_screen/login_screen.dart';
+import 'package:test_app/src/features/project_screen/project_screen.dart';
 import 'package:test_app/src/features/register_screen/register_screen.dart';
 
 const homePath = '/';
@@ -15,6 +16,7 @@ const registerPath = '/register';
 const emailConfirmationPath = '/email-confirmation';
 const forgotPasswordPath = '/forgot-password';
 const chatPath = '/chats/:chatId';
+const projectPath = '/projects/:projectId';
 
 GoRouter generateRouter(AppController appController) {
   return GoRouter(
@@ -43,6 +45,13 @@ GoRouter generateRouter(AppController appController) {
         builder: (context, state) {
           final chatId = state.pathParameters['chatId'] ?? '';
           return ChatScreen(chatId: chatId);
+        },
+      ),
+      GoRoute(
+        path: projectPath,
+        builder: (context, state) {
+          final projectId = state.pathParameters['projectId'] ?? '';
+          return ProjectScreen(projectId: projectId);
         },
       ),
     ],

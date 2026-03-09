@@ -3,6 +3,7 @@ import 'package:flutter/widgets.dart';
 import 'package:test_app/src/core/controller/base_controller/base_controller.dart';
 import 'package:test_app/src/features/app/data/models/chat_model.dart';
 import 'package:test_app/src/features/app/data/models/message_model.dart';
+import 'package:test_app/src/features/app/data/models/project_model.dart';
 import 'package:test_app/src/features/app/data/models/user_model.dart';
 import 'package:test_app/src/features/app/data/repositories/firebase/firebase_auth_repository/firebase_auth_repository_impl.dart';
 import 'package:test_app/src/features/app/data/repositories/firebase/firebase_auth_repository/ifirebase_auth_repository.dart';
@@ -194,6 +195,12 @@ final class AppController extends BaseController<AppState> {
     return _firestoreRepository.watchAllUsers();
   }
 
+  Stream<List<String>> watchUserNames() {
+    return watchAllUsers().map(
+      (users) => users.map((user) => user.name).toList(),
+    );
+  }
+
   Future<String> getOtherName(String chatId) {
     if (state.user is! AuthorizedUser) {
       return Future.error('User not authorized');
@@ -204,12 +211,18 @@ final class AppController extends BaseController<AppState> {
     return _firestoreRepository
         .watchChatsForUser(currentUserId)
         .firstWhere((chats) => chats.any((chat) => chat.id == chatId))
-        .then((chats) {
+        .then((chats) async {
           final chat = chats.firstWhere((chat) => chat.id == chatId);
           final otherUserId = chat.participants.firstWhere(
             (id) => id != currentUserId,
           );
-          return chat.participantNames[otherUserId] ?? 'Unknown';
+
+          // Find the user object and return its name
+          final allUsers = await watchAllUsers().first;
+          final otherUser = allUsers.firstWhere(
+            (user) => user.id == otherUserId,
+          );
+          return otherUser.name;
         });
   }
 
@@ -329,11 +342,6 @@ final class AppController extends BaseController<AppState> {
     return _firestoreRepository.deleteChat(chatId);
   }
 
-  @override
-  void dispose() {
-    super.dispose();
-  }
-
   Stream<List<AuthorizedUser>> watchAllUsersExcludingFriends(String userId) {
     return _firestoreRepository.watchAllUsers().asyncMap((users) async {
       final friends = await _firestoreRepository
@@ -346,5 +354,147 @@ final class AppController extends BaseController<AppState> {
           .where((user) => user.id != userId && !friendIds.contains(user.id))
           .toList();
     });
+  }
+
+  Stream<List<Project>> watchToDoProjectsForUser(String userId) {
+    return _firestoreRepository.watchProjectsForUser(userId).map((projects) {
+      return projects
+          .where((project) => project.status == ProjectStatus.todo)
+          .toList();
+    });
+  }
+
+  Stream<List<Project>> watchInProgressProjectsForUser(String userId) {
+    return _firestoreRepository.watchProjectsForUser(userId).map((projects) {
+      return projects
+          .where((project) => project.status == ProjectStatus.inProgress)
+          .toList();
+    });
+  }
+
+  Stream<List<Project>> watchFinishedProjectsForUser(String id) {
+    return _firestoreRepository.watchProjectsForUser(id).map((projects) {
+      return projects
+          .where((project) => project.status == ProjectStatus.finished)
+          .toList();
+    });
+  }
+
+  Future<Project> createProjectForUser({
+    required String ownerId,
+    required String projectName,
+    required String projectDescription,
+    required List<String> participants,
+  }) async {
+    return _firestoreRepository.createProjectForUser(
+      ownerId,
+      projectName,
+      projectDescription,
+      participants,
+    );
+  }
+
+  Future<String?> getProjectName(String projectId) async {
+    try {
+      final projects = await _firestoreRepository
+          .watchProjectsForUser((state.user as AuthorizedUser).id)
+          .first;
+
+      final project = projects.firstWhere((p) => p.id == projectId);
+      return project.name;
+    } catch (e) {
+      debugPrint('Failed to get project name: $e');
+      return null;
+    }
+  }
+
+  Future<Project?> getProjectWithId(String projectId) async {
+    try {
+      final projects = await _firestoreRepository
+          .watchProjectsForUser((state.user as AuthorizedUser).id)
+          .first;
+
+      final project = projects.firstWhere((p) => p.id == projectId);
+      return project;
+    } catch (e) {
+      debugPrint('Failed to get project with id: $e');
+      return null;
+    }
+  }
+
+  Future<AuthorizedUser?> getUserWithId(String userId) async {
+    try {
+      final users = await _firestoreRepository.watchAllUsers().first;
+      final user = users.firstWhere((u) => u.id == userId);
+      return user;
+    } catch (e) {
+      debugPrint('Failed to get user with id: $e');
+      return null;
+    }
+  }
+
+  Future<void> updateProject(Project project) async {
+    return _firestoreRepository.updateProject(project);
+  }
+
+  Stream<List<AuthorizedUser>> watchProjectParticipants(String projectId) {
+    return _firestoreRepository.watchProjectWithId(projectId).asyncExpand((
+      project,
+    ) {
+      final participantIds = project.participants.toSet();
+      return _firestoreRepository.watchAllUsers().map((users) {
+        return users.where((user) => participantIds.contains(user.id)).toList();
+      });
+    });
+  }
+
+  Stream<Project> watchProjectWithId(String projectId) {
+    return _firestoreRepository.watchProjectWithId(projectId);
+  }
+
+  Stream<List<AuthorizedUser>> watchAllUsersExcludingProjectParticipants(
+    String userId,
+    String projectId,
+  ) {
+    return _firestoreRepository.watchAllUsers().asyncMap((users) async {
+      final project = await _firestoreRepository
+          .watchProjectWithId(projectId)
+          .first;
+
+      final participantIds = project.participants.toSet();
+
+      return users
+          .where((u) => u.id != userId && !participantIds.contains(u.id))
+          .toList();
+    });
+  }
+
+  Stream<AuthorizedUser> watchUserWithId(String memberId) {
+    return _firestoreRepository.watchAllUsers().map((users) {
+      return users.firstWhere((u) => u.id == memberId);
+    });
+  }
+
+  Future<bool> isFriend(String userId, String friendId) async {
+    return _firestoreRepository
+        .watchFriendsForUser(userId: userId)
+        .map((friends) => friends.any((friend) => friend.id == friendId))
+        .firstWhere((isFriend) => true, orElse: () => false);
+  }
+
+  Future<bool> isUserProjectParticipant(String userId, String projectId) async {
+    return _firestoreRepository
+        .watchProjectWithId(projectId)
+        .map((project) => project.participants.contains(userId))
+        .firstWhere((isParticipant) => true, orElse: () => false);
+  }
+
+  Future<void> deleteProject(String projectId) async {
+    return _firestoreRepository.deleteProject(projectId);
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
   }
 }

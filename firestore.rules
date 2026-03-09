@@ -13,24 +13,6 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
-    // Chats - users can only read chats they are part of
-    match /chats/{chatId} {
-      allow read: if request.auth != null && (!exists(/databases/$(database)/documents/chats/$(chatId)) ||
-      request.auth.uid in resource.data.participants);
-      allow create: if request.auth != null &&
-      request.auth.uid in request.resource.data.participants &&
-      request.resource.data.participants.size() == 2 &&
-      request.resource.data.participants[0] != request.resource.data.participants[1];
-      allow update, delete: if request.auth != null && request.auth.uid in resource.data.participants;
-
-      // Messages subcollection
-      match /messages/{messageId} {
-        allow read: if request.auth != null && request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants;
-        allow create, delete: if request.auth != null && request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants;
-        allow update: if false;
-      }
-    }
-
     // User profiles - all users can read, only self can write
     match /users/{userId} {
       allow read: if request.auth != null;
@@ -64,6 +46,38 @@ service cloud.firestore {
         request.auth.uid == resource.data.id);
         allow update: if false;
       }
+    }
+
+    // Chats - users can only read chats they are part of
+    match /chats/{chatId} {
+      allow read: if request.auth != null && (!exists(/databases/$(database)/documents/chats/$(chatId)) ||
+      request.auth.uid in resource.data.participants);
+      allow create: if request.auth != null &&
+      request.auth.uid in request.resource.data.participants &&
+      request.resource.data.participants.size() > 1;
+      allow update, delete: if request.auth != null && request.auth.uid in resource.data.participants;
+
+      // Messages subcollection
+      match /messages/{messageId} {
+        allow read: if request.auth != null && request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants;
+        allow create, delete: if request.auth != null && request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants;
+        allow update: if false;
+      }
+    }
+
+    // Projects - users can only read projects they are part of
+    match /projects/{projectId} {
+      allow read: if request.auth != null && (!exists(/databases/$(database)/documents/projects/$(projectId)) ||
+      request.auth.uid in resource.data.participants);
+      allow create: if request.auth != null &&
+      request.auth.uid in request.resource.data.participants &&
+      request.resource.data.ownerId != null &&
+      request.auth.uid == request.resource.data.ownerId &&
+      request.resource.data.participants.size() > 0;
+      allow update, delete: if request.auth != null &&
+      request.auth.uid in resource.data.participants &&
+      resource.data.ownerId != null &&
+      request.auth.uid == resource.data.ownerId;
     }
 
     // Default deny all other collections

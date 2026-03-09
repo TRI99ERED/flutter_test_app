@@ -3,7 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:test_app/src/core/resources/app_icons.dart';
 import 'package:test_app/src/features/app/app_scope.dart';
 import 'package:test_app/src/features/app/data/models/user_model.dart';
-import 'package:test_app/src/features/home_screen/widgets/user_picker.dart';
+import 'package:test_app/src/widgets/user_picker.dart';
 import 'package:test_app/src/widgets/common/app_card.dart';
 import 'package:test_app/src/widgets/common/app_content_switcher.dart';
 import 'package:test_app/src/widgets/common/app_loader.dart';
@@ -71,17 +71,17 @@ class _FriendsState extends State<Friends> {
               valueListenable: _sectionIndex,
               builder: (context, value, child) {
                 return switch (value) {
-                  0 => FriendsSection(
+                  0 => _FriendsSection(
                     sectionType: FriendsSectionType.friends,
                     searchQuery: _searchQuery,
                     editPressed: widget.editPressed,
                   ),
-                  1 => FriendsSection(
+                  1 => _FriendsSection(
                     sectionType: FriendsSectionType.incomingRequests,
                     searchQuery: _searchQuery,
                     editPressed: widget.editPressed,
                   ),
-                  2 => FriendsSection(
+                  2 => _FriendsSection(
                     sectionType: FriendsSectionType.outgoingRequests,
                     searchQuery: _searchQuery,
                     editPressed: widget.editPressed,
@@ -104,33 +104,34 @@ class _FriendsState extends State<Friends> {
   }
 }
 
-class FriendsSection extends StatefulWidget {
-  final FriendsSectionType sectionType;
-  final ValueNotifier<String> searchQuery;
-  final ValueNotifier<bool> editPressed;
+class _FriendsSection extends StatefulWidget {
+  final FriendsSectionType _sectionType;
+  final ValueNotifier<String> _searchQuery;
+  final ValueNotifier<bool> _editPressed;
 
-  const FriendsSection({
-    super.key,
-    required this.sectionType,
-    required this.searchQuery,
-    required this.editPressed,
-  });
+  const _FriendsSection({
+    required FriendsSectionType sectionType,
+    required ValueNotifier<String> searchQuery,
+    required ValueNotifier<bool> editPressed,
+  }) : _editPressed = editPressed,
+       _searchQuery = searchQuery,
+       _sectionType = sectionType;
 
   @override
-  State<FriendsSection> createState() => _FriendsSectionState();
+  State<_FriendsSection> createState() => _FriendsSectionState();
 }
 
-class _FriendsSectionState extends State<FriendsSection> {
+class _FriendsSectionState extends State<_FriendsSection> {
   @override
   Widget build(BuildContext context) {
     final user = context.appState.user;
 
     if (user is! AuthorizedUser) {
-      return Scaffold(body: const SizedBox.shrink());
+      return const ErrorState(message: 'User not authorized');
     }
 
     return StreamBuilder(
-      stream: switch (widget.sectionType) {
+      stream: switch (widget._sectionType) {
         FriendsSectionType.friends => context.appController.watchFriendsForUser(
           user.id,
         ),
@@ -145,7 +146,7 @@ class _FriendsSectionState extends State<FriendsSection> {
         } else if (snapshot.hasError) {
           return ErrorState(
             message:
-                'Error loading ${switch (widget.sectionType) {
+                'Error loading ${switch (widget._sectionType) {
                   FriendsSectionType.friends => 'friends',
                   FriendsSectionType.incomingRequests => 'incoming requests',
                   FriendsSectionType.outgoingRequests => 'outgoing requests',
@@ -157,32 +158,27 @@ class _FriendsSectionState extends State<FriendsSection> {
 
         if (friends.isEmpty) {
           return EmptyState(
-            title:
-                'No ${switch (widget.sectionType) {
-                  FriendsSectionType.friends => 'friends',
-                  FriendsSectionType.incomingRequests => 'incoming requests',
-                  FriendsSectionType.outgoingRequests => 'outgoing requests',
-                }} found.',
+            title: 'Nothing here. For now.',
             body:
-                'This is where your ${switch (widget.sectionType) {
+                'This is where your ${switch (widget._sectionType) {
                   FriendsSectionType.friends => 'friends',
                   FriendsSectionType.incomingRequests => 'incoming requests',
                   FriendsSectionType.outgoingRequests => 'outgoing requests',
                 }} will appear.',
             buttonText:
-                widget.sectionType == FriendsSectionType.friends ||
-                    widget.sectionType == FriendsSectionType.outgoingRequests
+                widget._sectionType == FriendsSectionType.friends ||
+                    widget._sectionType == FriendsSectionType.outgoingRequests
                 ? 'Send friend request'
                 : null,
             onButtonPressed:
-                widget.sectionType == FriendsSectionType.friends ||
-                    widget.sectionType == FriendsSectionType.outgoingRequests
+                widget._sectionType == FriendsSectionType.friends ||
+                    widget._sectionType == FriendsSectionType.outgoingRequests
                 ? () async {
                     final user = context.appState.user as AuthorizedUser;
                     final appController = context.appController;
-                    final selectedUser = await showUserPicker(
+                    final selectedUser = await UserPicker.pickUser(
                       context,
-                      UserPickerMode.excludeFriends,
+                      UserPickerFlag.excludeFriends.value,
                     );
                     if (selectedUser == null) return;
 
@@ -196,7 +192,7 @@ class _FriendsSectionState extends State<FriendsSection> {
         }
 
         return ValueListenableBuilder(
-          valueListenable: widget.searchQuery,
+          valueListenable: widget._searchQuery,
           builder: (context, query, child) {
             final q = query.trim().toLowerCase();
 
@@ -209,7 +205,7 @@ class _FriendsSectionState extends State<FriendsSection> {
             if (filteredFriends.isEmpty) {
               return EmptyState(
                 title:
-                    'No ${switch (widget.sectionType) {
+                    'No ${switch (widget._sectionType) {
                       FriendsSectionType.friends => 'friends',
                       FriendsSectionType.incomingRequests => 'incoming requests',
                       FriendsSectionType.outgoingRequests => 'outgoing requests',
@@ -223,7 +219,7 @@ class _FriendsSectionState extends State<FriendsSection> {
               itemBuilder: (context, index) {
                 final friend = filteredFriends[index];
 
-                final stream = switch (widget.sectionType) {
+                final stream = switch (widget._sectionType) {
                   FriendsSectionType.friends =>
                     context.appController.watchFriendsForUser(user.id),
                   FriendsSectionType.incomingRequests =>
@@ -240,14 +236,11 @@ class _FriendsSectionState extends State<FriendsSection> {
                   stream: stream,
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
-                      return const Padding(
-                        padding: EdgeInsets.symmetric(vertical: spacing4),
-                        child: SizedBox(width: 32, child: AppLoader()),
-                      );
+                      return SizedBox(width: 32, child: AppLoader());
                     } else if (snapshot.hasError) {
                       return ErrorState(
                         message:
-                            'Error loading ${switch (widget.sectionType) {
+                            'Error loading ${switch (widget._sectionType) {
                               FriendsSectionType.friends => 'friend',
                               FriendsSectionType.incomingRequests => 'incoming request',
                               FriendsSectionType.outgoingRequests => 'outgoing request',
@@ -260,25 +253,25 @@ class _FriendsSectionState extends State<FriendsSection> {
                       child: SizedBox(
                         height: 72,
                         child: ValueListenableBuilder(
-                          valueListenable: widget.editPressed,
+                          valueListenable: widget._editPressed,
                           builder: (context, editPressed, child) {
                             return AppCardSmall(
                               title: friend.name,
                               subtitle: '@${friend.handle}',
                               avatar: PlaceholderAvatar(size: AvatarSize.small),
                               onAvatarPressed: () {},
-                              leftButtonText: switch (widget.sectionType) {
+                              leftButtonText: switch (widget._sectionType) {
                                 FriendsSectionType.incomingRequests =>
                                   'Decline',
                                 _ => null,
                               },
-                              rightButtonText: switch (widget.sectionType) {
+                              rightButtonText: switch (widget._sectionType) {
                                 FriendsSectionType.friends =>
                                   editPressed ? 'Remove' : 'Message',
                                 FriendsSectionType.incomingRequests => 'Accept',
                                 FriendsSectionType.outgoingRequests => 'Cancel',
                               },
-                              onPressedLeft: switch (widget.sectionType) {
+                              onPressedLeft: switch (widget._sectionType) {
                                 FriendsSectionType.incomingRequests =>
                                   () async {
                                     final user =
@@ -291,7 +284,7 @@ class _FriendsSectionState extends State<FriendsSection> {
                                   },
                                 _ => null,
                               },
-                              onPressedRight: switch (widget.sectionType) {
+                              onPressedRight: switch (widget._sectionType) {
                                 FriendsSectionType.friends =>
                                   editPressed
                                       ? () async {
@@ -390,9 +383,9 @@ class _FriendsAppBarState extends State<FriendsAppBar> {
             onPressedRight: () async {
               final user = context.appState.user as AuthorizedUser;
               final appController = context.appController;
-              final selectedUser = await showUserPicker(
+              final selectedUser = await UserPicker.pickUser(
                 context,
-                UserPickerMode.excludeFriends,
+                UserPickerFlag.excludeFriends.value,
               );
               if (selectedUser == null) return;
 

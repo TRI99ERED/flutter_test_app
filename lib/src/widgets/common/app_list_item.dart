@@ -119,6 +119,7 @@ class AppListItem extends StatelessWidget {
                       fontSize: bSSize,
                       fontWeight: bSWeight,
                       color: DarkColor.light.color,
+                      overflow: TextOverflow.ellipsis,
                     ),
                     softWrap: true,
                   ),

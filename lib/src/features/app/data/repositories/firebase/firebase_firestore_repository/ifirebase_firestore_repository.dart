@@ -1,5 +1,6 @@
 import 'package:test_app/src/features/app/data/models/chat_model.dart';
 import 'package:test_app/src/features/app/data/models/message_model.dart';
+import 'package:test_app/src/features/app/data/models/project_model.dart';
 import 'package:test_app/src/features/app/data/models/user_model.dart';
 
 abstract interface class IFirebaseFirestoreRepository {
@@ -27,6 +28,13 @@ abstract interface class IFirebaseFirestoreRepository {
     required String otherUserName,
   });
 
+  Future<Project> createProjectForUser(
+    String ownerId,
+    String projectName,
+    String projectDescription,
+    List<String> participants,
+  );
+
   Future<void> createUser({required AuthorizedUser user});
 
   Future<void> declineFriendRequest({
@@ -35,6 +43,8 @@ abstract interface class IFirebaseFirestoreRepository {
   });
 
   Future<void> deleteChat(String chatId);
+
+  Future<void> deleteProject(String projectId);
 
   Future<void> removeFriend({
     required String currentUserId,
@@ -56,6 +66,8 @@ abstract interface class IFirebaseFirestoreRepository {
     required int unreadCount,
   });
 
+  Future<void> updateProject(Project project);
+
   Stream<List<AuthorizedUser>> watchAllUsers();
 
   Stream<List<Chat>> watchChatsForUser(String userId);
@@ -73,4 +85,8 @@ abstract interface class IFirebaseFirestoreRepository {
   Stream<List<AuthorizedUser>> watchFriendsForUser({required String userId});
 
   Stream<List<Message>> watchMessagesForChat({required String chatId});
+
+  Stream<List<Project>> watchProjectsForUser(String userId);
+
+  Stream<Project> watchProjectWithId(String projectId);
 }
