@@ -38,4 +38,45 @@ class FirebaseStorageRepositoryImpl implements IFirebaseStorageRepository {
       throw Exception('Failed to delete avatar: $e');
     }
   }
+
+  @override
+  Future<String> uploadGroupChatAvatar({
+    required String chatId,
+    required XFile file,
+  }) async {
+    try {
+      await deleteGroupChatAvatar(chatId: chatId);
+      final metadata = switch (file.name.split('.').last.toLowerCase()) {
+        'jpg' || 'jpeg' => SettableMetadata(contentType: 'image/jpeg'),
+        'png' => SettableMetadata(contentType: 'image/png'),
+        'svg' => SettableMetadata(contentType: 'image/svg+xml'),
+        'gif' => SettableMetadata(contentType: 'image/gif'),
+        'webp' => SettableMetadata(contentType: 'image/webp'),
+        _ => throw Exception('Unsupported file type'),
+      };
+      final ref = FirebaseStorage.instance.ref().child(
+        'avatars/groups/$chatId/avatar.${file.name.split('.').last.toLowerCase()}',
+      );
+      await ref.putData(await file.readAsBytes(), metadata);
+      final url = await ref.getDownloadURL();
+      return url;
+    } catch (e) {
+      throw Exception('Failed to upload group chat avatar: $e');
+    }
+  }
+
+  @override
+  Future<void> deleteGroupChatAvatar({required String chatId}) async {
+    try {
+      final ref = FirebaseStorage.instance.ref().child(
+        'avatars/groups/$chatId',
+      );
+      final ListResult result = await ref.listAll();
+      for (var item in result.items) {
+        await item.delete();
+      }
+    } catch (e) {
+      throw Exception('Failed to delete group chat avatar: $e');
+    }
+  }
 }

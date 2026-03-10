@@ -1,5 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:test_app/src/features/app/data/models/chat_model.dart';
 import 'package:test_app/src/features/app/data/models/user_model.dart';
 import 'package:test_app/src/widgets/common/placeholders.dart';
 
@@ -46,6 +47,38 @@ class AppAvatar extends StatelessWidget {
             size: size,
           )
         : PlaceholderAvatar(size: size);
+  }
+
+  static Widget groupAvatarOrPlaceholder(GroupChat? chat, AvatarSize size) {
+    if (chat == null) {
+      return PlaceholderAvatar(size: size);
+    }
+    final avatarExtention = chat.avatarUrl
+        .split('?')
+        .first
+        .split('.')
+        .last
+        .toLowerCase();
+    return chat.avatarUrl != ''
+        ? AppAvatar(
+            imageUrl: chat.avatarUrl,
+            type: avatarExtention == 'svg'
+                ? AppAvatarType.vector
+                : AppAvatarType.raster,
+            size: size,
+          )
+        : SizedBox(
+            width: size.size,
+            height: size.size,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(switch (size) {
+                AvatarSize.small => 16,
+                AvatarSize.medium => 20,
+                AvatarSize.large => 32,
+              }),
+              child: PlaceholderImage(),
+            ),
+          );
   }
 
   @override

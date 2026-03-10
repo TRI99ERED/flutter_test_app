@@ -218,6 +218,16 @@ class FirebaseAuthRepositoryImpl implements IFirebaseAuthRepository {
     }
   }
 
+  @override
+  Stream<AuthorizedUser> watchAuthState() {
+    return FirebaseAuth.instance
+        .authStateChanges()
+        .map((user) => _mapFirebaseUserToAuthorized(user!))
+        .handleError((Object error) {
+          debugPrint('Auth state stream error (non-fatal): $error');
+        });
+  }
+
   Exception _handleAuthException(FirebaseAuthException e) {
     switch (e.code) {
       case 'user-not-found':

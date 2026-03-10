@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:rxdart/rxdart.dart';
 import 'package:test_app/src/features/app/data/models/chat_model.dart';
 import 'package:test_app/src/features/app/data/models/message_model.dart';
 import 'package:test_app/src/features/app/data/models/project_model.dart';
@@ -7,7 +8,8 @@ import 'package:test_app/src/features/app/data/repositories/firebase/firebase_fi
 
 class FirebaseFirestoreRepositoryImpl implements IFirebaseFirestoreRepository {
   final _users = FirebaseFirestore.instance.collection('users');
-  final _chats = FirebaseFirestore.instance.collection('chats');
+  final _directChats = FirebaseFirestore.instance.collection('directChats');
+  final _groupChats = FirebaseFirestore.instance.collection('groupChats');
   final _projects = FirebaseFirestore.instance.collection('projects');
 
   @override
@@ -79,46 +81,90 @@ class FirebaseFirestoreRepositoryImpl implements IFirebaseFirestoreRepository {
   }
 
   @override
-  Future<Chat> createChat({
+  Future<DirectChat> createDirectChat({
     required List<String> participants,
     required String chatName,
-    String groupOwnerId = '',
   }) async {
     try {
       final ids = participants..sort();
-      final doc = _chats.doc();
+      final doc = _directChats.doc();
 
-      final chat = Chat(
+      final directChat = DirectChat(
         id: doc.id,
         name: chatName,
-        groupOwnerId: groupOwnerId,
         participants: ids,
         lastMessage: '',
         unreadCount: 0,
         lastUpdated: DateTime.now(),
       );
-      await doc.set(chat.toFirestore());
-      return chat;
+      await doc.set(directChat.toFirestore());
+      return directChat;
     } catch (e) {
       throw Exception('Failed to create or get direct chat: $e');
     }
   }
 
   @override
-  Future<Message> createMessage({
+  Future<Message> createDirectChatMessage({
     required String chatId,
     required String senderId,
     required String body,
   }) async {
     try {
-      final doc = _chats.doc(chatId).collection('messages').doc();
+      final doc = _directChats.doc(chatId).collection('messages').doc();
 
       final message = Message(
         id: doc.id,
         senderId: senderId,
-        senderName: await getUserWithId(
-          senderId,
-        ).then((user) => user?.name ?? ''),
+        body: body,
+        timestamp: DateTime.now(),
+      );
+      await doc.set(message.toFirestore());
+      return message;
+    } catch (e) {
+      throw Exception('Failed to create message: $e');
+    }
+  }
+
+  @override
+  Future<GroupChat> createGroupChat({
+    required List<String> participants,
+    required String chatName,
+    required String ownerId,
+  }) async {
+    try {
+      final ids = participants..sort();
+      final doc = _groupChats.doc();
+
+      final groupChat = GroupChat(
+        id: doc.id,
+        name: chatName,
+        participants: ids,
+        ownerId: ownerId,
+        lastMessage: '',
+        avatarUrl: '',
+        unreadCounts: {for (var id in ids) id: 0},
+        lastUpdated: DateTime.now(),
+      );
+      await doc.set(groupChat.toFirestore());
+      return groupChat;
+    } catch (e) {
+      throw Exception('Failed to create group chat: $e');
+    }
+  }
+
+  @override
+  Future<Message> createGroupChatMessage({
+    required String chatId,
+    required String senderId,
+    required String body,
+  }) async {
+    try {
+      final doc = _groupChats.doc(chatId).collection('messages').doc();
+
+      final message = Message(
+        id: doc.id,
+        senderId: senderId,
         body: body,
         timestamp: DateTime.now(),
       );
@@ -197,8 +243,8 @@ class FirebaseFirestoreRepositoryImpl implements IFirebaseFirestoreRepository {
   }
 
   @override
-  Future<void> deleteChat(String chatId) async {
-    final doc = _chats.doc(chatId);
+  Future<void> deleteDirectChat(String chatId) async {
+    final doc = _directChats.doc(chatId);
     try {
       await FirebaseFirestore.instance.runTransaction((tx) async {
         final snapshot = await tx.get(doc);
@@ -220,27 +266,35 @@ class FirebaseFirestoreRepositoryImpl implements IFirebaseFirestoreRepository {
   }
 
   @override
-  Future<void> deleteProject(String projectId) {
-    final doc = _projects.doc(projectId);
+  Future<void> deleteGroupChat(String chatId) async {
+    final doc = _groupChats.doc(chatId);
     try {
-      return doc.delete();
+      await FirebaseFirestore.instance.runTransaction((tx) async {
+        final snapshot = await tx.get(doc);
+
+        if (!snapshot.exists) {
+          throw Exception('Chat does not exist');
+        }
+
+        final messagesSnapshot = await doc.collection('messages').get();
+        for (final messageDoc in messagesSnapshot.docs) {
+          tx.delete(messageDoc.reference);
+        }
+
+        tx.delete(doc);
+      });
     } catch (e) {
-      throw Exception('Failed to delete project: $e');
+      throw Exception('Failed to delete chat: $e');
     }
   }
 
   @override
-  Future<AuthorizedUser?> getUserWithId(String userId) {
-    final doc = _users.doc(userId);
+  Future<void> deleteProject(String projectId) async {
+    final doc = _projects.doc(projectId);
     try {
-      return doc.get().then((snapshot) {
-        if (!snapshot.exists) {
-          return null;
-        }
-        return AuthorizedUser.fromFirestore(snapshot);
-      });
+      await doc.delete();
     } catch (e) {
-      throw Exception('Failed to get user with id: $e');
+      throw Exception('Failed to delete project: $e');
     }
   }
 
@@ -303,6 +357,81 @@ class FirebaseFirestoreRepositoryImpl implements IFirebaseFirestoreRepository {
   }
 
   @override
+  Future<void> updateDirectChatLastMessage({
+    required String chatId,
+    required String lastMessage,
+  }) async {
+    try {
+      await _directChats.doc(chatId).update({
+        'lastMessage': lastMessage,
+        'lastUpdated': FieldValue.serverTimestamp(),
+      });
+    } catch (e) {
+      throw Exception('Failed to update chat last message: $e');
+    }
+  }
+
+  @override
+  Future<void> updateDirectChatUnreadCount({
+    required String chatId,
+    required int unreadCount,
+  }) async {
+    try {
+      await _directChats.doc(chatId).update({'unreadCount': unreadCount});
+    } catch (e) {
+      throw Exception('Failed to update chat unread count: $e');
+    }
+  }
+
+  @override
+  Future<void> updateGroupChatAvatarUrl({
+    required String chatId,
+    required String url,
+  }) async {
+    try {
+      await _groupChats.doc(chatId).update({'avatarUrl': url});
+    } catch (e) {
+      throw Exception('Failed to update group chat avatar URL: $e');
+    }
+  }
+
+  @override
+  Future<void> updateGroupChatLastMessage({
+    required String chatId,
+    required String lastMessage,
+  }) async {
+    try {
+      await _groupChats.doc(chatId).update({
+        'lastMessage': lastMessage,
+        'lastUpdated': FieldValue.serverTimestamp(),
+      });
+    } catch (e) {
+      throw Exception('Failed to update group chat last message: $e');
+    }
+  }
+
+  @override
+  Future<void> updateGroupChatUnreadCounts({
+    required String chatId,
+    required Map<String, int> unreadCounts,
+  }) async {
+    try {
+      await _groupChats.doc(chatId).update({'unreadCounts': unreadCounts});
+    } catch (e) {
+      throw Exception('Failed to update group chat unread counts: $e');
+    }
+  }
+
+  @override
+  Future<void> updateProject(Project project) {
+    try {
+      return _projects.doc(project.id).update(project.toFirestore());
+    } catch (e) {
+      throw Exception('Failed to update project: $e');
+    }
+  }
+
+  @override
   Future<void> updateUserAvatarUrl({
     required String userId,
     required String url,
@@ -315,39 +444,27 @@ class FirebaseFirestoreRepositoryImpl implements IFirebaseFirestoreRepository {
   }
 
   @override
-  Future<void> updateChatLastMessage({
-    required String chatId,
-    required String lastMessage,
-  }) async {
-    try {
-      await _chats.doc(chatId).update({
-        'lastMessage': lastMessage,
-        'lastUpdated': FieldValue.serverTimestamp(),
-      });
-    } catch (e) {
-      throw Exception('Failed to update chat last message: $e');
-    }
-  }
+  Stream<List<Chat>> watchAllChatsForUser(String userId) {
+    final directChatsStream = watchDirectChatsForUser(
+      userId,
+    ).map<List<Chat>>((directChats) => directChats);
+    final groupChatsStream = watchGroupChatsForUser(
+      userId,
+    ).map<List<Chat>>((groupChats) => groupChats);
 
-  @override
-  Future<void> updateChatUnreadCount({
-    required String chatId,
-    required int unreadCount,
-  }) async {
-    try {
-      await _chats.doc(chatId).update({'unreadCount': unreadCount});
-    } catch (e) {
-      throw Exception('Failed to update chat unread count: $e');
-    }
-  }
-
-  @override
-  Future<void> updateProject(Project project) {
-    try {
-      return _projects.doc(project.id).update(project.toFirestore());
-    } catch (e) {
-      throw Exception('Failed to update project: $e');
-    }
+    return Rx.combineLatest2(directChatsStream, groupChatsStream, (
+      directChats,
+      groupChats,
+    ) {
+      final allChats = [...directChats, ...groupChats];
+      allChats.sort((a, b) => b.lastUpdated.compareTo(a.lastUpdated));
+      return allChats;
+    }).distinct((prev, next) {
+      if (prev.length != next.length) return false;
+      final prevIds = prev.map((c) => c.id).toSet();
+      final nextIds = next.map((c) => c.id).toSet();
+      return prevIds.containsAll(nextIds) && nextIds.containsAll(prevIds);
+    });
   }
 
   @override
@@ -367,12 +484,29 @@ class FirebaseFirestoreRepositoryImpl implements IFirebaseFirestoreRepository {
   }
 
   @override
-  Stream<List<Chat>> watchChatsForUser(String userId) {
-    return _chats
+  Stream<Chat> watchChatWithId(String chatId) {
+    final directChatStream = watchDirectChatWithId(
+      chatId,
+    ).map<Chat>((directChat) => directChat);
+    final groupChatStream = watchGroupChatWithId(
+      chatId,
+    ).map<Chat>((groupChat) => groupChat);
+
+    return Rx.merge([directChatStream, groupChatStream])
+        .firstWhere(
+          (chat) => chat.id == chatId,
+          orElse: () => throw Exception('Chat with id $chatId does not exist'),
+        )
+        .asStream();
+  }
+
+  @override
+  Stream<List<DirectChat>> watchDirectChatsForUser(String userId) {
+    return _directChats
         .where('participants', arrayContains: userId)
         .orderBy('lastUpdated', descending: true)
         .snapshots()
-        .map((snapshot) => snapshot.docs.map(Chat.fromFirestore).toList())
+        .map((snapshot) => snapshot.docs.map(DirectChat.fromFirestore).toList())
         .distinct((prev, next) {
           if (prev.length != next.length) return false;
           final prevIds = prev.map((c) => c.id).toSet();
@@ -382,8 +516,8 @@ class FirebaseFirestoreRepositoryImpl implements IFirebaseFirestoreRepository {
   }
 
   @override
-  Stream<int> watchChatUnreadCount({required String chatId}) {
-    return _chats
+  Stream<int> watchDirectChatUnreadCount({required String chatId}) {
+    return _directChats
         .doc(chatId)
         .snapshots()
         .map((snapshot) {
@@ -396,15 +530,15 @@ class FirebaseFirestoreRepositoryImpl implements IFirebaseFirestoreRepository {
   }
 
   @override
-  Stream<Chat> watchChatWithId(String chatId) {
-    return _chats
+  Stream<DirectChat> watchDirectChatWithId(String chatId) {
+    return _directChats
         .doc(chatId)
         .snapshots()
         .map((snapshot) {
           if (!snapshot.exists) {
             throw Exception('Chat does not exist');
           }
-          return Chat.fromFirestore(snapshot);
+          return DirectChat.fromFirestore(snapshot);
         })
         .distinct((prev, next) => prev == next);
   }
@@ -507,8 +641,83 @@ class FirebaseFirestoreRepositoryImpl implements IFirebaseFirestoreRepository {
   }
 
   @override
-  Stream<List<Message>> watchMessagesForChat({required String chatId}) {
-    return _chats
+  Stream<List<GroupChat>> watchGroupChatsForUser(String userId) {
+    return _groupChats
+        .where('participants', arrayContains: userId)
+        .orderBy('lastUpdated', descending: true)
+        .snapshots()
+        .map((snapshot) => snapshot.docs.map(GroupChat.fromFirestore).toList())
+        .distinct((prev, next) {
+          if (prev.length != next.length) return false;
+          final prevIds = prev.map((c) => c.id).toSet();
+          final nextIds = next.map((c) => c.id).toSet();
+          return prevIds.containsAll(nextIds) && nextIds.containsAll(prevIds);
+        });
+  }
+
+  @override
+  Stream<Map<String, int>> watchGroupChatUnreadCounts({
+    required String chatId,
+  }) {
+    return _groupChats
+        .doc(chatId)
+        .snapshots()
+        .map((snapshot) {
+          final data = snapshot.data();
+          if (data == null) return {};
+          return Map<String, int>.from(data['unreadCounts'] ?? {});
+        })
+        .distinct((prev, next) {
+          if (prev.length != next.length) return false;
+          final prevKeys = prev.keys.toSet();
+          final nextKeys = next.keys.toSet();
+          if (!prevKeys.containsAll(nextKeys) ||
+              !nextKeys.containsAll(prevKeys)) {
+            return false;
+          }
+          for (final key in prevKeys) {
+            if (prev[key] != next[key]) {
+              return false;
+            }
+          }
+          return true;
+        })
+        .cast<Map<String, int>>();
+  }
+
+  @override
+  Stream<GroupChat> watchGroupChatWithId(String chatId) {
+    return _groupChats
+        .doc(chatId)
+        .snapshots()
+        .map((snapshot) {
+          if (!snapshot.exists) {
+            throw Exception('Chat does not exist');
+          }
+          return GroupChat.fromFirestore(snapshot);
+        })
+        .distinct((prev, next) => prev == next);
+  }
+
+  @override
+  Stream<List<Message>> watchMessagesForDirectChat({required String chatId}) {
+    return _directChats
+        .doc(chatId)
+        .collection('messages')
+        .orderBy('timestamp', descending: true)
+        .snapshots()
+        .map((snapshot) => snapshot.docs.map(Message.fromFirestore).toList())
+        .distinct((prev, next) {
+          if (prev.length != next.length) return false;
+          final prevIds = prev.map((m) => m.id).toSet();
+          final nextIds = next.map((m) => m.id).toSet();
+          return prevIds.containsAll(nextIds) && nextIds.containsAll(prevIds);
+        });
+  }
+
+  @override
+  Stream<List<Message>> watchMessagesForGroupChat({required String chatId}) {
+    return _groupChats
         .doc(chatId)
         .collection('messages')
         .orderBy('timestamp', descending: true)

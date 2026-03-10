@@ -36,36 +36,29 @@ final class AppController extends BaseController<AppState> {
         ),
         name: 'AppController',
       ) {
-    // Don't listen to auth state changes on Windows due to threading issues
-    // Instead, we'll check auth state after key actions
-    _initializeAuthState();
-    _startUserSync();
+    _listenToAuthState();
   }
 
-  Future<void> _initializeAuthState() async =>
-      await serialExecutor.synchronized(() async {
+  void _listenToAuthState() {
+    _userStreamSubscription?.cancel();
+    _userStream = _authRepository.watchAuthState();
+    _userStreamSubscription = _userStream!.listen(
+      (user) {
+        setState(AppState.idle(message: 'Auth state changed', user: user));
+        _startUserSync();
+      },
+      onError: (error, stackTrace) {
         setState(
-          AppState.processing(
-            message: 'Initializing auth state...',
+          AppState.failed(
+            message: 'Auth state listen failed: ${error.toString()}',
             user: state.user,
+            error: error,
+            stackTrace: stackTrace,
           ),
         );
-        try {
-          final user = await _authRepository.getCurrentUser();
-          debugPrint('Auth state initialized: $user');
-          setState(AppState.idle(message: 'Auth initialized', user: user));
-          _startUserSync();
-        } catch (error, stackTrace) {
-          setState(
-            AppState.failed(
-              message: 'Failed to initialize auth state: ${error.toString()}',
-              user: state.user,
-              error: error,
-              stackTrace: stackTrace,
-            ),
-          );
-        }
-      });
+      },
+    );
+  }
 
   void _startUserSync() {
     if (state.user is! AuthorizedUser) {
@@ -76,7 +69,9 @@ final class AppController extends BaseController<AppState> {
     _userStream = watchUserWithId(userId);
     _userStreamSubscription?.cancel();
     _userStreamSubscription = _userStream!.listen((user) {
-      setState(AppState.idle(message: 'User synced from Firebase', user: user));
+      setState(
+        AppState.idle(message: 'User synced from Firebase: $user', user: user),
+      );
     });
   }
 
@@ -230,31 +225,33 @@ final class AppController extends BaseController<AppState> {
         }
       });
 
-  Stream<List<Chat>> watchChatsForUser(String userId) {
-    return _firestoreRepository.watchChatsForUser(userId);
+  Stream<List<DirectChat>> watchDirectChatsForUser(String userId) {
+    return _firestoreRepository.watchDirectChatsForUser(userId);
   }
 
-  Future<Chat> createChat({
+  Stream<List<GroupChat>> watchGroupChatsForUser(String userId) {
+    return _firestoreRepository.watchGroupChatsForUser(userId);
+  }
+
+  Future<DirectChat> createDirectChat({
     required List<String> participants,
     required String chatName,
   }) async => await serialExecutor.synchronized(() async {
     setState(
       AppState.processing(
-        message: 'Creating chat "$chatName"...',
+        message: 'Creating direct chat "$chatName"...',
         user: state.user,
       ),
     );
     try {
-      final chat = await _firestoreRepository.createChat(
+      final chat = await _firestoreRepository.createDirectChat(
         participants: participants,
         chatName: chatName,
-        groupOwnerId: participants.length > 2
-            ? (state.user as AuthorizedUser).id
-            : '',
       );
       setState(
         AppState.idle(
-          message: 'Chat "$chatName" created successfully, id: "${chat.id}"',
+          message:
+              'Direct chat "$chatName" created successfully, id: "${chat.id}"',
           user: state.user,
         ),
       );
@@ -262,7 +259,46 @@ final class AppController extends BaseController<AppState> {
     } catch (error, stackTrace) {
       setState(
         AppState.failed(
-          message: 'Failed to create chat "$chatName": ${error.toString()}',
+          message:
+              'Failed to create direct chat "$chatName": ${error.toString()}',
+          user: state.user,
+          error: error,
+          stackTrace: stackTrace,
+        ),
+      );
+      rethrow;
+    }
+  });
+
+  Future<GroupChat> createGroupChat({
+    required String chatName,
+    required List<String> participants,
+  }) async => await serialExecutor.synchronized(() async {
+    setState(
+      AppState.processing(
+        message: 'Creating group chat "$chatName"...',
+        user: state.user,
+      ),
+    );
+    try {
+      final chat = await _firestoreRepository.createGroupChat(
+        chatName: chatName,
+        participants: participants,
+        ownerId: (state.user as AuthorizedUser).id,
+      );
+      setState(
+        AppState.idle(
+          message:
+              'Group chat "$chatName" created successfully, id: "${chat.id}"',
+          user: state.user,
+        ),
+      );
+      return chat;
+    } catch (error, stackTrace) {
+      setState(
+        AppState.failed(
+          message:
+              'Failed to create group chat "$chatName": ${error.toString()}',
           user: state.user,
           error: error,
           stackTrace: stackTrace,
@@ -276,11 +312,15 @@ final class AppController extends BaseController<AppState> {
     return _firestoreRepository.watchAllUsers();
   }
 
-  Stream<List<Message>> watchMessagesForChat(String chatId) {
-    return _firestoreRepository.watchMessagesForChat(chatId: chatId);
+  Stream<List<Message>> watchMessagesForDirectChat(String chatId) {
+    return _firestoreRepository.watchMessagesForDirectChat(chatId: chatId);
   }
 
-  Future<Message> createMessage({
+  Stream<List<Message>> watchMessagesForGroupChat(String chatId) {
+    return _firestoreRepository.watchMessagesForGroupChat(chatId: chatId);
+  }
+
+  Future<Message> createDirectChatMessage({
     required String chatId,
     required String senderId,
     required String senderName,
@@ -288,12 +328,12 @@ final class AppController extends BaseController<AppState> {
   }) async => await serialExecutor.synchronized(() async {
     setState(
       AppState.processing(
-        message: 'Sending message "$body" in chat "$chatId"...',
+        message: 'Sending message "$body" in direct chat "$chatId"...',
         user: state.user,
       ),
     );
     try {
-      final message = await _firestoreRepository.createMessage(
+      final message = await _firestoreRepository.createDirectChatMessage(
         chatId: chatId,
         senderId: senderId,
         body: body,
@@ -301,7 +341,7 @@ final class AppController extends BaseController<AppState> {
       setState(
         AppState.idle(
           message:
-              'Message "$body" sent successfully in chat "$chatId", id: "${message.id}"',
+              'Message "$body" sent successfully in direct chat "$chatId", id: "${message.id}"',
           user: state.user,
         ),
       );
@@ -310,7 +350,7 @@ final class AppController extends BaseController<AppState> {
       setState(
         AppState.failed(
           message:
-              'Failed to send message "$body" in chat "$chatId": ${error.toString()}',
+              'Failed to send message "$body" in direct chat "$chatId": ${error.toString()}',
           user: state.user,
           error: error,
           stackTrace: stackTrace,
@@ -320,24 +360,65 @@ final class AppController extends BaseController<AppState> {
     }
   });
 
-  Future<void> updateChatLastMessage({
+  Future<Message> createGroupChatMessage({
+    required String chatId,
+    required String senderId,
+    required String senderName,
+    required String body,
+  }) async => await serialExecutor.synchronized(() async {
+    setState(
+      AppState.processing(
+        message: 'Sending message "$body" in group chat "$chatId"...',
+        user: state.user,
+      ),
+    );
+    try {
+      final message = await _firestoreRepository.createGroupChatMessage(
+        chatId: chatId,
+        senderId: senderId,
+        body: body,
+      );
+      setState(
+        AppState.idle(
+          message:
+              'Message "$body" sent successfully in group chat "$chatId", id: "${message.id}"',
+          user: state.user,
+        ),
+      );
+      return message;
+    } catch (error, stackTrace) {
+      setState(
+        AppState.failed(
+          message:
+              'Failed to send message "$body" in group chat "$chatId": ${error.toString()}',
+          user: state.user,
+          error: error,
+          stackTrace: stackTrace,
+        ),
+      );
+      rethrow;
+    }
+  });
+
+  Future<void> updateDirectChatLastMessage({
     required String chatId,
     required String lastMessage,
   }) async => await serialExecutor.synchronized(() async {
     setState(
       AppState.processing(
-        message: 'Updating last message for chat "$chatId"...',
+        message: 'Updating last message for direct chat "$chatId"...',
         user: state.user,
       ),
     );
     try {
-      await _firestoreRepository.updateChatLastMessage(
+      await _firestoreRepository.updateDirectChatLastMessage(
         chatId: chatId,
         lastMessage: lastMessage,
       );
       setState(
         AppState.idle(
-          message: 'Last message for chat "$chatId" updated successfully',
+          message:
+              'Last message for direct chat "$chatId" updated successfully',
           user: state.user,
         ),
       );
@@ -345,7 +426,7 @@ final class AppController extends BaseController<AppState> {
       setState(
         AppState.failed(
           message:
-              'Failed to update last message for chat "$chatId": ${error.toString()}',
+              'Failed to update last message for direct chat "$chatId": ${error.toString()}',
           user: state.user,
           error: error,
           stackTrace: stackTrace,
@@ -355,28 +436,24 @@ final class AppController extends BaseController<AppState> {
     }
   });
 
-  Stream<int> watchChatUnreadCount(String chatId) {
-    return _firestoreRepository.watchChatUnreadCount(chatId: chatId);
-  }
-
-  Future<void> updateChatUnreadCount({
+  Future<void> updateGroupChatLastMessage({
     required String chatId,
-    required int unreadCount,
+    required String lastMessage,
   }) async => await serialExecutor.synchronized(() async {
     setState(
       AppState.processing(
-        message: 'Updating unread count for chat "$chatId"...',
+        message: 'Updating last message for group chat "$chatId"...',
         user: state.user,
       ),
     );
     try {
-      await _firestoreRepository.updateChatUnreadCount(
+      await _firestoreRepository.updateGroupChatLastMessage(
         chatId: chatId,
-        unreadCount: unreadCount,
+        lastMessage: lastMessage,
       );
       setState(
         AppState.idle(
-          message: 'Unread count for chat "$chatId" updated successfully',
+          message: 'Last message for group chat "$chatId" updated successfully',
           user: state.user,
         ),
       );
@@ -384,7 +461,87 @@ final class AppController extends BaseController<AppState> {
       setState(
         AppState.failed(
           message:
-              'Failed to update unread count for chat "$chatId": ${error.toString()}',
+              'Failed to update last message for group chat "$chatId": ${error.toString()}',
+          user: state.user,
+          error: error,
+          stackTrace: stackTrace,
+        ),
+      );
+      rethrow;
+    }
+  });
+
+  Stream<int> watchDirectChatUnreadCount(String chatId) {
+    return _firestoreRepository.watchDirectChatUnreadCount(chatId: chatId);
+  }
+
+  Stream<Map<String, int>> watchGroupChatUnreadCounts(String chatId) {
+    return _firestoreRepository.watchGroupChatUnreadCounts(chatId: chatId);
+  }
+
+  Future<void> updateDirectChatUnreadCount({
+    required String chatId,
+    required int unreadCount,
+  }) async => await serialExecutor.synchronized(() async {
+    setState(
+      AppState.processing(
+        message: 'Updating unread count for direct chat "$chatId"...',
+        user: state.user,
+      ),
+    );
+    try {
+      await _firestoreRepository.updateDirectChatUnreadCount(
+        chatId: chatId,
+        unreadCount: unreadCount,
+      );
+      setState(
+        AppState.idle(
+          message:
+              'Unread count for direct chat "$chatId" updated successfully',
+          user: state.user,
+        ),
+      );
+    } catch (error, stackTrace) {
+      setState(
+        AppState.failed(
+          message:
+              'Failed to update unread count for direct chat "$chatId": ${error.toString()}',
+          user: state.user,
+          error: error,
+          stackTrace: stackTrace,
+        ),
+      );
+      rethrow;
+    }
+  });
+
+  Future<void> updateGroupChatUnreadCounts({
+    required String chatId,
+    required Map<String, int> unreadCounts,
+  }) async => await serialExecutor.synchronized(() async {
+    setState(
+      AppState.processing(
+        message: 'Updating unread counts for group chat "$chatId"...',
+        user: state.user,
+      ),
+    );
+    try {
+      await _firestoreRepository.updateGroupChatUnreadCounts(
+        chatId: chatId,
+        unreadCounts: unreadCounts,
+      );
+      setState(
+        AppState.idle(
+          message:
+              'Unread counts for group chat "$chatId" updated successfully',
+          user: state.user,
+        ),
+      );
+    } catch (error, stackTrace) {
+      setState(
+        AppState.failed(
+          message:
+              'Failed to update unread counts for group chat "$chatId": ${error.toString()}',
           user: state.user,
           error: error,
           stackTrace: stackTrace,
@@ -593,26 +750,27 @@ final class AppController extends BaseController<AppState> {
     }
   });
 
-  Future<void> deleteChat(String chatId) async =>
+  Future<void> deleteDirectChat(String chatId) async =>
       await serialExecutor.synchronized(() async {
         setState(
           AppState.processing(
-            message: 'Deleting chat "$chatId"...',
+            message: 'Deleting direct chat "$chatId"...',
             user: state.user,
           ),
         );
         try {
-          await _firestoreRepository.deleteChat(chatId);
+          await _firestoreRepository.deleteDirectChat(chatId);
           setState(
             AppState.idle(
-              message: 'Chat "$chatId" deleted successfully',
+              message: 'Direct chat "$chatId" deleted successfully',
               user: state.user,
             ),
           );
         } catch (error, stackTrace) {
           setState(
             AppState.failed(
-              message: 'Failed to delete chat "$chatId": ${error.toString()}',
+              message:
+                  'Failed to delete direct chat "$chatId": ${error.toString()}',
               user: state.user,
               error: error,
               stackTrace: stackTrace,
@@ -622,19 +780,35 @@ final class AppController extends BaseController<AppState> {
         }
       });
 
-  Stream<List<AuthorizedUser>> watchAllUsersExcludingFriends(String userId) {
-    return _firestoreRepository.watchAllUsers().asyncMap((users) async {
-      final friends = await _firestoreRepository
-          .watchFriendsForUser(userId: userId)
-          .first;
-
-      final friendIds = friends.map((friend) => friend.id).toSet();
-
-      return users
-          .where((user) => user.id != userId && !friendIds.contains(user.id))
-          .toList();
-    });
-  }
+  Future<void> deleteGroupChat(String chatId) async =>
+      await serialExecutor.synchronized(() async {
+        setState(
+          AppState.processing(
+            message: 'Deleting group chat "$chatId"...',
+            user: state.user,
+          ),
+        );
+        try {
+          await _firestoreRepository.deleteGroupChat(chatId);
+          setState(
+            AppState.idle(
+              message: 'Group chat "$chatId" deleted successfully',
+              user: state.user,
+            ),
+          );
+        } catch (error, stackTrace) {
+          setState(
+            AppState.failed(
+              message:
+                  'Failed to delete group chat "$chatId": ${error.toString()}',
+              user: state.user,
+              error: error,
+              stackTrace: stackTrace,
+            ),
+          );
+          rethrow;
+        }
+      });
 
   Stream<List<Project>> watchToDoProjectsForUser(String userId) {
     return _firestoreRepository.watchProjectsForUser(userId).map((projects) {
@@ -700,78 +874,6 @@ final class AppController extends BaseController<AppState> {
     }
   });
 
-  Future<Project> getProjectWithId(
-    String projectId,
-  ) async => await serialExecutor.synchronized(() async {
-    setState(
-      AppState.processing(
-        message: 'Loading project with id "$projectId"...',
-        user: state.user,
-      ),
-    );
-    try {
-      final projects = await _firestoreRepository
-          .watchProjectsForUser(
-            state.user is AuthorizedUser
-                ? (state.user as AuthorizedUser).id
-                : '',
-          )
-          .first;
-
-      final project = projects.firstWhere((p) => p.id == projectId);
-      setState(
-        AppState.idle(
-          message: 'Project with id "$projectId" loaded successfully',
-          user: state.user,
-        ),
-      );
-      return project;
-    } catch (error, stackTrace) {
-      setState(
-        AppState.failed(
-          message:
-              'Failed to get project with id "$projectId": ${error.toString()}',
-          user: state.user,
-          error: error,
-          stackTrace: stackTrace,
-        ),
-      );
-      rethrow;
-    }
-  });
-
-  Future<AuthorizedUser> getUserWithId(String userId) async =>
-      await serialExecutor.synchronized(() async {
-        setState(
-          AppState.processing(
-            message: 'Loading user with id "$userId"...',
-            user: state.user,
-          ),
-        );
-        try {
-          final users = await _firestoreRepository.watchAllUsers().first;
-          final user = users.firstWhere((u) => u.id == userId);
-          setState(
-            AppState.idle(
-              message: 'User with id "$userId" loaded successfully',
-              user: state.user,
-            ),
-          );
-          return user;
-        } catch (error, stackTrace) {
-          setState(
-            AppState.failed(
-              message:
-                  'Failed to get user with id "$userId": ${error.toString()}',
-              user: state.user,
-              error: error,
-              stackTrace: stackTrace,
-            ),
-          );
-          rethrow;
-        }
-      });
-
   Future<void> updateProject(
     Project project,
   ) async => await serialExecutor.synchronized(() async {
@@ -816,23 +918,6 @@ final class AppController extends BaseController<AppState> {
 
   Stream<Project> watchProjectWithId(String projectId) {
     return _firestoreRepository.watchProjectWithId(projectId);
-  }
-
-  Stream<List<AuthorizedUser>> watchAllUsersExcludingProjectParticipants(
-    String userId,
-    String projectId,
-  ) {
-    return _firestoreRepository.watchAllUsers().asyncMap((users) async {
-      final project = await _firestoreRepository
-          .watchProjectWithId(projectId)
-          .first;
-
-      final participantIds = project.participants.toSet();
-
-      return users
-          .where((u) => u.id != userId && !participantIds.contains(u.id))
-          .toList();
-    });
   }
 
   Stream<AuthorizedUser> watchUserWithId(String memberId) {
@@ -945,8 +1030,12 @@ final class AppController extends BaseController<AppState> {
         }
       });
 
-  Stream<Chat> watchChatWithId(String chatId) {
-    return _firestoreRepository.watchChatWithId(chatId);
+  Stream<DirectChat> watchDirectChatWithId(String chatId) {
+    return _firestoreRepository.watchDirectChatWithId(chatId);
+  }
+
+  Stream<GroupChat> watchGroupChatWithId(String chatId) {
+    return _firestoreRepository.watchGroupChatWithId(chatId);
   }
 
   Future<void>
@@ -1036,6 +1125,100 @@ final class AppController extends BaseController<AppState> {
       rethrow;
     }
   });
+
+  Future<void> uploadGroupChatAvatar(
+    String chatId,
+  ) async => await serialExecutor.synchronized(() async {
+    setState(
+      AppState.processing(
+        message: 'Uploading avatar for group chat "$chatId"...',
+        user: state.user,
+      ),
+    );
+    try {
+      XFile? imageFile;
+      if (!kIsWeb) {
+        imageFile = await ImagePicker().pickImage(source: ImageSource.gallery);
+      } else {
+        imageFile = await ImagePickerPlugin().getImageFromSource(
+          source: ImageSource.gallery,
+        );
+      }
+      if (imageFile == null) {
+        setState(
+          AppState.idle(
+            message: 'Group chat avatar upload cancelled for chat "$chatId".',
+            user: state.user,
+          ),
+        );
+        return;
+      }
+      final url = await _storageRepository.uploadGroupChatAvatar(
+        chatId: chatId,
+        file: imageFile,
+      );
+      await _firestoreRepository.updateGroupChatAvatarUrl(
+        chatId: chatId,
+        url: url,
+      );
+      setState(
+        AppState.idle(
+          message: 'Avatar uploaded successfully for group chat "$chatId".',
+          user: state.user,
+        ),
+      );
+    } catch (error, stackTrace) {
+      setState(
+        AppState.failed(
+          message:
+              'Failed to upload avatar for group chat "$chatId": ${error.toString()}',
+          user: state.user,
+          error: error,
+          stackTrace: stackTrace,
+        ),
+      );
+      rethrow;
+    }
+  });
+
+  Future<void> deleteGroupChatAvatar(
+    String chatId,
+  ) async => await serialExecutor.synchronized(() async {
+    setState(
+      AppState.processing(
+        message: 'Deleting avatar for group chat "$chatId"...',
+        user: state.user,
+      ),
+    );
+    try {
+      await _storageRepository.deleteGroupChatAvatar(chatId: chatId);
+      setState(
+        AppState.idle(
+          message: 'Avatar deleted successfully for group chat "$chatId".',
+          user: state.user,
+        ),
+      );
+    } catch (error, stackTrace) {
+      setState(
+        AppState.failed(
+          message:
+              'Failed to delete avatar for group chat "$chatId": ${error.toString()}',
+          user: state.user,
+          error: error,
+          stackTrace: stackTrace,
+        ),
+      );
+      rethrow;
+    }
+  });
+
+  Stream<List<Chat>> watchAllChatsForUser(String userId) {
+    return _firestoreRepository.watchAllChatsForUser(userId);
+  }
+
+  Stream<Chat> watchChatWithId(String chatId) {
+    return _firestoreRepository.watchChatWithId(chatId);
+  }
 
   @override
   void dispose() {

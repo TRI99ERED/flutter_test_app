@@ -11,14 +11,27 @@ import 'package:test_app/src/widgets/common/app_list_title.dart';
 import 'package:test_app/src/widgets/common/app_text_field.dart';
 import 'package:test_app/src/widgets/common/styles.dart';
 
-class ChatWizard extends StatefulWidget {
-  const ChatWizard({super.key});
+enum ChatWizardMode { create, edit }
 
-  static Future<Chat?> manageChat(BuildContext context) async {
+class ChatWizard extends StatefulWidget {
+  final ChatWizardMode mode;
+  final Chat? chatToEdit;
+
+  const ChatWizard({
+    super.key,
+    this.mode = ChatWizardMode.create,
+    this.chatToEdit,
+  });
+
+  static Future<Chat?> manageChat(
+    BuildContext context, {
+    ChatWizardMode mode = ChatWizardMode.create,
+    Chat? chatToEdit,
+  }) async {
     return await showDialog<Chat?>(
       context: context,
       barrierColor: Colors.black.withAlpha(216),
-      builder: (context) => ChatWizard(),
+      builder: (context) => ChatWizard(mode: mode, chatToEdit: chatToEdit),
     );
   }
 
@@ -49,7 +62,11 @@ class _ChatWizardState extends State<ChatWizard> {
             child: Column(
               spacing: spacing8,
               children: [
-                AppListTitle(title: 'Create Chat'),
+                AppListTitle(
+                  title: widget.mode == ChatWizardMode.create
+                      ? 'Create Chat'
+                      : 'Edit Chat',
+                ),
                 Expanded(
                   child: Form(
                     key: _formKey,
@@ -57,13 +74,6 @@ class _ChatWizardState extends State<ChatWizard> {
                       height: MediaQuery.sizeOf(context).height * 0.6,
                       child: ListView(
                         children: [
-                          AppTextField(
-                            title: 'Chat name',
-                            placeholder: 'Enter chat name',
-                            controller: _nameController,
-                            keyboardType: TextInputType.name,
-                          ),
-                          const SizedBox(height: spacing16),
                           Align(
                             alignment: Alignment.centerRight,
                             child: AppButtonPrimary(
@@ -153,6 +163,45 @@ class _ChatWizardState extends State<ChatWizard> {
                               );
                             },
                           ),
+                          if (widget.mode == ChatWizardMode.edit &&
+                              _participants.value.length > 1)
+                            AppTextField(
+                              title: 'Chat name',
+                              placeholder: 'Enter chat name',
+                              controller: _nameController,
+                              keyboardType: TextInputType.name,
+                            ),
+                          if (widget.mode == ChatWizardMode.edit &&
+                              _participants.value.length > 1)
+                            const SizedBox(height: spacing16),
+                          if (widget.mode == ChatWizardMode.edit &&
+                              _participants.value.length > 1)
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                AppButtonPrimary(
+                                  text: 'Pick an avatar',
+                                  onPressed: () async {
+                                    throw UnimplementedError(
+                                      'Avatar picking not implemented yet',
+                                    );
+                                  },
+                                ),
+                                StreamBuilder(
+                                  stream: context.appController
+                                      .watchGroupChatWithId(
+                                        widget.chatToEdit!.id,
+                                      ),
+                                  builder: (context, asyncSnapshot) {
+                                    final chat = asyncSnapshot.data;
+                                    return AppAvatar.groupAvatarOrPlaceholder(
+                                      chat,
+                                      AvatarSize.large,
+                                    );
+                                  },
+                                ),
+                              ],
+                            ),
                         ],
                       ),
                     ),
@@ -174,7 +223,8 @@ class _ChatWizardState extends State<ChatWizard> {
                       } else {
                         final names = await Future.wait(
                           participants.map(
-                            (id) => context.appController.getUserWithId(id),
+                            (id) =>
+                                context.appController.watchUserWithId(id).first,
                           ),
                         );
                         chatName = names
@@ -182,11 +232,23 @@ class _ChatWizardState extends State<ChatWizard> {
                             .map((user) => user.name)
                             .join(', ');
                       }
-                      final chat = await context.appController.createChat(
+                      if (!context.mounted) return;
+
+                      if (participants.length > 2) {
+                        final chat = await context.appController
+                            .createGroupChat(
+                              participants: participants,
+                              chatName: chatName,
+                            );
+                        if (!context.mounted) return;
+                        context.pop(chat);
+                        return;
+                      }
+                      final chat = await context.appController.createDirectChat(
                         participants: participants,
                         chatName: chatName,
                       );
-                      if (!mounted) return;
+                      if (!context.mounted) return;
                       context.pop(chat);
                     },
                   ),

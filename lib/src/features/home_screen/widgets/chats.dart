@@ -29,7 +29,6 @@ class _ChatsState extends State<Chats> {
   @override
   Widget build(BuildContext context) {
     final user = context.appState.user;
-
     if (user is! AuthorizedUser) {
       return const ErrorState(message: 'User not authorized');
     }
@@ -42,16 +41,12 @@ class _ChatsState extends State<Chats> {
       child: Column(
         children: [
           AppSearchBar(
-            onChanged: (value) {
-              _searchQuery.value = value;
-            },
-            onSubmitted: (value) {
-              _searchQuery.value = value;
-            },
+            onChanged: (value) => _searchQuery.value = value,
+            onSubmitted: (value) => _searchQuery.value = value,
           ),
           Expanded(
-            child: StreamBuilder(
-              stream: context.appController.watchChatsForUser(user.id),
+            child: StreamBuilder<List<Chat>>(
+              stream: context.appController.watchAllChatsForUser(user.id),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(
@@ -64,9 +59,7 @@ class _ChatsState extends State<Chats> {
                     ),
                   );
                 }
-
                 final chats = snapshot.data ?? const [];
-
                 if (chats.isEmpty) {
                   return EmptyState(
                     title: 'Nothing here. For now.',
@@ -74,263 +67,21 @@ class _ChatsState extends State<Chats> {
                     buttonText: 'Start a chat',
                     onButtonPressed: () async {
                       final chat = await ChatWizard.manageChat(context);
-                      if (chat == null) return;
-
-                      if (!mounted) return;
+                      if (!mounted || chat == null) return;
                       context.push('/chats/${chat.id}');
                     },
                   );
                 }
-
-                return ValueListenableBuilder(
+                return ValueListenableBuilder<String>(
                   valueListenable: _searchQuery,
                   builder: (context, query, child) {
-                    final q = query.trim().toLowerCase();
-
-                    Future filterChats() async {
-                      if (q.isEmpty) return chats;
-                      List<Chat> result = [];
-                      for (final chat in chats) {
-                        final name = chat.name.toLowerCase();
-                        if (name.isEmpty) {
-                          final otherParticipantId = chat.participants
-                              .firstWhere((id) => id != user.id);
-                          final otherName = await context.appController
-                              .getUserWithId(otherParticipantId)
-                              .then((user) => user.name.toLowerCase());
-                          if (otherName.contains(q)) {
-                            result.add(chat);
-                          }
-                        } else if (name.contains(q)) {
-                          result.add(chat);
-                        }
-                      }
-                      return result;
-                    }
-
-                    return FutureBuilder(
-                      future: filterChats(),
-                      builder: (context, snapshot) {
-                        if (!snapshot.hasData) {
-                          return const Center(child: AppLoader());
-                        }
-                        final filteredChats = snapshot.data! as List<Chat>;
-                        if (filteredChats.isEmpty) {
-                          return const EmptyState(
-                            title: 'No chats found.',
-                            body: 'Try adjusting your search query.',
-                          );
-                        }
-
-                        return ValueListenableBuilder(
-                          valueListenable: widget.editPressed,
-                          builder: (context, value, child) {
-                            return ListView.builder(
-                              itemCount: filteredChats.length,
-                              itemBuilder: (context, index) {
-                                final chat = filteredChats[index];
-
-                                return StreamBuilder(
-                                  stream: context.appController.watchChatWithId(
-                                    chat.id,
-                                  ),
-                                  builder: (context, chatSnapshot) {
-                                    final resolvedChatNameFuture =
-                                        chatSnapshot
-                                                .data
-                                                ?.participants
-                                                .length ==
-                                            2
-                                        ? context.appController
-                                              .watchUserWithId(
-                                                chatSnapshot.data!.participants
-                                                    .firstWhere(
-                                                      (id) => id != user.id,
-                                                    ),
-                                              )
-                                              .first
-                                              .then((user) => user.name)
-                                        : Future.value(
-                                            chatSnapshot.data?.name ?? '',
-                                          );
-
-                                    return FutureBuilder(
-                                      future: resolvedChatNameFuture,
-                                      builder: (context, nameSnapshot) {
-                                        final resolvedChatName =
-                                            nameSnapshot.data ?? '';
-
-                                        return StreamBuilder(
-                                          stream: context.appController
-                                              .watchMessagesForChat(chat.id),
-                                          builder: (context, snapshot) {
-                                            Widget buildListItem({
-                                              required String title,
-                                              required String description,
-                                              required AppListItemControl
-                                              control,
-                                              String? symbol,
-                                              VoidCallback? onPressed,
-                                              String? largeButtonText,
-                                            }) {
-                                              return Padding(
-                                                padding:
-                                                    const EdgeInsets.symmetric(
-                                                      vertical: spacing4,
-                                                    ),
-                                                child: SizedBox(
-                                                  height: 72,
-                                                  child: StreamBuilder(
-                                                    stream: context
-                                                        .appController
-                                                        .watchUserWithId(
-                                                          chat.participants
-                                                              .firstWhere(
-                                                                (id) =>
-                                                                    id !=
-                                                                    user.id,
-                                                              ),
-                                                        ),
-                                                    builder:
-                                                        (
-                                                          context,
-                                                          asyncSnapshot,
-                                                        ) {
-                                                          final otherUser =
-                                                              asyncSnapshot
-                                                                  .data;
-
-                                                          return AppListItem(
-                                                            title: title,
-                                                            description:
-                                                                description,
-                                                            avatar:
-                                                                AppAvatar.avatarOrPlaceholder(
-                                                                  otherUser,
-                                                                  AvatarSize
-                                                                      .small,
-                                                                ),
-                                                            control: control,
-                                                            symbol: symbol,
-                                                            largeButtonText:
-                                                                largeButtonText,
-                                                            onPressed:
-                                                                onPressed,
-                                                          );
-                                                        },
-                                                  ),
-                                                ),
-                                              );
-                                            }
-
-                                            final canEdit =
-                                                widget.editPressed.value &&
-                                                (chat.groupOwnerId == user.id ||
-                                                    chat.groupOwnerId == '');
-
-                                            if (snapshot.data == null ||
-                                                snapshot.data!.isEmpty) {
-                                              return buildListItem(
-                                                title: resolvedChatName,
-                                                description: 'No messages yet',
-                                                control: canEdit
-                                                    ? AppListItemControl
-                                                          .largeButton
-                                                    : AppListItemControl.none,
-                                                largeButtonText: canEdit
-                                                    ? 'Delete'
-                                                    : null,
-                                                onPressed: canEdit
-                                                    ? () {
-                                                        context.appController
-                                                            .deleteChat(
-                                                              chat.id,
-                                                            );
-                                                      }
-                                                    : () {
-                                                        if (!mounted) return;
-                                                        context.push(
-                                                          '/chats/${chat.id}',
-                                                        );
-                                                      },
-                                              );
-                                            }
-
-                                            final lastSenderId =
-                                                snapshot.data?.first.senderId;
-                                            if (lastSenderId != null &&
-                                                lastSenderId != user.id &&
-                                                chat.unreadCount > 0) {
-                                              return buildListItem(
-                                                title: resolvedChatName,
-                                                description: chat.lastMessage,
-                                                control: canEdit
-                                                    ? AppListItemControl
-                                                          .largeButton
-                                                    : AppListItemControl.badge,
-                                                symbol: canEdit
-                                                    ? null
-                                                    : chat.unreadCount
-                                                          .toString(),
-                                                largeButtonText: canEdit
-                                                    ? 'Delete'
-                                                    : null,
-                                                onPressed:
-                                                    widget.editPressed.value
-                                                    ? () {
-                                                        context.appController
-                                                            .deleteChat(
-                                                              chat.id,
-                                                            );
-                                                      }
-                                                    : () async {
-                                                        if (!mounted) return;
-                                                        context.push(
-                                                          '/chats/${chat.id}',
-                                                        );
-                                                        await context
-                                                            .appController
-                                                            .updateChatUnreadCount(
-                                                              chatId: chat.id,
-                                                              unreadCount: 0,
-                                                            );
-                                                      },
-                                              );
-                                            }
-
-                                            return buildListItem(
-                                              title: resolvedChatName,
-                                              description: chat.lastMessage,
-                                              control: canEdit
-                                                  ? AppListItemControl
-                                                        .largeButton
-                                                  : AppListItemControl.none,
-                                              largeButtonText: canEdit
-                                                  ? 'Delete'
-                                                  : null,
-                                              onPressed: canEdit
-                                                  ? () {
-                                                      context.appController
-                                                          .deleteChat(chat.id);
-                                                    }
-                                                  : () {
-                                                      if (!mounted) return;
-                                                      context.push(
-                                                        '/chats/${chat.id}',
-                                                      );
-                                                    },
-                                            );
-                                          },
-                                        );
-                                      },
-                                    );
-                                  },
-                                );
-                              },
-                            );
-                          },
-                        );
-                      },
+                    return _FilteredChatsList(
+                      chats: chats,
+                      query: query,
+                      user: user,
+                      editPressed: widget.editPressed,
+                      mounted: mounted,
+                      context: context,
                     );
                   },
                 );
@@ -341,11 +92,290 @@ class _ChatsState extends State<Chats> {
       ),
     );
   }
+}
+
+class _FilteredChatsList extends StatelessWidget {
+  final List<Chat> chats;
+  final String query;
+  final AuthorizedUser user;
+  final ValueNotifier<bool> editPressed;
+  final bool mounted;
+  final BuildContext context;
+
+  const _FilteredChatsList({
+    required this.chats,
+    required this.query,
+    required this.user,
+    required this.editPressed,
+    required this.mounted,
+    required this.context,
+  });
+
+  Future<List<Chat>> _filterChats() async {
+    final q = query.trim().toLowerCase();
+    if (q.isEmpty) return chats;
+    List<Chat> result = [];
+    for (final chat in chats) {
+      final name = chat.name.toLowerCase();
+      if (name.isEmpty) {
+        final otherParticipantId = chat.participants.firstWhere(
+          (id) => id != user.id,
+          orElse: () => '',
+        );
+        if (otherParticipantId.isNotEmpty) {
+          final otherName = await context.appController
+              .watchUserWithId(otherParticipantId)
+              .first
+              .then((user) => user.name.toLowerCase());
+          if (otherName.contains(q)) {
+            result.add(chat);
+          }
+        }
+      } else if (name.contains(q)) {
+        result.add(chat);
+      }
+    }
+    return result;
+  }
 
   @override
-  void dispose() {
-    _searchQuery.dispose();
-    super.dispose();
+  Widget build(BuildContext context) {
+    return FutureBuilder<List<Chat>>(
+      future: _filterChats(),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          return const Center(child: AppLoader());
+        }
+        final filteredChats = snapshot.data!;
+        if (filteredChats.isEmpty) {
+          return const EmptyState(
+            title: 'No chats found.',
+            body: 'Try adjusting your search query.',
+          );
+        }
+        return ValueListenableBuilder<bool>(
+          valueListenable: editPressed,
+          builder: (context, canEdit, child) {
+            return ListView.builder(
+              itemCount: filteredChats.length,
+              itemBuilder: (context, index) {
+                final chat = filteredChats[index];
+                return _ChatListItem(
+                  chat: chat,
+                  user: user,
+                  canEdit: canEdit,
+                  mounted: mounted,
+                  context: this.context,
+                );
+              },
+            );
+          },
+        );
+      },
+    );
+  }
+}
+
+class _ChatListItem extends StatelessWidget {
+  final Chat chat;
+  final AuthorizedUser user;
+  final bool canEdit;
+  final bool mounted;
+  final BuildContext context;
+
+  const _ChatListItem({
+    required this.chat,
+    required this.user,
+    required this.canEdit,
+    required this.mounted,
+    required this.context,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder(
+      stream: this.context.appController.watchChatWithId(chat.id),
+      builder: (context, chatSnapshot) {
+        if (chatSnapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: SizedBox(width: 32, child: AppLoader()));
+        } else if (chatSnapshot.hasError) {
+          return Center(
+            child: ErrorState(
+              message: 'Error loading chat: ${chatSnapshot.error}',
+            ),
+          );
+        }
+        final participants = chatSnapshot.data?.participants ?? [];
+        final otherParticipantId = participants.firstWhere(
+          (id) => id != user.id,
+          orElse: () => '',
+        );
+        final resolvedChatNameFuture =
+            participants.length == 2 && otherParticipantId.isNotEmpty
+            ? this.context.appController
+                  .watchUserWithId(otherParticipantId)
+                  .first
+                  .then((user) => user.name)
+            : Future.value(chatSnapshot.data?.name ?? '');
+        return FutureBuilder<String>(
+          future: resolvedChatNameFuture,
+          builder: (context, nameSnapshot) {
+            final resolvedChatName = nameSnapshot.data ?? '';
+            if (chat is DirectChat) {
+              return StreamBuilder(
+                stream: this.context.appController.watchMessagesForDirectChat(
+                  chat.id,
+                ),
+                builder: (context, msgSnapshot) {
+                  if (msgSnapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(
+                      child: SizedBox(width: 32, child: AppLoader()),
+                    );
+                  } else if (msgSnapshot.hasError) {
+                    return Center(
+                      child: ErrorState(
+                        message:
+                            'Error loading messages!: ${msgSnapshot.error}',
+                      ),
+                    );
+                  }
+                  final messages = msgSnapshot.data;
+                  final lastSenderId = messages?.isNotEmpty == true
+                      ? messages!.first.senderId
+                      : null;
+                  final unreadCount = (chat as DirectChat).unreadCount;
+                  final description = messages == null || messages.isEmpty
+                      ? 'No messages yet'
+                      : chat.lastMessage;
+                  final control = canEdit
+                      ? AppListItemControl.largeButton
+                      : (lastSenderId != null &&
+                            lastSenderId != user.id &&
+                            unreadCount > 0)
+                      ? AppListItemControl.badge
+                      : AppListItemControl.none;
+                  final symbol = canEdit
+                      ? null
+                      : (lastSenderId != null &&
+                            lastSenderId != user.id &&
+                            unreadCount > 0)
+                      ? unreadCount.toString()
+                      : null;
+                  final largeButtonText = canEdit ? 'Delete' : null;
+                  final onPressed = canEdit
+                      ? () =>
+                            this.context.appController.deleteDirectChat(chat.id)
+                      : () async {
+                          if (!mounted) return;
+                          this.context.push('/chats/${chat.id}');
+                          if (lastSenderId != null &&
+                              lastSenderId != user.id &&
+                              unreadCount > 0) {
+                            await this.context.appController
+                                .updateDirectChatUnreadCount(
+                                  chatId: chat.id,
+                                  unreadCount: 0,
+                                );
+                          }
+                        };
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: spacing4),
+                    child: SizedBox(
+                      height: 72,
+                      child: otherParticipantId.isEmpty
+                          ? AppListItem(
+                              title: resolvedChatName,
+                              description: description,
+                              avatar: AppAvatar.avatarOrPlaceholder(
+                                null,
+                                AvatarSize.small,
+                              ),
+                              control: control,
+                              symbol: symbol,
+                              largeButtonText: largeButtonText,
+                              onPressed: onPressed,
+                            )
+                          : StreamBuilder(
+                              stream: this.context.appController
+                                  .watchUserWithId(otherParticipantId),
+                              builder: (context, asyncSnapshot) {
+                                final otherUser = asyncSnapshot.data;
+                                return AppListItem(
+                                  title: resolvedChatName,
+                                  description: description,
+                                  avatar: AppAvatar.avatarOrPlaceholder(
+                                    otherUser,
+                                    AvatarSize.small,
+                                  ),
+                                  control: control,
+                                  symbol: symbol,
+                                  largeButtonText: largeButtonText,
+                                  onPressed: onPressed,
+                                );
+                              },
+                            ),
+                    ),
+                  );
+                },
+              );
+            } else if (chat is GroupChat) {
+              return StreamBuilder(
+                stream: this.context.appController.watchMessagesForGroupChat(
+                  chat.id,
+                ),
+                builder: (context, msgSnapshot) {
+                  if (msgSnapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(
+                      child: SizedBox(width: 32, child: AppLoader()),
+                    );
+                  } else if (msgSnapshot.hasError) {
+                    return Center(
+                      child: ErrorState(
+                        message:
+                            'Error loading messages!: ${msgSnapshot.error}',
+                      ),
+                    );
+                  }
+                  final messages = msgSnapshot.data;
+                  final description = messages == null || messages.isEmpty
+                      ? 'No messages yet'
+                      : chat.lastMessage;
+                  final largeButtonText = canEdit ? 'Delete' : null;
+                  final onPressed = canEdit
+                      ? () =>
+                            this.context.appController.deleteGroupChat(chat.id)
+                      : () {
+                          if (!mounted) return;
+                          this.context.push('/chats/${chat.id}');
+                        };
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: spacing4),
+                    child: SizedBox(
+                      height: 72,
+                      child: AppListItem(
+                        title: resolvedChatName,
+                        description: description,
+                        avatar: AppAvatar.groupAvatarOrPlaceholder(
+                          (chat as GroupChat),
+                          AvatarSize.small,
+                        ),
+                        control: canEdit
+                            ? AppListItemControl.largeButton
+                            : AppListItemControl.none,
+                        symbol: null,
+                        largeButtonText: largeButtonText,
+                        onPressed: onPressed,
+                      ),
+                    ),
+                  );
+                },
+              );
+            }
+            return const SizedBox.shrink();
+          },
+        );
+      },
+    );
   }
 }
 

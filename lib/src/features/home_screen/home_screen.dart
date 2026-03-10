@@ -74,7 +74,7 @@ class _HomeScreenState extends State<HomeScreen> {
               1 => Friends(editPressed: _editPressed),
               2 => Projects(editPressed: _editPressed),
               3 => const Settings(),
-              _ => SizedBox.shrink(),
+              _ => const SizedBox.shrink(),
             },
           );
         },

@@ -39,4 +39,6 @@ abstract interface class IFirebaseAuthRepository {
   Future<AuthorizedUser> updateUserProfile({String? name, String? avatarUrl});
 
   Future<void> verifyEmailCode({required String code});
+
+  Stream<AuthorizedUser> watchAuthState();
 }

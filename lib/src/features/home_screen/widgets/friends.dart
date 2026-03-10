@@ -303,7 +303,7 @@ class _FriendsSectionState extends State<_FriendsSection> {
 
                                           if (!mounted) return;
                                           final chat = await appController
-                                              .createChat(
+                                              .createDirectChat(
                                                 participants: [
                                                   user.id,
                                                   friend.id,

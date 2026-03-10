@@ -68,7 +68,9 @@ class UserPicker extends StatefulWidget {
         return null;
       }
 
-      final project = await context.appController.getProjectWithId(projectId);
+      final project = await context.appController
+          .watchProjectWithId(projectId)
+          .first;
       final participantIds = project.participants;
       users = users.where((u) => !participantIds.contains(u.id)).toList();
     }

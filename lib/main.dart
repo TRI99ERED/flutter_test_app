@@ -17,7 +17,6 @@ void main() {
       await Firebase.initializeApp(
         options: DefaultFirebaseOptions.currentPlatform,
       );
-      // Preload Inter font to avoid blocking the UI thread
       GoogleFonts.inter();
       runApp(const App());
     },

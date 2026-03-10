@@ -7,4 +7,11 @@ abstract interface class IFirebaseStorageRepository {
   });
 
   Future<void> deleteUserAvatar({required String userId});
+
+  Future<String> uploadGroupChatAvatar({
+    required String chatId,
+    required XFile file,
+  });
+
+  Future<void> deleteGroupChatAvatar({required String chatId});
 }

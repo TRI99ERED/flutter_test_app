@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-abstract class UserEntity {
+abstract base class UserEntity {
   const UserEntity();
 
   UserEntity copyWith();
@@ -74,6 +74,11 @@ final class AuthorizedUser extends UserEntity {
   @override
   int get hashCode =>
       Object.hash(runtimeType, id, name, email, handle, avatarUrl);
+
+  @override
+  String toString() {
+    return 'AuthorizedUser{id: $id, name: $name, email: $email, handle: $handle, avatarUrl: $avatarUrl}';
+  }
 
   Map<String, dynamic> toFirestore() {
     return {

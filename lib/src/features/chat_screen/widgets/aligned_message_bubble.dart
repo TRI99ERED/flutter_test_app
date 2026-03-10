@@ -6,14 +6,14 @@ import 'package:test_app/src/widgets/common/app_message_bubble.dart';
 import 'package:test_app/src/widgets/common/styles.dart';
 
 class AlignedMessageBubble extends StatelessWidget {
-  final List<Message> messages;
+  final Map<Message, String> messagesWithSenderNames;
   final int index;
   final bool isLastInSequence;
   final bool isFirstInSequence;
 
   const AlignedMessageBubble({
     super.key,
-    required this.messages,
+    required this.messagesWithSenderNames,
     required this.index,
     this.isLastInSequence = false,
     this.isFirstInSequence = false,
@@ -23,7 +23,7 @@ class AlignedMessageBubble extends StatelessWidget {
   Widget build(BuildContext context) {
     return Align(
       alignment:
-          messages[index].senderId ==
+          messagesWithSenderNames.keys.elementAt(index).senderId ==
               (context.appState.user as AuthorizedUser).id
           ? Alignment.centerRight
           : Alignment.centerLeft,
@@ -34,11 +34,13 @@ class AlignedMessageBubble extends StatelessWidget {
             maxWidth: MediaQuery.sizeOf(context).width * 0.5,
           ),
           child: AppMessageBubble(
-            name: isFirstInSequence ? messages[index].senderName : null,
-            body: messages[index].body,
+            name: isFirstInSequence
+                ? messagesWithSenderNames.values.elementAt(index)
+                : null,
+            body: messagesWithSenderNames.keys.elementAt(index).body,
             isLastInSequence: isLastInSequence,
             messageType:
-                messages[index].senderId ==
+                messagesWithSenderNames.keys.elementAt(index).senderId ==
                     (context.appState.user as AuthorizedUser).id
                 ? MessageType.sent
                 : MessageType.received,
