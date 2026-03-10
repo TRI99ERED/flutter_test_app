@@ -27,7 +27,8 @@ class AppContentSwitcher extends StatefulWidget {
   State<AppContentSwitcher> createState() => _AppContentSwitcherState();
 }
 
-class _AppContentSwitcherState extends State<AppContentSwitcher> {
+class _AppContentSwitcherState extends State<AppContentSwitcher>
+    with SingleTickerProviderStateMixin {
   late int _selectedIndex;
 
   @override
@@ -51,36 +52,75 @@ class _AppContentSwitcherState extends State<AppContentSwitcher> {
         color: LightColor.light.color,
         borderRadius: BorderRadius.circular(16),
       ),
-      child: IntrinsicHeight(
-        child: Row(
-          children: List.generate(widget.sectionCount * 2 - 1, (index) {
-            if (index.isOdd) {
-              return VerticalDivider(
-                color: LightColor.darkest.color,
-                indent: 9.5,
-                endIndent: 9.5,
-                thickness: 1,
-              );
-            }
-            return Expanded(
-              child: Padding(
-                padding: EdgeInsets.all(spacing4),
-                child: _AppSection(
-                  text: widget.sectionTitles[index ~/ 2],
-                  onPressed: () {
-                    setState(() {
-                      _selectedIndex = index ~/ 2;
-                    });
-                    if (widget.onSectionSelected != null) {
-                      widget.onSectionSelected!(index ~/ 2);
-                    }
-                  },
-                  selected: index ~/ 2 == _selectedIndex,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final sectionWidth = constraints.maxWidth / widget.sectionCount;
+          return SizedBox(
+            height: 40,
+            child: Stack(
+              children: [
+                AnimatedAlign(
+                  alignment: Alignment(
+                    -1 + (_selectedIndex * 2) / (widget.sectionCount - 1),
+                    0,
+                  ),
+                  duration: const Duration(milliseconds: 300),
+                  curve: Curves.easeInOut,
+                  child: SizedBox(
+                    width: sectionWidth,
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: spacing12,
+                        vertical: spacing4,
+                      ),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: LightColor.lightest.color,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
-              ),
-            );
-          }),
-        ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: spacing8),
+                  child: Row(
+                    children: List.generate(widget.sectionCount * 2 - 1, (
+                      index,
+                    ) {
+                      if (index.isOdd) {
+                        return VerticalDivider(
+                          color: LightColor.darkest.color,
+                          indent: 9.5,
+                          endIndent: 9.5,
+                          thickness: 1,
+                        );
+                      }
+                      final sectionIdx = index ~/ 2;
+                      return Expanded(
+                        child: Padding(
+                          padding: EdgeInsets.all(spacing4),
+                          child: _AppSection(
+                            text: widget.sectionTitles[sectionIdx],
+                            onPressed: () {
+                              setState(() {
+                                _selectedIndex = sectionIdx;
+                              });
+                              if (widget.onSectionSelected != null) {
+                                widget.onSectionSelected!(sectionIdx);
+                              }
+                            },
+                            selected: sectionIdx == _selectedIndex,
+                          ),
+                        ),
+                      );
+                    }),
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
       ),
     );
   }
@@ -103,7 +143,7 @@ class _AppSection extends StatelessWidget {
       onPressed: onPressed,
       style: TextButton.styleFrom(
         padding: EdgeInsets.symmetric(vertical: spacing8, horizontal: 0),
-        backgroundColor: selected ? LightColor.lightest.color : null,
+        backgroundColor: Colors.transparent,
         foregroundColor: selected
             ? DarkColor.darkest.color
             : DarkColor.light.color,

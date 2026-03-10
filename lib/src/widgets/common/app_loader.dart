@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:test_app/src/widgets/common/styles.dart';
 
-class AppLoader extends StatelessWidget {
+class AppLoader extends StatefulWidget {
   final double? value;
 
   const AppLoader({super.key, this.value})
@@ -13,6 +13,17 @@ class AppLoader extends StatelessWidget {
       );
 
   @override
+  State<AppLoader> createState() => _AppLoaderState();
+}
+
+class _AppLoaderState extends State<AppLoader>
+    with SingleTickerProviderStateMixin {
+  late final animationController = AnimationController(
+    vsync: this,
+    duration: const Duration(seconds: 2),
+  )..repeat();
+
+  @override
   Widget build(BuildContext context) {
     return Center(
       child: SizedBox(
@@ -20,25 +31,45 @@ class AppLoader extends StatelessWidget {
         height: 32,
         child: AspectRatio(
           aspectRatio: 1,
-          child: CustomPaint(
-            size: const Size(32, 32),
-            painter: _AppLoaderPainter(value: value),
-          ),
+          child: widget.value == null
+              ? AnimatedBuilder(
+                  animation: animationController,
+                  builder: (context, child) {
+                    return Transform.rotate(
+                      angle: animationController.value * 2 * pi,
+                      child: child,
+                    );
+                  },
+                  child: CustomPaint(
+                    size: const Size(32, 32),
+                    painter: _AppLoaderPainter(end: 1 / 3),
+                  ),
+                )
+              : CustomPaint(
+                  size: const Size(32, 32),
+                  painter: _AppLoaderPainter(end: widget.value!),
+                ),
         ),
       ),
     );
   }
+
+  @override
+  void dispose() {
+    animationController.dispose();
+    super.dispose();
+  }
 }
 
 class _AppLoaderPainter extends CustomPainter {
-  final double? _value;
+  final double _start;
+  final double _end;
 
-  _AppLoaderPainter({required double? value})
-    : _value = value,
-      assert(
-        value == null || (value >= 0 && value <= 1),
-        'Value must be between 0 and 1',
-      );
+  _AppLoaderPainter({double start = 0, required double end})
+    : _start = start,
+      _end = end,
+      assert(start >= 0 && start <= 1, 'Start must be between 0 and 1'),
+      assert(end >= 0 && end <= 1, 'End must be between 0 and 1');
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -64,11 +95,11 @@ class _AppLoaderPainter extends CustomPainter {
       railPaint,
     );
 
-    if (_value != null && _value > 0) {
+    if (_end > 0) {
       canvas.drawArc(
         Rect.fromCenter(center: center, width: size.width, height: size.height),
-        -pi / 2,
-        pi * 2 * _value,
+        -pi / 2 + pi * 2 * _start,
+        pi * 2 * (_end - _start),
         false,
         trackPaint,
       );
@@ -77,6 +108,6 @@ class _AppLoaderPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_AppLoaderPainter oldDelegate) {
-    return oldDelegate._value != _value;
+    return oldDelegate._end != _end;
   }
 }

@@ -3,11 +3,11 @@ import 'package:go_router/go_router.dart';
 import 'package:test_app/src/core/resources/app_icons.dart';
 import 'package:test_app/src/features/app/app_scope.dart';
 import 'package:test_app/src/features/app/data/models/user_model.dart';
+import 'package:test_app/src/widgets/common/app_avatar.dart';
 import 'package:test_app/src/widgets/common/app_dialog.dart';
 import 'package:test_app/src/widgets/common/app_divider.dart';
 import 'package:test_app/src/widgets/common/app_list_item.dart';
 import 'package:test_app/src/widgets/common/app_nav_bar.dart';
-import 'package:test_app/src/widgets/common/placeholders.dart';
 import 'package:test_app/src/widgets/common/styles.dart';
 
 class Settings extends StatelessWidget {
@@ -20,7 +20,10 @@ class Settings extends StatelessWidget {
         Center(
           child: Stack(
             children: [
-              const PlaceholderAvatar(size: AvatarSize.large),
+              AppAvatar.avatarOrPlaceholder(
+                context.appState.user as AuthorizedUser,
+                AvatarSize.large,
+              ),
               Positioned(
                 bottom: 0,
                 right: 0,
@@ -32,7 +35,9 @@ class Settings extends StatelessWidget {
                     style: IconButton.styleFrom(
                       backgroundColor: HighlightColor.darkest.color,
                     ),
-                    onPressed: () {},
+                    onPressed: () async {
+                      await context.appController.uploadUserAvatar();
+                    },
                     icon: Icon(
                       AppIcons.edit,
                       size: 10,

@@ -69,7 +69,7 @@ class UserPicker extends StatefulWidget {
       }
 
       final project = await context.appController.getProjectWithId(projectId);
-      final participantIds = project?.participants ?? [];
+      final participantIds = project.participants;
       users = users.where((u) => !participantIds.contains(u.id)).toList();
     }
 
@@ -116,69 +116,68 @@ class _UserPickerState extends State<UserPicker> {
         .toList();
 
     return Center(
-      child: SizedBox(
+      child: Container(
+        padding: const EdgeInsets.all(spacing16),
         width: MediaQuery.sizeOf(context).width * 0.5,
         height: MediaQuery.sizeOf(context).height * 0.8,
-        child: Container(
-          padding: const EdgeInsets.all(spacing16),
-          decoration: BoxDecoration(
-            color: LightColor.lightest.color,
-            borderRadius: const BorderRadius.all(Radius.circular(16)),
-          ),
-          child: Material(
-            color: Colors.transparent,
-            child: Center(
-              child: Column(
-                spacing: spacing8,
-                children: [
-                  AppListTitle(title: title),
-                  AppSearchBar(
-                    onChanged: (value) {
-                      _searchQuery.value = value;
-                    },
-                    onSubmitted: (value) {
-                      _searchQuery.value = value;
-                    },
-                  ),
-                  Expanded(
-                    child: ValueListenableBuilder(
-                      valueListenable: _searchQuery,
-                      builder: (context, value, child) {
-                        final filteredUsers = users.where((user) {
-                          final query = _searchQuery.value.toLowerCase();
-                          return user.name.toLowerCase().contains(query) ||
-                              user.handle.toLowerCase().contains(query);
-                        }).toList();
+        decoration: BoxDecoration(
+          color: LightColor.lightest.color,
+          borderRadius: const BorderRadius.all(Radius.circular(16)),
+        ),
+        child: Material(
+          color: Colors.transparent,
+          child: Padding(
+            padding: const EdgeInsets.all(spacing16),
+            child: Column(
+              spacing: spacing8,
+              children: [
+                AppListTitle(title: title),
+                AppSearchBar(
+                  onChanged: (value) {
+                    _searchQuery.value = value;
+                  },
+                  onSubmitted: (value) {
+                    _searchQuery.value = value;
+                  },
+                ),
+                Expanded(
+                  child: ValueListenableBuilder(
+                    valueListenable: _searchQuery,
+                    builder: (context, value, child) {
+                      final filteredUsers = users.where((user) {
+                        final query = _searchQuery.value.toLowerCase();
+                        return user.name.toLowerCase().contains(query) ||
+                            user.handle.toLowerCase().contains(query);
+                      }).toList();
 
-                        if (filteredUsers.isEmpty) {
-                          return Center(
-                            child: Text('No $errorLabel match your search'),
-                          );
-                        }
-
-                        return ListView.builder(
-                          itemCount: filteredUsers.length,
-                          itemBuilder: (context, index) {
-                            final user = filteredUsers[index];
-                            return AppListItem(
-                              title: user.name,
-                              description: '@${user.handle}',
-                              onPressed: () => context.pop(user),
-                            );
-                          },
+                      if (filteredUsers.isEmpty) {
+                        return Center(
+                          child: Text('No $errorLabel match your search'),
                         );
-                      },
-                    ),
+                      }
+
+                      return ListView.builder(
+                        itemCount: filteredUsers.length,
+                        itemBuilder: (context, index) {
+                          final user = filteredUsers[index];
+                          return AppListItem(
+                            title: user.name,
+                            description: '@${user.handle}',
+                            onPressed: () => context.pop(user),
+                          );
+                        },
+                      );
+                    },
                   ),
-                  SizedBox(
-                    width: double.infinity,
-                    child: AppButtonPrimary(
-                      onPressed: () => context.pop(),
-                      text: 'Cancel',
-                    ),
+                ),
+                SizedBox(
+                  width: double.infinity,
+                  child: AppButtonPrimary(
+                    onPressed: () => context.pop(),
+                    text: 'Cancel',
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ),

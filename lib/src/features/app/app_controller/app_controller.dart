@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
-import 'package:flutter/widgets.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:rxdart/rxdart.dart';
 import 'package:test_app/src/core/controller/base_controller/base_controller.dart';
 import 'package:test_app/src/features/app/data/models/chat_model.dart';
 import 'package:test_app/src/features/app/data/models/message_model.dart';
@@ -9,16 +12,23 @@ import 'package:test_app/src/features/app/data/repositories/firebase/firebase_au
 import 'package:test_app/src/features/app/data/repositories/firebase/firebase_auth_repository/ifirebase_auth_repository.dart';
 import 'package:test_app/src/features/app/data/repositories/firebase/firebase_firestore_repository/firebase_firestore_repository_impl.dart';
 import 'package:test_app/src/features/app/data/repositories/firebase/firebase_firestore_repository/ifirebase_firestore_repository.dart';
+import 'package:test_app/src/features/app/data/repositories/firebase/firebase_storage_repository/firebase_storage_repository_impl.dart';
+import 'package:test_app/src/features/app/data/repositories/firebase/firebase_storage_repository/ifirebase_storage_repository.dart';
+import 'package:image_picker_for_web/image_picker_for_web.dart';
 
 part 'app_state.dart';
 
 final class AppController extends BaseController<AppState> {
   final IFirebaseAuthRepository _authRepository;
   final IFirebaseFirestoreRepository _firestoreRepository;
+  final IFirebaseStorageRepository _storageRepository;
+  Stream<AuthorizedUser>? _userStream;
+  StreamSubscription<AuthorizedUser>? _userStreamSubscription;
 
   AppController()
     : _authRepository = FirebaseAuthRepositoryImpl(),
       _firestoreRepository = FirebaseFirestoreRepositoryImpl(),
+      _storageRepository = FirebaseStorageRepositoryImpl(),
       super(
         state: const AppState.idle(
           message: 'initialized',
@@ -29,18 +39,52 @@ final class AppController extends BaseController<AppState> {
     // Don't listen to auth state changes on Windows due to threading issues
     // Instead, we'll check auth state after key actions
     _initializeAuthState();
+    _startUserSync();
   }
 
-  Future<void> _initializeAuthState() async {
-    try {
-      final user = await _authRepository.getCurrentUser();
-      setState(AppState.idle(message: 'Auth initialized', user: user));
-    } catch (e) {
-      debugPrint('Failed to initialize auth state: $e');
+  Future<void> _initializeAuthState() async =>
+      await serialExecutor.synchronized(() async {
+        setState(
+          AppState.processing(
+            message: 'Initializing auth state...',
+            user: state.user,
+          ),
+        );
+        try {
+          final user = await _authRepository.getCurrentUser();
+          debugPrint('Auth state initialized: $user');
+          setState(AppState.idle(message: 'Auth initialized', user: user));
+          _startUserSync();
+        } catch (error, stackTrace) {
+          setState(
+            AppState.failed(
+              message: 'Failed to initialize auth state: ${error.toString()}',
+              user: state.user,
+              error: error,
+              stackTrace: stackTrace,
+            ),
+          );
+        }
+      });
+
+  void _startUserSync() {
+    if (state.user is! AuthorizedUser) {
+      _userStreamSubscription?.cancel();
+      return;
     }
+    final userId = (state.user as AuthorizedUser).id;
+    _userStream = watchUserWithId(userId);
+    _userStreamSubscription?.cancel();
+    _userStreamSubscription = _userStream!.listen((user) {
+      setState(AppState.idle(message: 'User synced from Firebase', user: user));
+    });
   }
 
-  Future<void> register(String email, String password, String name) async {
+  Future<void> register(
+    String email,
+    String password,
+    String name,
+  ) async => await serialExecutor.synchronized(() async {
     setState(AppState.processing(message: 'Registering...', user: state.user));
     try {
       final user = await _authRepository.signUpWithEmailAndPassword(
@@ -60,53 +104,58 @@ final class AppController extends BaseController<AppState> {
         ),
       );
     }
-  }
+  });
 
-  Future<void> sendEmailVerification() async {
-    setState(
-      AppState.processing(
-        message: 'Sending verification code...',
-        user: state.user,
-      ),
-    );
-    try {
-      await _authRepository.sendEmailVerification();
-      setState(
-        AppState.idle(message: 'Verification code sent', user: state.user),
-      );
-    } catch (error, stackTrace) {
-      setState(
-        AppState.failed(
-          message: 'Failed to send verification code',
-          user: state.user,
-          error: error,
-          stackTrace: stackTrace,
-        ),
-      );
-    }
-  }
+  Future<void> sendEmailVerification() async =>
+      await serialExecutor.synchronized(() async {
+        setState(
+          AppState.processing(
+            message: 'Sending verification code...',
+            user: state.user,
+          ),
+        );
+        try {
+          await _authRepository.sendEmailVerification();
+          setState(
+            AppState.idle(message: 'Verification code sent', user: state.user),
+          );
+        } catch (error, stackTrace) {
+          setState(
+            AppState.failed(
+              message: 'Failed to send verification code',
+              user: state.user,
+              error: error,
+              stackTrace: stackTrace,
+            ),
+          );
+        }
+      });
 
-  Future<void> login(String email, String password) async {
-    setState(AppState.processing(message: 'Signing in...', user: state.user));
-    try {
-      final user = await _authRepository.signInWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
-      setState(AppState.idle(message: 'Sign in successful', user: user));
-    } catch (error, stackTrace) {
-      setState(
-        AppState.failed(
-          message: 'Sign in failed: ${error.toString()}',
-          user: state.user,
-          error: error,
-          stackTrace: stackTrace,
-        ),
-      );
-    }
-  }
+  Future<void> login(String email, String password) async =>
+      await serialExecutor.synchronized(() async {
+        setState(
+          AppState.processing(message: 'Signing in...', user: state.user),
+        );
+        try {
+          final user = await _authRepository.signInWithEmailAndPassword(
+            email: email,
+            password: password,
+          );
+          setState(AppState.idle(message: 'Sign in successful', user: user));
+          _startUserSync();
+        } catch (error, stackTrace) {
+          setState(
+            AppState.failed(
+              message: 'Sign in failed: ${error.toString()}',
+              user: state.user,
+              error: error,
+              stackTrace: stackTrace,
+            ),
+          );
+        }
+      });
 
-  Future<void> logout() async {
+  Future<void> logout() async => await serialExecutor.synchronized(() async {
     setState(AppState.processing(message: 'Signing out...', user: state.user));
     try {
       await _authRepository.signOut();
@@ -116,6 +165,7 @@ final class AppController extends BaseController<AppState> {
           user: const UnauthorizedUser(),
         ),
       );
+      _userStreamSubscription?.cancel();
     } catch (error, stackTrace) {
       setState(
         AppState.failed(
@@ -126,9 +176,11 @@ final class AppController extends BaseController<AppState> {
         ),
       );
     }
-  }
+  });
 
-  Future<void> verifyEmailCode(String code) async {
+  Future<void> verifyEmailCode(
+    String code,
+  ) async => await serialExecutor.synchronized(() async {
     setState(
       AppState.processing(message: 'Verifying email code...', user: state.user),
     );
@@ -147,112 +199,161 @@ final class AppController extends BaseController<AppState> {
         ),
       );
     }
-  }
+  });
 
-  Future<void> resendEmailVerification() async {
-    setState(
-      AppState.processing(
-        message: 'Resending verification code...',
-        user: state.user,
-      ),
-    );
-    try {
-      await _authRepository.resendEmailVerification();
-      setState(
-        AppState.idle(message: 'Verification code resent', user: state.user),
-      );
-    } catch (error, stackTrace) {
-      setState(
-        AppState.failed(
-          message: 'Failed to resend verification code',
-          user: state.user,
-          error: error,
-          stackTrace: stackTrace,
-        ),
-      );
-    }
-  }
+  Future<void> resendEmailVerification() async =>
+      await serialExecutor.synchronized(() async {
+        setState(
+          AppState.processing(
+            message: 'Resending verification code...',
+            user: state.user,
+          ),
+        );
+        try {
+          await _authRepository.resendEmailVerification();
+          setState(
+            AppState.idle(
+              message: 'Verification code resent',
+              user: state.user,
+            ),
+          );
+        } catch (error, stackTrace) {
+          setState(
+            AppState.failed(
+              message:
+                  'Failed to resend verification code: ${error.toString()}',
+              user: state.user,
+              error: error,
+              stackTrace: stackTrace,
+            ),
+          );
+        }
+      });
 
   Stream<List<Chat>> watchChatsForUser(String userId) {
     return _firestoreRepository.watchChatsForUser(userId);
   }
 
-  Future<String> createOrGetDirectChat({
-    required String currentUserId,
-    required String currentUserName,
-    required String otherUserId,
-    required String otherUserName,
-  }) {
-    return _firestoreRepository.createOrGetDirectChat(
-      currentUserId: currentUserId,
-      currentUserName: currentUserName,
-      otherUserId: otherUserId,
-      otherUserName: otherUserName,
+  Future<Chat> createChat({
+    required List<String> participants,
+    required String chatName,
+  }) async => await serialExecutor.synchronized(() async {
+    setState(
+      AppState.processing(
+        message: 'Creating chat "$chatName"...',
+        user: state.user,
+      ),
     );
-  }
+    try {
+      final chat = await _firestoreRepository.createChat(
+        participants: participants,
+        chatName: chatName,
+        groupOwnerId: participants.length > 2
+            ? (state.user as AuthorizedUser).id
+            : '',
+      );
+      setState(
+        AppState.idle(
+          message: 'Chat "$chatName" created successfully, id: "${chat.id}"',
+          user: state.user,
+        ),
+      );
+      return chat;
+    } catch (error, stackTrace) {
+      setState(
+        AppState.failed(
+          message: 'Failed to create chat "$chatName": ${error.toString()}',
+          user: state.user,
+          error: error,
+          stackTrace: stackTrace,
+        ),
+      );
+      rethrow;
+    }
+  });
 
   Stream<List<AuthorizedUser>> watchAllUsers() {
     return _firestoreRepository.watchAllUsers();
-  }
-
-  Stream<List<String>> watchUserNames() {
-    return watchAllUsers().map(
-      (users) => users.map((user) => user.name).toList(),
-    );
-  }
-
-  Future<String> getOtherName(String chatId) {
-    if (state.user is! AuthorizedUser) {
-      return Future.error('User not authorized');
-    }
-
-    final currentUserId = (state.user as AuthorizedUser).id;
-
-    return _firestoreRepository
-        .watchChatsForUser(currentUserId)
-        .firstWhere((chats) => chats.any((chat) => chat.id == chatId))
-        .then((chats) async {
-          final chat = chats.firstWhere((chat) => chat.id == chatId);
-          final otherUserId = chat.participants.firstWhere(
-            (id) => id != currentUserId,
-          );
-
-          // Find the user object and return its name
-          final allUsers = await watchAllUsers().first;
-          final otherUser = allUsers.firstWhere(
-            (user) => user.id == otherUserId,
-          );
-          return otherUser.name;
-        });
   }
 
   Stream<List<Message>> watchMessagesForChat(String chatId) {
     return _firestoreRepository.watchMessagesForChat(chatId: chatId);
   }
 
-  Future<void> createMessage({
+  Future<Message> createMessage({
     required String chatId,
     required String senderId,
     required String senderName,
     required String body,
-  }) {
-    return _firestoreRepository.createMessage(
-      chatId: chatId,
-      senderId: senderId,
-      senderName: senderName,
-      body: body,
+  }) async => await serialExecutor.synchronized(() async {
+    setState(
+      AppState.processing(
+        message: 'Sending message "$body" in chat "$chatId"...',
+        user: state.user,
+      ),
     );
-  }
+    try {
+      final message = await _firestoreRepository.createMessage(
+        chatId: chatId,
+        senderId: senderId,
+        body: body,
+      );
+      setState(
+        AppState.idle(
+          message:
+              'Message "$body" sent successfully in chat "$chatId", id: "${message.id}"',
+          user: state.user,
+        ),
+      );
+      return message;
+    } catch (error, stackTrace) {
+      setState(
+        AppState.failed(
+          message:
+              'Failed to send message "$body" in chat "$chatId": ${error.toString()}',
+          user: state.user,
+          error: error,
+          stackTrace: stackTrace,
+        ),
+      );
+      rethrow;
+    }
+  });
 
   Future<void> updateChatLastMessage({
     required String chatId,
     required String lastMessage,
-  }) {
-    return _firestoreRepository.updateChatLastMessage(
-      chatId: chatId,
-      lastMessage: lastMessage,
+  }) async => await serialExecutor.synchronized(() async {
+    setState(
+      AppState.processing(
+        message: 'Updating last message for chat "$chatId"...',
+        user: state.user,
+      ),
     );
-  }
+    try {
+      await _firestoreRepository.updateChatLastMessage(
+        chatId: chatId,
+        lastMessage: lastMessage,
+      );
+      setState(
+        AppState.idle(
+          message: 'Last message for chat "$chatId" updated successfully',
+          user: state.user,
+        ),
+      );
+    } catch (error, stackTrace) {
+      setState(
+        AppState.failed(
+          message:
+              'Failed to update last message for chat "$chatId": ${error.toString()}',
+          user: state.user,
+          error: error,
+          stackTrace: stackTrace,
+        ),
+      );
+      rethrow;
+    }
+  });
 
   Stream<int> watchChatUnreadCount(String chatId) {
     return _firestoreRepository.watchChatUnreadCount(chatId: chatId);
@@ -261,12 +362,37 @@ final class AppController extends BaseController<AppState> {
   Future<void> updateChatUnreadCount({
     required String chatId,
     required int unreadCount,
-  }) {
-    return _firestoreRepository.updateChatUnreadCount(
-      chatId: chatId,
-      unreadCount: unreadCount,
+  }) async => await serialExecutor.synchronized(() async {
+    setState(
+      AppState.processing(
+        message: 'Updating unread count for chat "$chatId"...',
+        user: state.user,
+      ),
     );
-  }
+    try {
+      await _firestoreRepository.updateChatUnreadCount(
+        chatId: chatId,
+        unreadCount: unreadCount,
+      );
+      setState(
+        AppState.idle(
+          message: 'Unread count for chat "$chatId" updated successfully',
+          user: state.user,
+        ),
+      );
+    } catch (error, stackTrace) {
+      setState(
+        AppState.failed(
+          message:
+              'Failed to update unread count for chat "$chatId": ${error.toString()}',
+          user: state.user,
+          error: error,
+          stackTrace: stackTrace,
+        ),
+      );
+      rethrow;
+    }
+  });
 
   Stream<List<AuthorizedUser>> watchFriendsForUser(String userId) {
     return _firestoreRepository.watchFriendsForUser(userId: userId);
@@ -275,12 +401,37 @@ final class AppController extends BaseController<AppState> {
   Future<void> sendFriendRequest(
     String currentUserId,
     String friendUserId,
-  ) async {
-    return _firestoreRepository.sendFriendRequest(
-      currentUserId: currentUserId,
-      friendUserId: friendUserId,
+  ) async => await serialExecutor.synchronized(() async {
+    setState(
+      AppState.processing(
+        message: 'Sending friend request to "$friendUserId"...',
+        user: state.user,
+      ),
     );
-  }
+    try {
+      await _firestoreRepository.sendFriendRequest(
+        currentUserId: currentUserId,
+        friendUserId: friendUserId,
+      );
+      setState(
+        AppState.idle(
+          message: 'Friend request sent to "$friendUserId" successfully',
+          user: state.user,
+        ),
+      );
+    } catch (error, stackTrace) {
+      setState(
+        AppState.failed(
+          message:
+              'Failed to send friend request to "$friendUserId": ${error.toString()}',
+          user: state.user,
+          error: error,
+          stackTrace: stackTrace,
+        ),
+      );
+      rethrow;
+    }
+  });
 
   Stream<List<AuthorizedUser>> watchFriendIncomingRequestsForUser(
     String userId,
@@ -299,48 +450,177 @@ final class AppController extends BaseController<AppState> {
   }
 
   Future<void> acceptFriendRequest({
-    required String currentUserId,
     required String friendUserId,
-  }) async {
-    return _firestoreRepository.acceptFriendRequest(
-      currentUserId: currentUserId,
-      friendUserId: friendUserId,
+  }) async => await serialExecutor.synchronized(() async {
+    setState(
+      AppState.processing(
+        message: 'Accepting friend request from "$friendUserId"...',
+        user: state.user,
+      ),
     );
-  }
+    try {
+      await _firestoreRepository.acceptFriendRequest(
+        currentUserId: state.user is AuthorizedUser
+            ? (state.user as AuthorizedUser).id
+            : '',
+        friendUserId: friendUserId,
+      );
+      setState(
+        AppState.idle(
+          message: 'Friend request from "$friendUserId" accepted successfully',
+          user: state.user,
+        ),
+      );
+    } catch (error, stackTrace) {
+      setState(
+        AppState.failed(
+          message:
+              'Failed to accept friend request from "$friendUserId": ${error.toString()}',
+          user: state.user,
+          error: error,
+          stackTrace: stackTrace,
+        ),
+      );
+      rethrow;
+    }
+  });
 
   Future<void> declineFriendRequest({
-    required String currentUserId,
     required String friendUserId,
-  }) async {
-    return _firestoreRepository.declineFriendRequest(
-      currentUserId: currentUserId,
-      friendUserId: friendUserId,
+  }) async => await serialExecutor.synchronized(() async {
+    setState(
+      AppState.processing(
+        message: 'Declining friend request from "$friendUserId"...',
+        user: state.user,
+      ),
     );
-  }
+    try {
+      await _firestoreRepository.declineFriendRequest(
+        currentUserId: state.user is AuthorizedUser
+            ? (state.user as AuthorizedUser).id
+            : '',
+        friendUserId: friendUserId,
+      );
+      setState(
+        AppState.idle(
+          message: 'Friend request from "$friendUserId" declined successfully',
+          user: state.user,
+        ),
+      );
+    } catch (error, stackTrace) {
+      setState(
+        AppState.failed(
+          message:
+              'Failed to decline friend request from "$friendUserId": ${error.toString()}',
+          user: state.user,
+          error: error,
+          stackTrace: stackTrace,
+        ),
+      );
+      rethrow;
+    }
+  });
 
   Future<void> cancelFriendRequest({
-    required String currentUserId,
     required String friendUserId,
-  }) async {
-    return _firestoreRepository.cancelFriendRequest(
-      currentUserId: currentUserId,
-      friendUserId: friendUserId,
+  }) async => await serialExecutor.synchronized(() async {
+    setState(
+      AppState.processing(
+        message: 'Cancelling friend request to "$friendUserId"...',
+        user: state.user,
+      ),
     );
-  }
+    try {
+      await _firestoreRepository.cancelFriendRequest(
+        currentUserId: state.user is AuthorizedUser
+            ? (state.user as AuthorizedUser).id
+            : '',
+        friendUserId: friendUserId,
+      );
+      setState(
+        AppState.idle(
+          message: 'Friend request to "$friendUserId" cancelled successfully',
+          user: state.user,
+        ),
+      );
+    } catch (error, stackTrace) {
+      setState(
+        AppState.failed(
+          message:
+              'Failed to cancel friend request to "$friendUserId": ${error.toString()}',
+          user: state.user,
+          error: error,
+          stackTrace: stackTrace,
+        ),
+      );
+      rethrow;
+    }
+  });
 
   Future<void> removeFriend({
-    required String currentUserId,
     required String friendUserId,
-  }) async {
-    return _firestoreRepository.removeFriend(
-      currentUserId: currentUserId,
-      friendUserId: friendUserId,
+  }) async => await serialExecutor.synchronized(() async {
+    setState(
+      AppState.processing(
+        message: 'Removing friend "$friendUserId"...',
+        user: state.user,
+      ),
     );
-  }
+    try {
+      await _firestoreRepository.removeFriend(
+        currentUserId: state.user is AuthorizedUser
+            ? (state.user as AuthorizedUser).id
+            : '',
+        friendUserId: friendUserId,
+      );
+      setState(
+        AppState.idle(
+          message: 'Friend "$friendUserId" removed successfully',
+          user: state.user,
+        ),
+      );
+    } catch (error, stackTrace) {
+      setState(
+        AppState.failed(
+          message:
+              'Failed to remove friend "$friendUserId": ${error.toString()}',
+          user: state.user,
+          error: error,
+          stackTrace: stackTrace,
+        ),
+      );
+      rethrow;
+    }
+  });
 
-  Future<void> deleteChat(String chatId) async {
-    return _firestoreRepository.deleteChat(chatId);
-  }
+  Future<void> deleteChat(String chatId) async =>
+      await serialExecutor.synchronized(() async {
+        setState(
+          AppState.processing(
+            message: 'Deleting chat "$chatId"...',
+            user: state.user,
+          ),
+        );
+        try {
+          await _firestoreRepository.deleteChat(chatId);
+          setState(
+            AppState.idle(
+              message: 'Chat "$chatId" deleted successfully',
+              user: state.user,
+            ),
+          );
+        } catch (error, stackTrace) {
+          setState(
+            AppState.failed(
+              message: 'Failed to delete chat "$chatId": ${error.toString()}',
+              user: state.user,
+              error: error,
+              stackTrace: stackTrace,
+            ),
+          );
+          rethrow;
+        }
+      });
 
   Stream<List<AuthorizedUser>> watchAllUsersExcludingFriends(String userId) {
     return _firestoreRepository.watchAllUsers().asyncMap((users) async {
@@ -381,71 +661,157 @@ final class AppController extends BaseController<AppState> {
   }
 
   Future<Project> createProjectForUser({
-    required String ownerId,
     required String projectName,
     required String projectDescription,
     required List<String> participants,
-  }) async {
-    return _firestoreRepository.createProjectForUser(
-      ownerId,
-      projectName,
-      projectDescription,
-      participants,
+  }) async => await serialExecutor.synchronized(() async {
+    setState(
+      AppState.processing(
+        message: 'Creating project "$projectName"...',
+        user: state.user,
+      ),
     );
-  }
-
-  Future<String?> getProjectName(String projectId) async {
     try {
-      final projects = await _firestoreRepository
-          .watchProjectsForUser((state.user as AuthorizedUser).id)
-          .first;
-
-      final project = projects.firstWhere((p) => p.id == projectId);
-      return project.name;
-    } catch (e) {
-      debugPrint('Failed to get project name: $e');
-      return null;
-    }
-  }
-
-  Future<Project?> getProjectWithId(String projectId) async {
-    try {
-      final projects = await _firestoreRepository
-          .watchProjectsForUser((state.user as AuthorizedUser).id)
-          .first;
-
-      final project = projects.firstWhere((p) => p.id == projectId);
+      final project = await _firestoreRepository.createProjectForUser(
+        state.user is AuthorizedUser ? (state.user as AuthorizedUser).id : '',
+        projectName,
+        projectDescription,
+        participants,
+      );
+      setState(
+        AppState.idle(
+          message:
+              'Project "$projectName" created successfully, id: "${project.id}"',
+          user: state.user,
+        ),
+      );
       return project;
-    } catch (e) {
-      debugPrint('Failed to get project with id: $e');
-      return null;
+    } catch (error, stackTrace) {
+      setState(
+        AppState.failed(
+          message:
+              'Failed to create project "$projectName": ${error.toString()}',
+          user: state.user,
+          error: error,
+          stackTrace: stackTrace,
+        ),
+      );
+      rethrow;
     }
-  }
+  });
 
-  Future<AuthorizedUser?> getUserWithId(String userId) async {
+  Future<Project> getProjectWithId(
+    String projectId,
+  ) async => await serialExecutor.synchronized(() async {
+    setState(
+      AppState.processing(
+        message: 'Loading project with id "$projectId"...',
+        user: state.user,
+      ),
+    );
     try {
-      final users = await _firestoreRepository.watchAllUsers().first;
-      final user = users.firstWhere((u) => u.id == userId);
-      return user;
-    } catch (e) {
-      debugPrint('Failed to get user with id: $e');
-      return null;
-    }
-  }
+      final projects = await _firestoreRepository
+          .watchProjectsForUser(
+            state.user is AuthorizedUser
+                ? (state.user as AuthorizedUser).id
+                : '',
+          )
+          .first;
 
-  Future<void> updateProject(Project project) async {
-    return _firestoreRepository.updateProject(project);
-  }
+      final project = projects.firstWhere((p) => p.id == projectId);
+      setState(
+        AppState.idle(
+          message: 'Project with id "$projectId" loaded successfully',
+          user: state.user,
+        ),
+      );
+      return project;
+    } catch (error, stackTrace) {
+      setState(
+        AppState.failed(
+          message:
+              'Failed to get project with id "$projectId": ${error.toString()}',
+          user: state.user,
+          error: error,
+          stackTrace: stackTrace,
+        ),
+      );
+      rethrow;
+    }
+  });
+
+  Future<AuthorizedUser> getUserWithId(String userId) async =>
+      await serialExecutor.synchronized(() async {
+        setState(
+          AppState.processing(
+            message: 'Loading user with id "$userId"...',
+            user: state.user,
+          ),
+        );
+        try {
+          final users = await _firestoreRepository.watchAllUsers().first;
+          final user = users.firstWhere((u) => u.id == userId);
+          setState(
+            AppState.idle(
+              message: 'User with id "$userId" loaded successfully',
+              user: state.user,
+            ),
+          );
+          return user;
+        } catch (error, stackTrace) {
+          setState(
+            AppState.failed(
+              message:
+                  'Failed to get user with id "$userId": ${error.toString()}',
+              user: state.user,
+              error: error,
+              stackTrace: stackTrace,
+            ),
+          );
+          rethrow;
+        }
+      });
+
+  Future<void> updateProject(
+    Project project,
+  ) async => await serialExecutor.synchronized(() async {
+    setState(
+      AppState.processing(
+        message: 'Updating project "${project.name}"...',
+        user: state.user,
+      ),
+    );
+    try {
+      await _firestoreRepository.updateProject(project);
+      setState(
+        AppState.idle(
+          message: 'Project "${project.name}" updated successfully',
+          user: state.user,
+        ),
+      );
+    } catch (error, stackTrace) {
+      setState(
+        AppState.failed(
+          message:
+              'Failed to update project "${project.name}": ${error.toString()}',
+          user: state.user,
+          error: error,
+          stackTrace: stackTrace,
+        ),
+      );
+      rethrow;
+    }
+  });
 
   Stream<List<AuthorizedUser>> watchProjectParticipants(String projectId) {
-    return _firestoreRepository.watchProjectWithId(projectId).asyncExpand((
-      project,
-    ) {
-      final participantIds = project.participants.toSet();
-      return _firestoreRepository.watchAllUsers().map((users) {
+    return Rx.combineLatest2(
+      _firestoreRepository.watchProjectWithId(projectId),
+      _firestoreRepository.watchAllUsers(),
+      (Project project, List<AuthorizedUser> users) {
+        final participantIds = project.participants.toSet();
         return users.where((user) => participantIds.contains(user.id)).toList();
-      });
-    });
+      },
+    );
   }
 
   Stream<Project> watchProjectWithId(String projectId) {
@@ -475,26 +841,205 @@ final class AppController extends BaseController<AppState> {
     });
   }
 
-  Future<bool> isFriend(String userId, String friendId) async {
-    return _firestoreRepository
-        .watchFriendsForUser(userId: userId)
-        .map((friends) => friends.any((friend) => friend.id == friendId))
-        .firstWhere((isFriend) => true, orElse: () => false);
+  Future<bool> isFriend(
+    String userId,
+    String friendId,
+  ) async => await serialExecutor.synchronized(() async {
+    setState(
+      AppState.processing(
+        message: 'Checking if user "$friendId" is a friend...',
+        user: state.user,
+      ),
+    );
+    try {
+      final isFriend = await _firestoreRepository
+          .watchFriendsForUser(userId: userId)
+          .map((friends) => friends.any((friend) => friend.id == friendId))
+          .firstWhere((isFriend) => true, orElse: () => false);
+      setState(
+        AppState.idle(
+          message: 'Friend check for user "$friendId" completed: $isFriend',
+          user: state.user,
+        ),
+      );
+      return isFriend;
+    } catch (error, stackTrace) {
+      setState(
+        AppState.failed(
+          message:
+              'Failed to check if user "$friendId" is a friend: ${error.toString()}',
+          user: state.user,
+          error: error,
+          stackTrace: stackTrace,
+        ),
+      );
+      rethrow;
+    }
+  });
+
+  Future<bool> isUserProjectParticipant(
+    String userId,
+    String projectId,
+  ) async => await serialExecutor.synchronized(() async {
+    setState(
+      AppState.processing(
+        message:
+            'Checking if user "$userId" is a participant of project "$projectId"...',
+        user: state.user,
+      ),
+    );
+    try {
+      final isParticipant = await _firestoreRepository
+          .watchProjectWithId(projectId)
+          .map((project) => project.participants.contains(userId))
+          .firstWhere((isParticipant) => true, orElse: () => false);
+      setState(
+        AppState.idle(
+          message:
+              'Participant check for user "$userId" in project "$projectId" completed: $isParticipant',
+          user: state.user,
+        ),
+      );
+      return isParticipant;
+    } catch (error, stackTrace) {
+      setState(
+        AppState.failed(
+          message:
+              'Failed to check if user "$userId" is a participant of project "$projectId": ${error.toString()}',
+          user: state.user,
+          error: error,
+          stackTrace: stackTrace,
+        ),
+      );
+      rethrow;
+    }
+  });
+
+  Future<void> deleteProject(String projectId) async =>
+      await serialExecutor.synchronized(() async {
+        setState(
+          AppState.processing(
+            message: 'Deleting project "$projectId"...',
+            user: state.user,
+          ),
+        );
+        try {
+          await _firestoreRepository.deleteProject(projectId);
+          setState(
+            AppState.idle(
+              message: 'Project "$projectId" deleted successfully.',
+              user: state.user,
+            ),
+          );
+        } catch (error, stackTrace) {
+          setState(
+            AppState.failed(
+              message:
+                  'Failed to delete project "$projectId": ${error.toString()}',
+              user: state.user,
+              error: error,
+              stackTrace: stackTrace,
+            ),
+          );
+          rethrow;
+        }
+      });
+
+  Stream<Chat> watchChatWithId(String chatId) {
+    return _firestoreRepository.watchChatWithId(chatId);
   }
 
-  Future<bool> isUserProjectParticipant(String userId, String projectId) async {
-    return _firestoreRepository
-        .watchProjectWithId(projectId)
-        .map((project) => project.participants.contains(userId))
-        .firstWhere((isParticipant) => true, orElse: () => false);
-  }
+  Future<void>
+  uploadUserAvatar() async => await serialExecutor.synchronized(() async {
+    final userId = state.user is AuthorizedUser
+        ? (state.user as AuthorizedUser).id
+        : '';
+    setState(
+      AppState.processing(
+        message: 'Uploading avatar for user "$userId"...',
+        user: state.user,
+      ),
+    );
+    try {
+      XFile? imageFile;
+      if (!kIsWeb) {
+        imageFile = await ImagePicker().pickImage(source: ImageSource.gallery);
+      } else {
+        imageFile = await ImagePickerPlugin().getImageFromSource(
+          source: ImageSource.gallery,
+        );
+      }
+      if (imageFile == null) {
+        setState(
+          AppState.idle(
+            message: 'Avatar upload cancelled by user "$userId".',
+            user: state.user,
+          ),
+        );
+        return;
+      }
+      final url = await _storageRepository.uploadUserAvatar(
+        userId: userId,
+        file: imageFile,
+      );
+      await _firestoreRepository.updateUserAvatarUrl(userId: userId, url: url);
+      setState(
+        AppState.idle(
+          message: 'Avatar uploaded successfully for user "$userId".',
+          user: state.user,
+        ),
+      );
+      _startUserSync();
+    } catch (error, stackTrace) {
+      setState(
+        AppState.failed(
+          message:
+              'Failed to upload avatar for user "$userId": ${error.toString()}',
+          user: state.user,
+          error: error,
+          stackTrace: stackTrace,
+        ),
+      );
+      rethrow;
+    }
+  });
 
-  Future<void> deleteProject(String projectId) async {
-    return _firestoreRepository.deleteProject(projectId);
-  }
+  Future<void>
+  deleteUserAvatar() async => await serialExecutor.synchronized(() async {
+    final userId = state.user is AuthorizedUser
+        ? (state.user as AuthorizedUser).id
+        : '';
+    setState(
+      AppState.processing(
+        message: 'Deleting avatar for user "$userId"...',
+        user: state.user,
+      ),
+    );
+    try {
+      await _storageRepository.deleteUserAvatar(userId: userId);
+      setState(
+        AppState.idle(
+          message: 'Avatar deleted successfully for user "$userId".',
+          user: state.user,
+        ),
+      );
+    } catch (error, stackTrace) {
+      setState(
+        AppState.failed(
+          message:
+              'Failed to delete avatar for user "$userId": ${error.toString()}',
+          user: state.user,
+          error: error,
+          stackTrace: stackTrace,
+        ),
+      );
+      rethrow;
+    }
+  });
 
   @override
   void dispose() {
     super.dispose();
+    _userStreamSubscription?.cancel();
   }
 }

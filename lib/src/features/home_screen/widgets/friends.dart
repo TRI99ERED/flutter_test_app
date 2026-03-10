@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:test_app/src/core/resources/app_icons.dart';
 import 'package:test_app/src/features/app/app_scope.dart';
 import 'package:test_app/src/features/app/data/models/user_model.dart';
+import 'package:test_app/src/widgets/common/app_avatar.dart';
 import 'package:test_app/src/widgets/user_picker.dart';
 import 'package:test_app/src/widgets/common/app_card.dart';
 import 'package:test_app/src/widgets/common/app_content_switcher.dart';
@@ -11,7 +12,6 @@ import 'package:test_app/src/widgets/common/app_nav_bar.dart';
 import 'package:test_app/src/widgets/common/app_search_bar.dart';
 import 'package:test_app/src/widgets/common/empty_state.dart';
 import 'package:test_app/src/widgets/common/error_state.dart';
-import 'package:test_app/src/widgets/common/placeholders.dart';
 import 'package:test_app/src/widgets/common/styles.dart';
 
 enum FriendsSectionType { friends, incomingRequests, outgoingRequests }
@@ -258,7 +258,10 @@ class _FriendsSectionState extends State<_FriendsSection> {
                             return AppCardSmall(
                               title: friend.name,
                               subtitle: '@${friend.handle}',
-                              avatar: PlaceholderAvatar(size: AvatarSize.small),
+                              avatar: AppAvatar.avatarOrPlaceholder(
+                                friend,
+                                AvatarSize.small,
+                              ),
                               onAvatarPressed: () {},
                               leftButtonText: switch (widget._sectionType) {
                                 FriendsSectionType.incomingRequests =>
@@ -274,11 +277,8 @@ class _FriendsSectionState extends State<_FriendsSection> {
                               onPressedLeft: switch (widget._sectionType) {
                                 FriendsSectionType.incomingRequests =>
                                   () async {
-                                    final user =
-                                        context.appState.user as AuthorizedUser;
                                     final appController = context.appController;
                                     await appController.declineFriendRequest(
-                                      currentUserId: user.id,
                                       friendUserId: friend.id,
                                     );
                                   },
@@ -288,13 +288,9 @@ class _FriendsSectionState extends State<_FriendsSection> {
                                 FriendsSectionType.friends =>
                                   editPressed
                                       ? () async {
-                                          final user =
-                                              context.appState.user
-                                                  as AuthorizedUser;
                                           final appController =
                                               context.appController;
                                           await appController.removeFriend(
-                                            currentUserId: user.id,
                                             friendUserId: friend.id,
                                           );
                                         }
@@ -306,34 +302,29 @@ class _FriendsSectionState extends State<_FriendsSection> {
                                               context.appController;
 
                                           if (!mounted) return;
-                                          final chatId = await appController
-                                              .createOrGetDirectChat(
-                                                currentUserId: user.id,
-                                                currentUserName: user.name,
-                                                otherUserId: friend.id,
-                                                otherUserName: friend.name,
+                                          final chat = await appController
+                                              .createChat(
+                                                participants: [
+                                                  user.id,
+                                                  friend.id,
+                                                ],
+                                                chatName: '',
                                               );
 
                                           if (!mounted) return;
-                                          context.push('/chats/$chatId');
+                                          context.push('/chats/${chat.id}');
                                         },
                                 FriendsSectionType.incomingRequests =>
                                   () async {
-                                    final user =
-                                        context.appState.user as AuthorizedUser;
                                     final appController = context.appController;
                                     await appController.acceptFriendRequest(
-                                      currentUserId: user.id,
                                       friendUserId: friend.id,
                                     );
                                   },
                                 FriendsSectionType.outgoingRequests =>
                                   () async {
-                                    final user =
-                                        context.appState.user as AuthorizedUser;
                                     final appController = context.appController;
                                     await appController.cancelFriendRequest(
-                                      currentUserId: user.id,
                                       friendUserId: friend.id,
                                     );
                                   },

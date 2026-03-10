@@ -8,6 +8,7 @@ import 'package:test_app/src/features/app/data/repositories/firebase/firebase_fi
 class FirebaseFirestoreRepositoryImpl implements IFirebaseFirestoreRepository {
   final _users = FirebaseFirestore.instance.collection('users');
   final _chats = FirebaseFirestore.instance.collection('chats');
+  final _projects = FirebaseFirestore.instance.collection('projects');
 
   @override
   Future<void> acceptFriendRequest({
@@ -78,10 +79,35 @@ class FirebaseFirestoreRepositoryImpl implements IFirebaseFirestoreRepository {
   }
 
   @override
-  Future<void> createMessage({
+  Future<Chat> createChat({
+    required List<String> participants,
+    required String chatName,
+    String groupOwnerId = '',
+  }) async {
+    try {
+      final ids = participants..sort();
+      final doc = _chats.doc();
+
+      final chat = Chat(
+        id: doc.id,
+        name: chatName,
+        groupOwnerId: groupOwnerId,
+        participants: ids,
+        lastMessage: '',
+        unreadCount: 0,
+        lastUpdated: DateTime.now(),
+      );
+      await doc.set(chat.toFirestore());
+      return chat;
+    } catch (e) {
+      throw Exception('Failed to create or get direct chat: $e');
+    }
+  }
+
+  @override
+  Future<Message> createMessage({
     required String chatId,
     required String senderId,
-    required String senderName,
     required String body,
   }) async {
     try {
@@ -90,48 +116,16 @@ class FirebaseFirestoreRepositoryImpl implements IFirebaseFirestoreRepository {
       final message = Message(
         id: doc.id,
         senderId: senderId,
-        senderName: senderName,
+        senderName: await getUserWithId(
+          senderId,
+        ).then((user) => user?.name ?? ''),
         body: body,
         timestamp: DateTime.now(),
       );
       await doc.set(message.toFirestore());
+      return message;
     } catch (e) {
       throw Exception('Failed to create message: $e');
-    }
-  }
-
-  @override
-  Future<String> createOrGetDirectChat({
-    required String currentUserId,
-    required String currentUserName,
-    required String otherUserId,
-    required String otherUserName,
-  }) async {
-    try {
-      final ids = [currentUserId, otherUserId]..sort();
-      final chatId = ids.join('_');
-      final doc = _chats.doc(chatId);
-
-      await FirebaseFirestore.instance.runTransaction((tx) async {
-        final snapshot = await tx.get(doc);
-        if (snapshot.exists) {
-          return;
-        }
-
-        tx.set(doc, {
-          'participants': ids,
-          'participantNames': {
-            currentUserId: currentUserName,
-            otherUserId: otherUserName,
-          },
-          'lastMessage': '',
-          'lastUpdated': FieldValue.serverTimestamp(),
-        });
-      });
-
-      return chatId;
-    } catch (e) {
-      throw Exception('Failed to create or get direct chat: $e');
     }
   }
 
@@ -143,7 +137,8 @@ class FirebaseFirestoreRepositoryImpl implements IFirebaseFirestoreRepository {
     List<String> participants,
   ) async {
     try {
-      final doc = FirebaseFirestore.instance.collection('projects').doc();
+      final doc = _projects.doc();
+
       final project = Project(
         id: doc.id,
         ownerId: ownerId,
@@ -154,9 +149,7 @@ class FirebaseFirestoreRepositoryImpl implements IFirebaseFirestoreRepository {
         createdAt: DateTime.now(),
         lastUpdated: DateTime.now(),
       );
-
       await doc.set(project.toFirestore());
-
       return project;
     } catch (e) {
       throw Exception('Failed to create project: $e');
@@ -228,13 +221,26 @@ class FirebaseFirestoreRepositoryImpl implements IFirebaseFirestoreRepository {
 
   @override
   Future<void> deleteProject(String projectId) {
-    final doc = FirebaseFirestore.instance
-        .collection('projects')
-        .doc(projectId);
+    final doc = _projects.doc(projectId);
     try {
       return doc.delete();
     } catch (e) {
       throw Exception('Failed to delete project: $e');
+    }
+  }
+
+  @override
+  Future<AuthorizedUser?> getUserWithId(String userId) {
+    final doc = _users.doc(userId);
+    try {
+      return doc.get().then((snapshot) {
+        if (!snapshot.exists) {
+          return null;
+        }
+        return AuthorizedUser.fromFirestore(snapshot);
+      });
+    } catch (e) {
+      throw Exception('Failed to get user with id: $e');
     }
   }
 
@@ -297,6 +303,18 @@ class FirebaseFirestoreRepositoryImpl implements IFirebaseFirestoreRepository {
   }
 
   @override
+  Future<void> updateUserAvatarUrl({
+    required String userId,
+    required String url,
+  }) {
+    try {
+      return _users.doc(userId).update({'avatarUrl': url});
+    } catch (e) {
+      throw Exception('Failed to update user avatar URL: $e');
+    }
+  }
+
+  @override
   Future<void> updateChatLastMessage({
     required String chatId,
     required String lastMessage,
@@ -326,10 +344,7 @@ class FirebaseFirestoreRepositoryImpl implements IFirebaseFirestoreRepository {
   @override
   Future<void> updateProject(Project project) {
     try {
-      return FirebaseFirestore.instance
-          .collection('projects')
-          .doc(project.id)
-          .update(project.toFirestore());
+      return _projects.doc(project.id).update(project.toFirestore());
     } catch (e) {
       throw Exception('Failed to update project: $e');
     }
@@ -337,11 +352,18 @@ class FirebaseFirestoreRepositoryImpl implements IFirebaseFirestoreRepository {
 
   @override
   Stream<List<AuthorizedUser>> watchAllUsers() {
-    return _users.snapshots().map(
-      (snapshot) => snapshot.docs
-          .map((doc) => AuthorizedUser.fromFirestore(doc))
-          .toList(),
-    );
+    return _users
+        .snapshots()
+        .map(
+          (snapshot) => snapshot.docs
+              .map((doc) => AuthorizedUser.fromFirestore(doc))
+              .toList(),
+        )
+        .distinct(
+          (prev, next) =>
+              prev.length == next.length &&
+              prev.every((user) => next.any((u) => u == user)),
+        );
   }
 
   @override
@@ -350,16 +372,41 @@ class FirebaseFirestoreRepositoryImpl implements IFirebaseFirestoreRepository {
         .where('participants', arrayContains: userId)
         .orderBy('lastUpdated', descending: true)
         .snapshots()
-        .map((snapshot) => snapshot.docs.map(Chat.fromFirestore).toList());
+        .map((snapshot) => snapshot.docs.map(Chat.fromFirestore).toList())
+        .distinct((prev, next) {
+          if (prev.length != next.length) return false;
+          final prevIds = prev.map((c) => c.id).toSet();
+          final nextIds = next.map((c) => c.id).toSet();
+          return prevIds.containsAll(nextIds) && nextIds.containsAll(prevIds);
+        });
   }
 
   @override
   Stream<int> watchChatUnreadCount({required String chatId}) {
-    return _chats.doc(chatId).snapshots().map((snapshot) {
-      final data = snapshot.data();
-      if (data == null) return 0;
-      return data['unreadCount'] ?? 0;
-    });
+    return _chats
+        .doc(chatId)
+        .snapshots()
+        .map((snapshot) {
+          final data = snapshot.data();
+          if (data == null) return 0;
+          return data['unreadCount'] ?? 0;
+        })
+        .distinct((prev, next) => prev == next)
+        .cast<int>();
+  }
+
+  @override
+  Stream<Chat> watchChatWithId(String chatId) {
+    return _chats
+        .doc(chatId)
+        .snapshots()
+        .map((snapshot) {
+          if (!snapshot.exists) {
+            throw Exception('Chat does not exist');
+          }
+          return Chat.fromFirestore(snapshot);
+        })
+        .distinct((prev, next) => prev == next);
   }
 
   @override
@@ -386,6 +433,12 @@ class FirebaseFirestoreRepositoryImpl implements IFirebaseFirestoreRepository {
             }).toList(),
           );
           return users;
+        })
+        .distinct((prev, next) {
+          if (prev.length != next.length) return false;
+          final prevIds = prev.map((u) => u.id).toSet();
+          final nextIds = next.map((u) => u.id).toSet();
+          return prevIds.containsAll(nextIds) && nextIds.containsAll(prevIds);
         });
   }
 
@@ -413,30 +466,44 @@ class FirebaseFirestoreRepositoryImpl implements IFirebaseFirestoreRepository {
             }).toList(),
           );
           return users;
+        })
+        .distinct((prev, next) {
+          if (prev.length != next.length) return false;
+          final prevIds = prev.map((u) => u.id).toSet();
+          final nextIds = next.map((u) => u.id).toSet();
+          return prevIds.containsAll(nextIds) && nextIds.containsAll(prevIds);
         });
   }
 
   @override
   Stream<List<AuthorizedUser>> watchFriendsForUser({required String userId}) {
-    return _users.doc(userId).collection('friends').snapshots().asyncMap((
-      snapshot,
-    ) async {
-      final users = await Future.wait(
-        snapshot.docs.map((doc) async {
-          final u = AuthorizedUser.fromFirestore(doc);
-          final userDoc = await _users.doc(u.id).get();
-          final data = userDoc.data() ?? {};
-          return AuthorizedUser(
-            id: u.id,
-            name: data['name'] ?? '',
-            email: data['email'] ?? '',
-            handle: data['handle'] ?? '',
-            avatarUrl: data['avatarUrl'] ?? '',
+    return _users
+        .doc(userId)
+        .collection('friends')
+        .snapshots()
+        .asyncMap((snapshot) async {
+          final users = await Future.wait(
+            snapshot.docs.map((doc) async {
+              final u = AuthorizedUser.fromFirestore(doc);
+              final userDoc = await _users.doc(u.id).get();
+              final data = userDoc.data() ?? {};
+              return AuthorizedUser(
+                id: u.id,
+                name: data['name'] ?? '',
+                email: data['email'] ?? '',
+                handle: data['handle'] ?? '',
+                avatarUrl: data['avatarUrl'] ?? '',
+              );
+            }).toList(),
           );
-        }).toList(),
-      );
-      return users;
-    });
+          return users;
+        })
+        .distinct((prev, next) {
+          if (prev.length != next.length) return false;
+          final prevIds = prev.map((u) => u.id).toSet();
+          final nextIds = next.map((u) => u.id).toSet();
+          return prevIds.containsAll(nextIds) && nextIds.containsAll(prevIds);
+        });
   }
 
   @override
@@ -446,25 +513,36 @@ class FirebaseFirestoreRepositoryImpl implements IFirebaseFirestoreRepository {
         .collection('messages')
         .orderBy('timestamp', descending: true)
         .snapshots()
-        .map((snapshot) => snapshot.docs.map(Message.fromFirestore).toList());
+        .map((snapshot) => snapshot.docs.map(Message.fromFirestore).toList())
+        .distinct((prev, next) {
+          if (prev.length != next.length) return false;
+          final prevIds = prev.map((m) => m.id).toSet();
+          final nextIds = next.map((m) => m.id).toSet();
+          return prevIds.containsAll(nextIds) && nextIds.containsAll(prevIds);
+        });
   }
 
   @override
   Stream<List<Project>> watchProjectsForUser(String userId) {
-    return FirebaseFirestore.instance
-        .collection('projects')
+    return _projects
         .where('participants', arrayContains: userId)
         .orderBy('lastUpdated', descending: true)
         .snapshots()
-        .map((snapshot) => snapshot.docs.map(Project.fromFirestore).toList());
+        .map((snapshot) => snapshot.docs.map(Project.fromFirestore).toList())
+        .distinct((prev, next) {
+          if (prev.length != next.length) return false;
+          final prevIds = prev.map((p) => p.id).toSet();
+          final nextIds = next.map((p) => p.id).toSet();
+          return prevIds.containsAll(nextIds) && nextIds.containsAll(prevIds);
+        });
   }
 
   @override
   Stream<Project> watchProjectWithId(String projectId) {
-    return FirebaseFirestore.instance
-        .collection('projects')
+    return _projects
         .doc(projectId)
         .snapshots()
-        .map((snapshot) => Project.fromFirestore(snapshot));
+        .map((snapshot) => Project.fromFirestore(snapshot))
+        .distinct((prev, next) => prev == next);
   }
 }

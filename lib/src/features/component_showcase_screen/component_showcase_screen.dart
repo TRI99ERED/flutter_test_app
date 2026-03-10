@@ -7,6 +7,7 @@ import 'package:test_app/src/features/app/app_scope.dart';
 import 'package:test_app/src/router/routes.dart';
 import 'package:test_app/src/widgets/common/app_accordion.dart';
 import 'package:test_app/src/widgets/common/app_action_sheet.dart';
+import 'package:test_app/src/widgets/common/app_avatar.dart';
 import 'package:test_app/src/widgets/common/app_badge.dart';
 import 'package:test_app/src/widgets/common/app_banner.dart';
 import 'package:test_app/src/widgets/common/app_button.dart';

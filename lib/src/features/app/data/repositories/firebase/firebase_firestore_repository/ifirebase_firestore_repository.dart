@@ -14,18 +14,16 @@ abstract interface class IFirebaseFirestoreRepository {
     required String friendUserId,
   });
 
-  Future<void> createMessage({
-    required String chatId,
-    required String senderId,
-    required String senderName,
-    required String body,
+  Future<Chat> createChat({
+    required List<String> participants,
+    required String chatName,
+    String groupOwnerId = '',
   });
 
-  Future<String> createOrGetDirectChat({
-    required String currentUserId,
-    required String currentUserName,
-    required String otherUserId,
-    required String otherUserName,
+  Future<Message> createMessage({
+    required String chatId,
+    required String senderId,
+    required String body,
   });
 
   Future<Project> createProjectForUser(
@@ -45,6 +43,8 @@ abstract interface class IFirebaseFirestoreRepository {
   Future<void> deleteChat(String chatId);
 
   Future<void> deleteProject(String projectId);
+
+  Future<AuthorizedUser?> getUserWithId(String userId);
 
   Future<void> removeFriend({
     required String currentUserId,
@@ -68,11 +68,18 @@ abstract interface class IFirebaseFirestoreRepository {
 
   Future<void> updateProject(Project project);
 
+  Future<void> updateUserAvatarUrl({
+    required String userId,
+    required String url,
+  }) async {}
+
   Stream<List<AuthorizedUser>> watchAllUsers();
 
   Stream<List<Chat>> watchChatsForUser(String userId);
 
   Stream<int> watchChatUnreadCount({required String chatId});
+
+  Stream<Chat> watchChatWithId(String chatId);
 
   Stream<List<AuthorizedUser>> watchFriendIncomingRequestsForUser({
     required String userId,

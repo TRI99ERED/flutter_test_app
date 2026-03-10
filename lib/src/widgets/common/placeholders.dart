@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:test_app/src/widgets/common/app_avatar.dart';
 
 class PlaceholderImage extends StatelessWidget {
   const PlaceholderImage({super.key});
@@ -31,16 +32,6 @@ class PlaceholderVideo extends StatelessWidget {
       ),
     );
   }
-}
-
-enum AvatarSize {
-  small(40),
-  medium(56),
-  large(80);
-
-  final double size;
-
-  const AvatarSize(this.size);
 }
 
 class PlaceholderAvatar extends StatelessWidget {

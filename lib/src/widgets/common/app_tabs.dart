@@ -49,23 +49,43 @@ class _AppTabsState extends State<AppTabs> {
         color: LightColor.lightest.color,
         borderRadius: BorderRadius.circular(16),
       ),
-      child: Row(
-        children: List.generate(widget.tabCount, (index) {
-          return Expanded(
-            child: _Tab(
-              text: widget.tabTitles[index],
-              onPressed: () {
-                setState(() {
-                  _selectedIndex = index;
-                });
-                if (widget.onTabSelected != null) {
-                  widget.onTabSelected!(index);
-                }
-              },
-              selected: index == _selectedIndex,
+      child: Stack(
+        children: [
+          AnimatedAlign(
+            alignment: Alignment(
+              -1 + (_selectedIndex * 2) / (widget.tabCount - 1),
+              0,
             ),
-          );
-        }),
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+            child: Container(
+              width: 24,
+              height: 4,
+              decoration: BoxDecoration(
+                color: HighlightColor.darkest.color,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+          ),
+          Row(
+            children: List.generate(widget.tabCount, (index) {
+              return Expanded(
+                child: _Tab(
+                  text: widget.tabTitles[index],
+                  onPressed: () {
+                    setState(() {
+                      _selectedIndex = index;
+                    });
+                    if (widget.onTabSelected != null) {
+                      widget.onTabSelected!(index);
+                    }
+                  },
+                  selected: index == _selectedIndex,
+                ),
+              );
+            }),
+          ),
+        ],
       ),
     );
   }
@@ -91,17 +111,7 @@ class _Tab extends StatelessWidget {
       child: Column(
         children: [
           Text(text),
-          selected
-              ? Container(
-                  margin: EdgeInsets.only(top: spacing4),
-                  width: 24,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: HighlightColor.darkest.color,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                )
-              : SizedBox(height: spacing8),
+          const SizedBox(height: spacing8),
         ],
       ),
     );

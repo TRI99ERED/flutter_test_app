@@ -54,13 +54,27 @@ service cloud.firestore {
       request.auth.uid in resource.data.participants);
       allow create: if request.auth != null &&
       request.auth.uid in request.resource.data.participants &&
-      request.resource.data.participants.size() > 1;
-      allow update, delete: if request.auth != null && request.auth.uid in resource.data.participants;
+      request.resource.data.participants.size() > 1 &&
+      (request.resource.data.groupOwnerId != null &&
+      request.auth.uid == request.resource.data.groupOwnerId ||
+      request.resource.data.groupOwnerId == '');
+      allow update, delete: if request.auth != null &&
+      request.auth.uid in resource.data.participants &&
+      (resource.data.groupOwnerId != null &&
+      request.auth.uid == resource.data.groupOwnerId ||
+      resource.data.groupOwnerId == '');
 
       // Messages subcollection
       match /messages/{messageId} {
-        allow read: if request.auth != null && request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants;
-        allow create, delete: if request.auth != null && request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants;
+        allow read: if request.auth != null &&
+        request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants;
+        allow create: if request.auth != null &&
+        request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants;
+        allow delete: if request.auth != null &&
+        request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants &&
+        (get(/databases/$(database)/documents/chats/$(chatId)).data.data.groupOwnerId != null &&
+        request.auth.uid == get(/databases/$(database)/documents/chats/$(chatId)).data.data.groupOwnerId ||
+        get(/databases/$(database)/documents/chats/$(chatId)).data.data.groupOwnerId == '');
         allow update: if false;
       }
     }

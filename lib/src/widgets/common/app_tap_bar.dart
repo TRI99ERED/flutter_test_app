@@ -99,24 +99,44 @@ class _TabItem extends StatelessWidget {
     return TextButton(
       onPressed: onPressed,
       style: TextButton.styleFrom(
-        foregroundColor: selected
-            ? DarkColor.darkest.color
-            : DarkColor.light.color,
-        shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+        shape: const ContinuousRectangleBorder(borderRadius: BorderRadius.zero),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            icon,
-            size: 20,
-            color: selected
-                ? HighlightColor.darkest.color
-                : DarkColor.light.color,
+          AnimatedCrossFade(
+            crossFadeState: selected
+                ? CrossFadeState.showFirst
+                : CrossFadeState.showSecond,
+            duration: const Duration(milliseconds: 300),
+            firstChild: Icon(
+              icon,
+              size: 20,
+              color: HighlightColor.darkest.color,
+            ),
+            secondChild: Icon(icon, size: 20, color: DarkColor.light.color),
           ),
-          Text(
-            text,
-            style: const TextStyle(fontSize: bXSSize, fontWeight: bXSWeight),
+          AnimatedCrossFade(
+            crossFadeState: selected
+                ? CrossFadeState.showFirst
+                : CrossFadeState.showSecond,
+            duration: const Duration(milliseconds: 300),
+            firstChild: Text(
+              text,
+              style: TextStyle(
+                fontSize: bXSSize,
+                fontWeight: bXSWeight,
+                color: DarkColor.darkest.color,
+              ),
+            ),
+            secondChild: Text(
+              text,
+              style: TextStyle(
+                fontSize: bXSSize,
+                fontWeight: bXSWeight,
+                color: DarkColor.light.color,
+              ),
+            ),
           ),
         ],
       ),
