@@ -174,7 +174,7 @@ class _ProjectsSectionState extends State<_ProjectsSection> {
                             ProjectWizardMode.create,
                           );
 
-                          if (project != null && mounted) {
+                          if (project != null && context.mounted) {
                             context.push('/projects/${project.id}');
                           }
                         },

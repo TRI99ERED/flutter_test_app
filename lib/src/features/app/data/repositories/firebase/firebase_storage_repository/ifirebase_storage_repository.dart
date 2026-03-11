@@ -1,16 +1,13 @@
-import 'package:image_picker/image_picker.dart';
+import 'dart:io';
 
 abstract interface class IFirebaseStorageRepository {
-  Future<String> uploadUserAvatar({
-    required String userId,
-    required XFile file,
-  });
+  Future<String> uploadUserAvatar({required String userId, required File file});
 
   Future<void> deleteUserAvatar({required String userId});
 
   Future<String> uploadGroupChatAvatar({
     required String chatId,
-    required XFile file,
+    required File file,
   });
 
   Future<void> deleteGroupChatAvatar({required String chatId});

@@ -182,9 +182,7 @@ class _ChatWizardState extends State<ChatWizard> {
                                 AppButtonPrimary(
                                   text: 'Pick an avatar',
                                   onPressed: () async {
-                                    throw UnimplementedError(
-                                      'Avatar picking not implemented yet',
-                                    );
+                                    // TODO
                                   },
                                 ),
                                 StreamBuilder(
@@ -194,6 +192,9 @@ class _ChatWizardState extends State<ChatWizard> {
                                       ),
                                   builder: (context, asyncSnapshot) {
                                     final chat = asyncSnapshot.data;
+                                    if (chat == null) {
+                                      return const SizedBox.shrink();
+                                    }
                                     return AppAvatar.groupAvatarOrPlaceholder(
                                       chat,
                                       AvatarSize.large,

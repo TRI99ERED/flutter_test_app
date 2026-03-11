@@ -74,7 +74,7 @@ final class DirectChat extends Chat {
     );
   }
 
-  Chat copyWith({
+  DirectChat copyWith({
     String? id,
     String? name,
     List<String>? participants,
@@ -143,7 +143,7 @@ final class GroupChat extends Chat {
     );
   }
 
-  Chat copyWith({
+  GroupChat copyWith({
     String? id,
     String? name,
     List<String>? participants,

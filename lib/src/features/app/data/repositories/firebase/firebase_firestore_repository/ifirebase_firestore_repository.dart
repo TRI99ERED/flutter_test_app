@@ -99,39 +99,49 @@ abstract interface class IFirebaseFirestoreRepository {
     required String url,
   }) async {}
 
-  Stream<List<Chat>> watchAllChatsForUser(String userId);
+  Future<void> updateUserCurrentDirectChatId({
+    required String userId,
+    required String currentDirectChatId,
+  });
 
-  Stream<List<AuthorizedUser>> watchAllUsers();
+  Future<void> updateUserCurrentGroupChatId({
+    required String userId,
+    required String currentGroupChatId,
+  });
 
-  Stream<Chat> watchChatWithId(String chatId);
+  Stream<List<Chat>?> watchAllChatsForUser(String userId);
 
-  Stream<List<DirectChat>> watchDirectChatsForUser(String userId);
+  Stream<List<AuthorizedUser>?> watchAllUsers();
 
-  Stream<int> watchDirectChatUnreadCount({required String chatId});
+  Stream<List<DirectChat>?> watchDirectChatsForUser(String userId);
 
-  Stream<DirectChat> watchDirectChatWithId(String chatId);
+  Stream<int?> watchDirectChatUnreadCount({required String chatId});
 
-  Stream<List<AuthorizedUser>> watchFriendIncomingRequestsForUser({
+  Stream<DirectChat?> watchDirectChatWithId(String chatId);
+
+  Stream<List<AuthorizedUser>?> watchFriendIncomingRequestsForUser({
     required String userId,
   });
 
-  Stream<List<AuthorizedUser>> watchFriendOutgoingRequestsForUser({
+  Stream<List<AuthorizedUser>?> watchFriendOutgoingRequestsForUser({
     required String userId,
   });
 
-  Stream<List<AuthorizedUser>> watchFriendsForUser({required String userId});
+  Stream<List<AuthorizedUser>?> watchFriendsForUser({required String userId});
 
-  Stream<List<GroupChat>> watchGroupChatsForUser(String userId);
+  Stream<List<GroupChat>?> watchGroupChatsForUser(String userId);
 
-  Stream<Map<String, int>> watchGroupChatUnreadCounts({required String chatId});
+  Stream<Map<String, int>?> watchGroupChatUnreadCounts({
+    required String chatId,
+  });
 
-  Stream<GroupChat> watchGroupChatWithId(String chatId);
+  Stream<GroupChat?> watchGroupChatWithId(String chatId);
 
-  Stream<List<Message>> watchMessagesForDirectChat({required String chatId});
+  Stream<List<Message>?> watchMessagesForDirectChat({required String chatId});
 
-  Stream<List<Message>> watchMessagesForGroupChat({required String chatId});
+  Stream<List<Message>?> watchMessagesForGroupChat({required String chatId});
 
-  Stream<List<Project>> watchProjectsForUser(String userId);
+  Stream<List<Project>?> watchProjectsForUser(String userId);
 
-  Stream<Project> watchProjectWithId(String projectId);
+  Stream<Project?> watchProjectWithId(String projectId);
 }

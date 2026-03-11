@@ -19,6 +19,8 @@ final class AuthorizedUser extends UserEntity {
   final String email;
   final String handle;
   final String avatarUrl;
+  final String currentDirectChatId;
+  final String currentGroupChatId;
 
   const AuthorizedUser({
     required this.id,
@@ -26,6 +28,8 @@ final class AuthorizedUser extends UserEntity {
     required this.email,
     required this.handle,
     this.avatarUrl = '',
+    this.currentDirectChatId = '',
+    this.currentGroupChatId = '',
   });
 
   factory AuthorizedUser.fromFirestore(
@@ -38,6 +42,8 @@ final class AuthorizedUser extends UserEntity {
       email: data['email'] ?? '',
       handle: data['handle'] ?? '',
       avatarUrl: data['avatarUrl'] ?? '',
+      currentDirectChatId: data['currentDirectChatId'] ?? '',
+      currentGroupChatId: data['currentGroupChatId'] ?? '',
     );
   }
 
@@ -50,6 +56,8 @@ final class AuthorizedUser extends UserEntity {
     String? email,
     String? handle,
     String? avatarUrl,
+    String? currentDirectChatId,
+    String? currentGroupChatId,
   }) {
     return AuthorizedUser(
       id: id ?? this.id,
@@ -57,6 +65,8 @@ final class AuthorizedUser extends UserEntity {
       email: email ?? this.email,
       handle: handle ?? this.handle,
       avatarUrl: avatarUrl ?? this.avatarUrl,
+      currentDirectChatId: currentDirectChatId ?? this.currentDirectChatId,
+      currentGroupChatId: currentGroupChatId ?? this.currentGroupChatId,
     );
   }
 
@@ -68,25 +78,36 @@ final class AuthorizedUser extends UserEntity {
             other.name == name &&
             other.email == email &&
             other.handle == handle &&
-            other.avatarUrl == avatarUrl;
+            other.avatarUrl == avatarUrl &&
+            other.currentDirectChatId == currentDirectChatId &&
+            other.currentGroupChatId == currentGroupChatId;
   }
 
   @override
-  int get hashCode =>
-      Object.hash(runtimeType, id, name, email, handle, avatarUrl);
+  int get hashCode => Object.hash(
+    runtimeType,
+    id,
+    name,
+    email,
+    handle,
+    avatarUrl,
+    currentDirectChatId,
+    currentGroupChatId,
+  );
 
   @override
   String toString() {
-    return 'AuthorizedUser{id: $id, name: $name, email: $email, handle: $handle, avatarUrl: $avatarUrl}';
+    return 'AuthorizedUser{id: $id, name: $name, email: $email, handle: $handle, avatarUrl: $avatarUrl, currentDirectChatId: $currentDirectChatId, currentGroupChatId: $currentGroupChatId}';
   }
 
   Map<String, dynamic> toFirestore() {
     return {
-      'id': id,
       'name': name,
       'email': email,
       'handle': handle,
       'avatarUrl': avatarUrl,
+      'currentDirectChatId': currentDirectChatId,
+      'currentGroupChatId': currentGroupChatId,
     };
   }
 }

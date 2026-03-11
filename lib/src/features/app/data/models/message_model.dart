@@ -26,7 +26,6 @@ class Message {
   Message copyWith({
     String? id,
     String? senderId,
-    String? senderName,
     String? body,
     DateTime? timestamp,
   }) {

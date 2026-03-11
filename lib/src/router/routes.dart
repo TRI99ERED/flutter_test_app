@@ -15,7 +15,7 @@ const loginPath = '/login';
 const registerPath = '/register';
 const emailConfirmationPath = '/email-confirmation';
 const forgotPasswordPath = '/forgot-password';
-const chatPath = '/chats/:chatId';
+const chatPath = '/chats/:chatType/:chatId';
 const projectPath = '/projects/:projectId';
 
 GoRouter generateRouter(AppController appController) {
@@ -44,7 +44,11 @@ GoRouter generateRouter(AppController appController) {
         path: chatPath,
         builder: (context, state) {
           final chatId = state.pathParameters['chatId'] ?? '';
-          return ChatScreen(chatId: chatId);
+          final chatType = state.pathParameters['chatType'] ?? 'direct';
+          return ChatScreen(
+            chatId: chatId,
+            chatType: chatType == 'group' ? ChatType.group : ChatType.direct,
+          );
         },
       ),
       GoRoute(

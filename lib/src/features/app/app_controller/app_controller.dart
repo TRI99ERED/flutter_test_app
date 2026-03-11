@@ -1,7 +1,8 @@
 import 'dart:async';
+import 'dart:io';
 
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:test_app/src/core/controller/base_controller/base_controller.dart';
 import 'package:test_app/src/features/app/data/models/chat_model.dart';
@@ -14,7 +15,6 @@ import 'package:test_app/src/features/app/data/repositories/firebase/firebase_fi
 import 'package:test_app/src/features/app/data/repositories/firebase/firebase_firestore_repository/ifirebase_firestore_repository.dart';
 import 'package:test_app/src/features/app/data/repositories/firebase/firebase_storage_repository/firebase_storage_repository_impl.dart';
 import 'package:test_app/src/features/app/data/repositories/firebase/firebase_storage_repository/ifirebase_storage_repository.dart';
-import 'package:image_picker_for_web/image_picker_for_web.dart';
 
 part 'app_state.dart';
 
@@ -22,8 +22,8 @@ final class AppController extends BaseController<AppState> {
   final IFirebaseAuthRepository _authRepository;
   final IFirebaseFirestoreRepository _firestoreRepository;
   final IFirebaseStorageRepository _storageRepository;
-  Stream<AuthorizedUser>? _userStream;
-  StreamSubscription<AuthorizedUser>? _userStreamSubscription;
+  Stream<AuthorizedUser?>? _userStream;
+  StreamSubscription<AuthorizedUser?>? _userStreamSubscription;
 
   AppController()
     : _authRepository = FirebaseAuthRepositoryImpl(),
@@ -44,7 +44,12 @@ final class AppController extends BaseController<AppState> {
     _userStream = _authRepository.watchAuthState();
     _userStreamSubscription = _userStream!.listen(
       (user) {
-        setState(AppState.idle(message: 'Auth state changed', user: user));
+        setState(
+          AppState.idle(
+            message: 'Auth state changed',
+            user: user ?? const UnauthorizedUser(),
+          ),
+        );
         _startUserSync();
       },
       onError: (error, stackTrace) {
@@ -70,7 +75,10 @@ final class AppController extends BaseController<AppState> {
     _userStreamSubscription?.cancel();
     _userStreamSubscription = _userStream!.listen((user) {
       setState(
-        AppState.idle(message: 'User synced from Firebase: $user', user: user),
+        AppState.idle(
+          message: 'User synced from Firebase: $user',
+          user: user ?? const UnauthorizedUser(),
+        ),
       );
     });
   }
@@ -225,11 +233,11 @@ final class AppController extends BaseController<AppState> {
         }
       });
 
-  Stream<List<DirectChat>> watchDirectChatsForUser(String userId) {
+  Stream<List<DirectChat>?> watchDirectChatsForUser(String userId) {
     return _firestoreRepository.watchDirectChatsForUser(userId);
   }
 
-  Stream<List<GroupChat>> watchGroupChatsForUser(String userId) {
+  Stream<List<GroupChat>?> watchGroupChatsForUser(String userId) {
     return _firestoreRepository.watchGroupChatsForUser(userId);
   }
 
@@ -308,15 +316,15 @@ final class AppController extends BaseController<AppState> {
     }
   });
 
-  Stream<List<AuthorizedUser>> watchAllUsers() {
+  Stream<List<AuthorizedUser>?> watchAllUsers() {
     return _firestoreRepository.watchAllUsers();
   }
 
-  Stream<List<Message>> watchMessagesForDirectChat(String chatId) {
+  Stream<List<Message>?> watchMessagesForDirectChat(String chatId) {
     return _firestoreRepository.watchMessagesForDirectChat(chatId: chatId);
   }
 
-  Stream<List<Message>> watchMessagesForGroupChat(String chatId) {
+  Stream<List<Message>?> watchMessagesForGroupChat(String chatId) {
     return _firestoreRepository.watchMessagesForGroupChat(chatId: chatId);
   }
 
@@ -471,11 +479,11 @@ final class AppController extends BaseController<AppState> {
     }
   });
 
-  Stream<int> watchDirectChatUnreadCount(String chatId) {
+  Stream<int?> watchDirectChatUnreadCount(String chatId) {
     return _firestoreRepository.watchDirectChatUnreadCount(chatId: chatId);
   }
 
-  Stream<Map<String, int>> watchGroupChatUnreadCounts(String chatId) {
+  Stream<Map<String, int>?> watchGroupChatUnreadCounts(String chatId) {
     return _firestoreRepository.watchGroupChatUnreadCounts(chatId: chatId);
   }
 
@@ -551,7 +559,7 @@ final class AppController extends BaseController<AppState> {
     }
   });
 
-  Stream<List<AuthorizedUser>> watchFriendsForUser(String userId) {
+  Stream<List<AuthorizedUser>?> watchFriendsForUser(String userId) {
     return _firestoreRepository.watchFriendsForUser(userId: userId);
   }
 
@@ -590,7 +598,7 @@ final class AppController extends BaseController<AppState> {
     }
   });
 
-  Stream<List<AuthorizedUser>> watchFriendIncomingRequestsForUser(
+  Stream<List<AuthorizedUser>?> watchFriendIncomingRequestsForUser(
     String userId,
   ) {
     return _firestoreRepository.watchFriendIncomingRequestsForUser(
@@ -598,7 +606,7 @@ final class AppController extends BaseController<AppState> {
     );
   }
 
-  Stream<List<AuthorizedUser>> watchFriendOutgoingRequestsForUser(
+  Stream<List<AuthorizedUser>?> watchFriendOutgoingRequestsForUser(
     String userId,
   ) {
     return _firestoreRepository.watchFriendOutgoingRequestsForUser(
@@ -810,26 +818,26 @@ final class AppController extends BaseController<AppState> {
         }
       });
 
-  Stream<List<Project>> watchToDoProjectsForUser(String userId) {
+  Stream<List<Project>?> watchToDoProjectsForUser(String userId) {
     return _firestoreRepository.watchProjectsForUser(userId).map((projects) {
       return projects
-          .where((project) => project.status == ProjectStatus.todo)
+          ?.where((project) => project.status == ProjectStatus.todo)
           .toList();
     });
   }
 
-  Stream<List<Project>> watchInProgressProjectsForUser(String userId) {
+  Stream<List<Project>?> watchInProgressProjectsForUser(String userId) {
     return _firestoreRepository.watchProjectsForUser(userId).map((projects) {
       return projects
-          .where((project) => project.status == ProjectStatus.inProgress)
+          ?.where((project) => project.status == ProjectStatus.inProgress)
           .toList();
     });
   }
 
-  Stream<List<Project>> watchFinishedProjectsForUser(String id) {
+  Stream<List<Project>?> watchFinishedProjectsForUser(String id) {
     return _firestoreRepository.watchProjectsForUser(id).map((projects) {
       return projects
-          .where((project) => project.status == ProjectStatus.finished)
+          ?.where((project) => project.status == ProjectStatus.finished)
           .toList();
     });
   }
@@ -905,24 +913,26 @@ final class AppController extends BaseController<AppState> {
     }
   });
 
-  Stream<List<AuthorizedUser>> watchProjectParticipants(String projectId) {
+  Stream<List<AuthorizedUser>?> watchProjectParticipants(String projectId) {
     return Rx.combineLatest2(
       _firestoreRepository.watchProjectWithId(projectId),
       _firestoreRepository.watchAllUsers(),
-      (Project project, List<AuthorizedUser> users) {
-        final participantIds = project.participants.toSet();
-        return users.where((user) => participantIds.contains(user.id)).toList();
+      (Project? project, List<AuthorizedUser>? users) {
+        final participantIds = project?.participants.toSet() ?? {};
+        return users
+            ?.where((user) => participantIds.contains(user.id))
+            .toList();
       },
     );
   }
 
-  Stream<Project> watchProjectWithId(String projectId) {
+  Stream<Project?> watchProjectWithId(String projectId) {
     return _firestoreRepository.watchProjectWithId(projectId);
   }
 
-  Stream<AuthorizedUser> watchUserWithId(String memberId) {
+  Stream<AuthorizedUser?> watchUserWithId(String memberId) {
     return _firestoreRepository.watchAllUsers().map((users) {
-      return users.firstWhere((u) => u.id == memberId);
+      return users?.firstWhere((u) => u.id == memberId);
     });
   }
 
@@ -939,7 +949,7 @@ final class AppController extends BaseController<AppState> {
     try {
       final isFriend = await _firestoreRepository
           .watchFriendsForUser(userId: userId)
-          .map((friends) => friends.any((friend) => friend.id == friendId))
+          .map((friends) => friends?.any((friend) => friend.id == friendId))
           .firstWhere((isFriend) => true, orElse: () => false);
       setState(
         AppState.idle(
@@ -947,7 +957,7 @@ final class AppController extends BaseController<AppState> {
           user: state.user,
         ),
       );
-      return isFriend;
+      return isFriend ?? false;
     } catch (error, stackTrace) {
       setState(
         AppState.failed(
@@ -976,7 +986,7 @@ final class AppController extends BaseController<AppState> {
     try {
       final isParticipant = await _firestoreRepository
           .watchProjectWithId(projectId)
-          .map((project) => project.participants.contains(userId))
+          .map((project) => project?.participants.contains(userId))
           .firstWhere((isParticipant) => true, orElse: () => false);
       setState(
         AppState.idle(
@@ -985,7 +995,7 @@ final class AppController extends BaseController<AppState> {
           user: state.user,
         ),
       );
-      return isParticipant;
+      return isParticipant ?? false;
     } catch (error, stackTrace) {
       setState(
         AppState.failed(
@@ -1030,11 +1040,11 @@ final class AppController extends BaseController<AppState> {
         }
       });
 
-  Stream<DirectChat> watchDirectChatWithId(String chatId) {
+  Stream<DirectChat?> watchDirectChatWithId(String chatId) {
     return _firestoreRepository.watchDirectChatWithId(chatId);
   }
 
-  Stream<GroupChat> watchGroupChatWithId(String chatId) {
+  Stream<GroupChat?> watchGroupChatWithId(String chatId) {
     return _firestoreRepository.watchGroupChatWithId(chatId);
   }
 
@@ -1050,13 +1060,21 @@ final class AppController extends BaseController<AppState> {
       ),
     );
     try {
-      XFile? imageFile;
+      File? imageFile;
       if (!kIsWeb) {
-        imageFile = await ImagePicker().pickImage(source: ImageSource.gallery);
-      } else {
-        imageFile = await ImagePickerPlugin().getImageFromSource(
-          source: ImageSource.gallery,
+        final result = await FilePicker.platform.pickFiles(
+          type: FileType.image,
         );
+        if (result != null && result.files.isNotEmpty) {
+          imageFile = File(result.files.single.path!);
+        }
+      } else {
+        final result = await FilePicker.platform.pickFiles(
+          type: FileType.image,
+        );
+        if (result != null && result.files.isNotEmpty) {
+          imageFile = File(result.files.single.path!);
+        }
       }
       if (imageFile == null) {
         setState(
@@ -1136,13 +1154,21 @@ final class AppController extends BaseController<AppState> {
       ),
     );
     try {
-      XFile? imageFile;
+      File? imageFile;
       if (!kIsWeb) {
-        imageFile = await ImagePicker().pickImage(source: ImageSource.gallery);
-      } else {
-        imageFile = await ImagePickerPlugin().getImageFromSource(
-          source: ImageSource.gallery,
+        final result = await FilePicker.platform.pickFiles(
+          type: FileType.image,
         );
+        if (result != null && result.files.isNotEmpty) {
+          imageFile = File(result.files.single.path!);
+        }
+      } else {
+        final result = await FilePicker.platform.pickFiles(
+          type: FileType.image,
+        );
+        if (result != null && result.files.isNotEmpty) {
+          imageFile = File(result.files.single.path!);
+        }
       }
       if (imageFile == null) {
         setState(
@@ -1212,12 +1238,88 @@ final class AppController extends BaseController<AppState> {
     }
   });
 
-  Stream<List<Chat>> watchAllChatsForUser(String userId) {
+  Stream<List<Chat>?> watchAllChatsForUser(String userId) {
     return _firestoreRepository.watchAllChatsForUser(userId);
   }
 
-  Stream<Chat> watchChatWithId(String chatId) {
-    return _firestoreRepository.watchChatWithId(chatId);
+  Future<void> updateUserCurrentDirectChatId({
+    required String userId,
+    String currentDirectChatId = '',
+  }) async => await serialExecutor.synchronized(() async {
+    setState(
+      AppState.processing(
+        message: 'Updating current direct chat for user "$userId"...',
+        user: state.user,
+      ),
+    );
+    try {
+      await _firestoreRepository.updateUserCurrentDirectChatId(
+        userId: userId,
+        currentDirectChatId: currentDirectChatId,
+      );
+      setState(
+        AppState.idle(
+          message:
+              'Current direct chat updated successfully for user "$userId".',
+          user: state.user,
+        ),
+      );
+    } catch (error, stackTrace) {
+      setState(
+        AppState.failed(
+          message:
+              'Failed to update current direct chat for user "$userId": ${error.toString()}',
+          user: state.user,
+          error: error,
+          stackTrace: stackTrace,
+        ),
+      );
+      rethrow;
+    }
+  });
+
+  Future<void> updateUserCurrentGroupChatId({
+    required String userId,
+    String currentGroupChatId = '',
+  }) async => await serialExecutor.synchronized(() async {
+    setState(
+      AppState.processing(
+        message: 'Updating current group chat for user "$userId"...',
+        user: state.user,
+      ),
+    );
+    try {
+      await _firestoreRepository.updateUserCurrentGroupChatId(
+        userId: userId,
+        currentGroupChatId: currentGroupChatId,
+      );
+      setState(
+        AppState.idle(
+          message:
+              'Current group chat updated successfully for user "$userId".',
+          user: state.user,
+        ),
+      );
+    } catch (error, stackTrace) {
+      setState(
+        AppState.failed(
+          message:
+              'Failed to update current group chat for user "$userId": ${error.toString()}',
+          user: state.user,
+          error: error,
+          stackTrace: stackTrace,
+        ),
+      );
+      rethrow;
+    }
+  });
+
+  Stream<String?> watchUserCurrentDirectChatId(String userId) {
+    return watchUserWithId(userId).map((user) => user?.currentDirectChatId);
+  }
+
+  Stream<String?> watchUserCurrentGroupChatId(String userId) {
+    return watchUserWithId(userId).map((user) => user?.currentGroupChatId);
   }
 
   @override

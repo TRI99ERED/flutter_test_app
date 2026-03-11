@@ -311,8 +311,10 @@ class _FriendsSectionState extends State<_FriendsSection> {
                                                 chatName: '',
                                               );
 
-                                          if (!mounted) return;
-                                          context.push('/chats/${chat.id}');
+                                          if (!context.mounted) return;
+                                          context.push(
+                                            '/chats/direct/${chat.id}',
+                                          );
                                         },
                                 FriendsSectionType.incomingRequests =>
                                   () async {

@@ -297,7 +297,7 @@ class _ProjectWizardState extends State<ProjectWizard> {
                                   }.toList(),
                                 );
 
-                            if (!mounted) return;
+                            if (!context.mounted) return;
                             context.pop(project);
                             break;
                           case ProjectWizardMode.edit:
@@ -316,7 +316,7 @@ class _ProjectWizardState extends State<ProjectWizard> {
                               updatedProject,
                             );
 
-                            if (!mounted) return;
+                            if (!context.mounted) return;
                             context.pop(updatedProject);
                             break;
                         }

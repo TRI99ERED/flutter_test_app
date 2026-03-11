@@ -416,7 +416,20 @@ class FirebaseFirestoreRepositoryImpl implements IFirebaseFirestoreRepository {
     required Map<String, int> unreadCounts,
   }) async {
     try {
-      await _groupChats.doc(chatId).update({'unreadCounts': unreadCounts});
+      final docRef = _groupChats.doc(chatId);
+      await FirebaseFirestore.instance.runTransaction((tx) async {
+        final snapshot = await tx.get(docRef);
+        if (!snapshot.exists) {
+          throw Exception('Group chat does not exist');
+        }
+        final currentCounts = Map<String, int>.from(
+          snapshot.data()?['unreadCounts'] ?? {},
+        );
+        unreadCounts.forEach((key, value) {
+          currentCounts[key] = value;
+        });
+        tx.update(docRef, {'unreadCounts': currentCounts});
+      });
     } catch (e) {
       throw Exception('Failed to update group chat unread counts: $e');
     }
@@ -444,22 +457,48 @@ class FirebaseFirestoreRepositoryImpl implements IFirebaseFirestoreRepository {
   }
 
   @override
-  Stream<List<Chat>> watchAllChatsForUser(String userId) {
-    final directChatsStream = watchDirectChatsForUser(
-      userId,
-    ).map<List<Chat>>((directChats) => directChats);
-    final groupChatsStream = watchGroupChatsForUser(
-      userId,
-    ).map<List<Chat>>((groupChats) => groupChats);
+  Future<void> updateUserCurrentDirectChatId({
+    required String userId,
+    required String currentDirectChatId,
+  }) {
+    try {
+      return _users.doc(userId).update({
+        'currentDirectChatId': currentDirectChatId,
+      });
+    } catch (e) {
+      throw Exception('Failed to update user current direct chat ID: $e');
+    }
+  }
 
-    return Rx.combineLatest2(directChatsStream, groupChatsStream, (
-      directChats,
-      groupChats,
-    ) {
-      final allChats = [...directChats, ...groupChats];
-      allChats.sort((a, b) => b.lastUpdated.compareTo(a.lastUpdated));
-      return allChats;
-    }).distinct((prev, next) {
+  @override
+  Future<void> updateUserCurrentGroupChatId({
+    required String userId,
+    required String currentGroupChatId,
+  }) {
+    try {
+      return _users.doc(userId).update({
+        'currentGroupChatId': currentGroupChatId,
+      });
+    } catch (e) {
+      throw Exception('Failed to update user current group chat ID: $e');
+    }
+  }
+
+  @override
+  Stream<List<Chat>?> watchAllChatsForUser(String userId) {
+    final directChatsStream = watchDirectChatsForUser(userId);
+    final groupChatsStream = watchGroupChatsForUser(userId);
+
+    return Rx.combineLatest2<List<Chat>?, List<Chat>?, List<Chat>?>(
+      directChatsStream,
+      groupChatsStream,
+      (directChats, groupChats) {
+        final allChats = <Chat>[...?directChats, ...?groupChats];
+        allChats.sort((a, b) => b.lastUpdated.compareTo(a.lastUpdated));
+        return allChats;
+      },
+    ).distinct((prev, next) {
+      if (prev == null || next == null) return prev == next;
       if (prev.length != next.length) return false;
       final prevIds = prev.map((c) => c.id).toSet();
       final nextIds = next.map((c) => c.id).toSet();
@@ -468,7 +507,7 @@ class FirebaseFirestoreRepositoryImpl implements IFirebaseFirestoreRepository {
   }
 
   @override
-  Stream<List<AuthorizedUser>> watchAllUsers() {
+  Stream<List<AuthorizedUser>?> watchAllUsers() {
     return _users
         .snapshots()
         .map(
@@ -484,24 +523,7 @@ class FirebaseFirestoreRepositoryImpl implements IFirebaseFirestoreRepository {
   }
 
   @override
-  Stream<Chat> watchChatWithId(String chatId) {
-    final directChatStream = watchDirectChatWithId(
-      chatId,
-    ).map<Chat>((directChat) => directChat);
-    final groupChatStream = watchGroupChatWithId(
-      chatId,
-    ).map<Chat>((groupChat) => groupChat);
-
-    return Rx.merge([directChatStream, groupChatStream])
-        .firstWhere(
-          (chat) => chat.id == chatId,
-          orElse: () => throw Exception('Chat with id $chatId does not exist'),
-        )
-        .asStream();
-  }
-
-  @override
-  Stream<List<DirectChat>> watchDirectChatsForUser(String userId) {
+  Stream<List<DirectChat>?> watchDirectChatsForUser(String userId) {
     return _directChats
         .where('participants', arrayContains: userId)
         .orderBy('lastUpdated', descending: true)
@@ -516,27 +538,27 @@ class FirebaseFirestoreRepositoryImpl implements IFirebaseFirestoreRepository {
   }
 
   @override
-  Stream<int> watchDirectChatUnreadCount({required String chatId}) {
+  Stream<int?> watchDirectChatUnreadCount({required String chatId}) {
     return _directChats
         .doc(chatId)
         .snapshots()
         .map((snapshot) {
           final data = snapshot.data();
-          if (data == null) return 0;
+          if (data == null) return null;
           return data['unreadCount'] ?? 0;
         })
         .distinct((prev, next) => prev == next)
-        .cast<int>();
+        .cast<int?>();
   }
 
   @override
-  Stream<DirectChat> watchDirectChatWithId(String chatId) {
+  Stream<DirectChat?> watchDirectChatWithId(String chatId) {
     return _directChats
         .doc(chatId)
         .snapshots()
         .map((snapshot) {
           if (!snapshot.exists) {
-            throw Exception('Chat does not exist');
+            return null;
           }
           return DirectChat.fromFirestore(snapshot);
         })
@@ -544,7 +566,7 @@ class FirebaseFirestoreRepositoryImpl implements IFirebaseFirestoreRepository {
   }
 
   @override
-  Stream<List<AuthorizedUser>> watchFriendIncomingRequestsForUser({
+  Stream<List<AuthorizedUser>?> watchFriendIncomingRequestsForUser({
     required String userId,
   }) {
     return _users
@@ -577,7 +599,7 @@ class FirebaseFirestoreRepositoryImpl implements IFirebaseFirestoreRepository {
   }
 
   @override
-  Stream<List<AuthorizedUser>> watchFriendOutgoingRequestsForUser({
+  Stream<List<AuthorizedUser>?> watchFriendOutgoingRequestsForUser({
     required String userId,
   }) {
     return _users
@@ -610,7 +632,7 @@ class FirebaseFirestoreRepositoryImpl implements IFirebaseFirestoreRepository {
   }
 
   @override
-  Stream<List<AuthorizedUser>> watchFriendsForUser({required String userId}) {
+  Stream<List<AuthorizedUser>?> watchFriendsForUser({required String userId}) {
     return _users
         .doc(userId)
         .collection('friends')
@@ -641,7 +663,7 @@ class FirebaseFirestoreRepositoryImpl implements IFirebaseFirestoreRepository {
   }
 
   @override
-  Stream<List<GroupChat>> watchGroupChatsForUser(String userId) {
+  Stream<List<GroupChat>?> watchGroupChatsForUser(String userId) {
     return _groupChats
         .where('participants', arrayContains: userId)
         .orderBy('lastUpdated', descending: true)
@@ -656,7 +678,7 @@ class FirebaseFirestoreRepositoryImpl implements IFirebaseFirestoreRepository {
   }
 
   @override
-  Stream<Map<String, int>> watchGroupChatUnreadCounts({
+  Stream<Map<String, int>?> watchGroupChatUnreadCounts({
     required String chatId,
   }) {
     return _groupChats
@@ -664,10 +686,11 @@ class FirebaseFirestoreRepositoryImpl implements IFirebaseFirestoreRepository {
         .snapshots()
         .map((snapshot) {
           final data = snapshot.data();
-          if (data == null) return {};
+          if (data == null) return null;
           return Map<String, int>.from(data['unreadCounts'] ?? {});
         })
         .distinct((prev, next) {
+          if (prev == null || next == null) return prev == next;
           if (prev.length != next.length) return false;
           final prevKeys = prev.keys.toSet();
           final nextKeys = next.keys.toSet();
@@ -682,17 +705,17 @@ class FirebaseFirestoreRepositoryImpl implements IFirebaseFirestoreRepository {
           }
           return true;
         })
-        .cast<Map<String, int>>();
+        .cast<Map<String, int>?>();
   }
 
   @override
-  Stream<GroupChat> watchGroupChatWithId(String chatId) {
+  Stream<GroupChat?> watchGroupChatWithId(String chatId) {
     return _groupChats
         .doc(chatId)
         .snapshots()
         .map((snapshot) {
           if (!snapshot.exists) {
-            throw Exception('Chat does not exist');
+            return null;
           }
           return GroupChat.fromFirestore(snapshot);
         })
@@ -700,7 +723,7 @@ class FirebaseFirestoreRepositoryImpl implements IFirebaseFirestoreRepository {
   }
 
   @override
-  Stream<List<Message>> watchMessagesForDirectChat({required String chatId}) {
+  Stream<List<Message>?> watchMessagesForDirectChat({required String chatId}) {
     return _directChats
         .doc(chatId)
         .collection('messages')
@@ -716,7 +739,7 @@ class FirebaseFirestoreRepositoryImpl implements IFirebaseFirestoreRepository {
   }
 
   @override
-  Stream<List<Message>> watchMessagesForGroupChat({required String chatId}) {
+  Stream<List<Message>?> watchMessagesForGroupChat({required String chatId}) {
     return _groupChats
         .doc(chatId)
         .collection('messages')
@@ -732,7 +755,7 @@ class FirebaseFirestoreRepositoryImpl implements IFirebaseFirestoreRepository {
   }
 
   @override
-  Stream<List<Project>> watchProjectsForUser(String userId) {
+  Stream<List<Project>?> watchProjectsForUser(String userId) {
     return _projects
         .where('participants', arrayContains: userId)
         .orderBy('lastUpdated', descending: true)
@@ -747,11 +770,16 @@ class FirebaseFirestoreRepositoryImpl implements IFirebaseFirestoreRepository {
   }
 
   @override
-  Stream<Project> watchProjectWithId(String projectId) {
+  Stream<Project?> watchProjectWithId(String projectId) {
     return _projects
         .doc(projectId)
         .snapshots()
-        .map((snapshot) => Project.fromFirestore(snapshot))
+        .map((snapshot) {
+          if (!snapshot.exists) {
+            return null;
+          }
+          return Project.fromFirestore(snapshot);
+        })
         .distinct((prev, next) => prev == next);
   }
 }

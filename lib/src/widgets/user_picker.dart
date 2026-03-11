@@ -47,7 +47,9 @@ class UserPicker extends StatefulWidget {
       return null;
     }
 
-    List<AuthorizedUser> users = (flags & UserPickerFlag.friendsOnly.value) != 0
+    if (!context.mounted) return null;
+    List<AuthorizedUser>? users =
+        (flags & UserPickerFlag.friendsOnly.value) != 0
         ? await context.appController.watchFriendsForUser(userId).first
         : await context.appController.watchAllUsers().first;
 
@@ -59,8 +61,10 @@ class UserPicker extends StatefulWidget {
       final friends = await context.appController
           .watchFriendsForUser(userId)
           .first;
-      final friendIds = friends.map((f) => f.id).toSet();
-      users = users.where((u) => !friendIds.contains(u.id)).toList();
+      final friendIds = friends?.map((f) => f.id).toSet();
+      users = users
+          ?.where((u) => !(friendIds?.contains(u.id) ?? false))
+          .toList();
     }
     if ((flags & UserPickerFlag.excludeProjectParticipants.value) != 0 &&
         projectId != null) {
@@ -71,8 +75,10 @@ class UserPicker extends StatefulWidget {
       final project = await context.appController
           .watchProjectWithId(projectId)
           .first;
-      final participantIds = project.participants;
-      users = users.where((u) => !participantIds.contains(u.id)).toList();
+      final participantIds = project?.participants;
+      users = users
+          ?.where((u) => !(participantIds?.contains(u.id) ?? false))
+          .toList();
     }
 
     if (!context.mounted) {
@@ -83,7 +89,11 @@ class UserPicker extends StatefulWidget {
       context: context,
       barrierColor: Colors.black.withAlpha(216),
       builder: (context) {
-        return UserPicker(users: users, flags: flags, projectId: projectId);
+        return UserPicker(
+          users: users ?? [],
+          flags: flags,
+          projectId: projectId,
+        );
       },
     );
   }
