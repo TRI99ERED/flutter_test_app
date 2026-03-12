@@ -7,6 +7,7 @@ import 'package:rxdart/rxdart.dart';
 import 'package:test_app/src/core/controller/base_controller/base_controller.dart';
 import 'package:test_app/src/features/app/data/models/chat_model.dart';
 import 'package:test_app/src/features/app/data/models/message_model.dart';
+import 'package:test_app/src/features/app/data/models/project_feedback_model.dart';
 import 'package:test_app/src/features/app/data/models/project_model.dart';
 import 'package:test_app/src/features/app/data/models/user_model.dart';
 import 'package:test_app/src/features/app/data/repositories/firebase/firebase_auth_repository/firebase_auth_repository_impl.dart';
@@ -802,6 +803,15 @@ final class AppController extends BaseController<AppState> {
         );
         try {
           await _firestoreRepository.deleteGroupChat(chatId);
+          final projects = await _firestoreRepository
+              .watchProjectsForUser((state.user as AuthorizedUser).id)
+              .first;
+          final associatedProject = projects?.firstWhere(
+            (p) => p.groupChatId == chatId,
+          );
+          if (associatedProject != null) {
+            await updateProject(associatedProject.copyWith(groupChatId: ''));
+          }
           setState(
             AppState.idle(
               message: 'Group chat "$chatId" deleted successfully',
@@ -1416,6 +1426,82 @@ final class AppController extends BaseController<AppState> {
           rethrow;
         }
       });
+
+  Future<void> sendPasswordResetEmail(
+    String email,
+  ) async => await serialExecutor.synchronized(() async {
+    setState(
+      AppState.processing(
+        message: 'Sending password reset email to "$email"...',
+        user: state.user,
+      ),
+    );
+    try {
+      await _authRepository.sendPasswordResetEmail(email: email);
+      setState(
+        AppState.idle(
+          message: 'Password reset email sent successfully to "$email".',
+          user: state.user,
+        ),
+      );
+    } catch (error, stackTrace) {
+      setState(
+        AppState.failed(
+          message:
+              'Failed to send password reset email to "$email": ${error.toString()}',
+          user: state.user,
+          error: error,
+          stackTrace: stackTrace,
+        ),
+      );
+      rethrow;
+    }
+  });
+
+  Future<ProjectFeedback> submitProjectFeedback({
+    required String projectId,
+    required String userId,
+    required int starRating,
+    required Set<String> likes,
+    required Set<String> dislikes,
+    required String feedback,
+  }) async => await serialExecutor.synchronized(() async {
+    setState(
+      AppState.processing(
+        message: 'Submitting feedback for project "$projectId"...',
+        user: state.user,
+      ),
+    );
+    try {
+      final projectFeedback = await _firestoreRepository.submitProjectFeedback(
+        projectId: projectId,
+        userId: userId,
+        starRating: starRating,
+        likes: likes,
+        dislikes: dislikes,
+        feedback: feedback,
+      );
+      setState(
+        AppState.idle(
+          message:
+              'Feedback submitted successfully for project "$projectId", id: "${projectFeedback.feedbackId}"',
+          user: state.user,
+        ),
+      );
+      return projectFeedback;
+    } catch (error, stackTrace) {
+      setState(
+        AppState.failed(
+          message:
+              'Failed to submit feedback for project "$projectId": ${error.toString()}',
+          user: state.user,
+          error: error,
+          stackTrace: stackTrace,
+        ),
+      );
+      rethrow;
+    }
+  });
 
   @override
   void dispose() {

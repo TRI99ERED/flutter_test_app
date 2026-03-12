@@ -63,42 +63,52 @@ class _UserProfileState extends State<UserProfile> {
   Widget _buildProfileView() {
     return Column(
       spacing: spacing16,
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Center(
           child: AppAvatar.avatarOrPlaceholder(widget.user, AvatarSize.large),
         ),
-        Text(
-          'Name:',
-          style: TextStyle(
-            fontSize: h3Size,
-            fontWeight: h3Weight,
-            color: DarkColor.darkest.color,
-          ),
+        Column(
+          spacing: spacing8,
+          children: [
+            Text(
+              'Name:',
+              style: TextStyle(
+                fontSize: h3Size,
+                fontWeight: h3Weight,
+                color: DarkColor.darkest.color,
+              ),
+            ),
+            Text(
+              widget.user.name,
+              style: TextStyle(
+                fontSize: bMSize,
+                fontWeight: bMWeight,
+                color: DarkColor.darkest.color,
+              ),
+            ),
+          ],
         ),
-        Text(
-          widget.user.name,
-          style: TextStyle(
-            fontSize: bMSize,
-            fontWeight: bMWeight,
-            color: DarkColor.darkest.color,
-          ),
-        ),
-        Text(
-          'Handle:',
-          style: TextStyle(
-            fontSize: h3Size,
-            fontWeight: h3Weight,
-            color: DarkColor.darkest.color,
-          ),
-        ),
-        Text(
-          '@${widget.user.handle}',
-          style: TextStyle(
-            fontSize: bMSize,
-            fontWeight: bMWeight,
-            color: DarkColor.darkest.color,
-          ),
+        Column(
+          spacing: spacing8,
+          children: [
+            Text(
+              'Handle:',
+              style: TextStyle(
+                fontSize: h3Size,
+                fontWeight: h3Weight,
+                color: DarkColor.darkest.color,
+              ),
+            ),
+            Text(
+              '@${widget.user.handle}',
+              style: TextStyle(
+                fontSize: bMSize,
+                fontWeight: bMWeight,
+                color: DarkColor.darkest.color,
+              ),
+            ),
+          ],
         ),
       ],
     );

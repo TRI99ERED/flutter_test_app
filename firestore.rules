@@ -22,8 +22,7 @@ service cloud.firestore {
       match /friends/{friendId} {
         allow read: if request.auth != null && request.auth.uid == userId;
         allow create: if request.auth != null && (request.auth.uid == userId ||
-        request.auth.uid == request.resource.data.id) &&
-        !exists(/databases/$(database)/documents/users/$(userId)/friends/$(request.resource.data.id));
+        request.auth.uid == request.resource.data.id);
         allow delete: if request.auth != null && (request.auth.uid == userId ||
         request.auth.uid == resource.data.id);
         allow update: if false;
@@ -50,7 +49,8 @@ service cloud.firestore {
 
     // Direct chats - users can only read chats they are part of
     match /directChats/{chatId} {
-      allow read: if request.auth != null && request.auth.uid in resource.data.participants;
+      allow read: if request.auth != null &&
+      request.auth.uid in resource.data.participants;
       allow create: if request.auth != null &&
       request.auth.uid in request.resource.data.participants &&
       request.resource.data.participants.size() == 2;
@@ -70,7 +70,8 @@ service cloud.firestore {
 
     // Group chats - users can only read chats they are part of
     match /groupChats/{chatId} {
-      allow read: if request.auth != null && request.auth.uid in resource.data.participants;
+      allow read: if request.auth != null &&
+      request.auth.uid in resource.data.participants;
       allow create: if request.auth != null &&
       request.auth.uid in request.resource.data.participants &&
       request.resource.data.participants.size() > 2 &&
@@ -95,8 +96,8 @@ service cloud.firestore {
 
     // Projects - users can only read projects they are part of
     match /projects/{projectId} {
-      allow read: if request.auth != null && (!exists(/databases/$(database)/documents/projects/$(projectId)) ||
-      request.auth.uid in resource.data.participants);
+      allow read: if request.auth != null &&
+      request.auth.uid in resource.data.participants;
       allow create: if request.auth != null &&
       request.auth.uid in request.resource.data.participants &&
       request.resource.data.ownerId != null &&
@@ -106,6 +107,17 @@ service cloud.firestore {
       request.auth.uid in resource.data.participants &&
       resource.data.ownerId != null &&
       request.auth.uid == resource.data.ownerId;
+
+      // Feedback subcollection
+      match /feedback/{feedbackId} {
+        allow read: if request.auth != null &&
+        request.auth.uid in get(/databases/$(database)/documents/projects/$(projectId)).data.participants;
+        allow create: if request.auth != null &&
+        request.auth.uid in get(/databases/$(database)/documents/projects/$(projectId)).data.participants &&
+        request.resource.data.userId == request.auth.uid;
+        allow delete: if false;
+        allow update: if false;
+      }
     }
 
     // Default deny all other collections

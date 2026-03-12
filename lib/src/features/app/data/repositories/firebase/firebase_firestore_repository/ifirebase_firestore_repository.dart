@@ -1,5 +1,6 @@
 import 'package:test_app/src/features/app/data/models/chat_model.dart';
 import 'package:test_app/src/features/app/data/models/message_model.dart';
+import 'package:test_app/src/features/app/data/models/project_feedback_model.dart';
 import 'package:test_app/src/features/app/data/models/project_model.dart';
 import 'package:test_app/src/features/app/data/models/user_model.dart';
 
@@ -65,6 +66,15 @@ abstract interface class IFirebaseFirestoreRepository {
   Future<void> sendFriendRequest({
     required String currentUserId,
     required String friendUserId,
+  });
+
+  Future<ProjectFeedback> submitProjectFeedback({
+    required String projectId,
+    required String userId,
+    required int starRating,
+    required Set<String> likes,
+    required Set<String> dislikes,
+    required String feedback,
   });
 
   Future<void> updateDirectChatLastMessage({

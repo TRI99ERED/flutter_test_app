@@ -5,6 +5,7 @@ import 'package:test_app/src/core/widgets/controller_listener.dart';
 import 'package:test_app/src/router/routes.dart';
 import 'package:test_app/src/widgets/common/app_button.dart';
 import 'package:test_app/src/widgets/common/app_checkbox.dart';
+import 'package:test_app/src/widgets/common/app_divider.dart';
 import 'package:test_app/src/widgets/common/app_text_field.dart';
 import 'package:test_app/src/widgets/common/styles.dart';
 
@@ -200,6 +201,27 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               );
                             },
                           ),
+                        ),
+                        AppDivider(),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          spacing: spacing8,
+                          children: [
+                            Text(
+                              'Already have an account?',
+                              style: TextStyle(
+                                fontSize: bMSize,
+                                fontWeight: bMWeight,
+                                color: DarkColor.light.color,
+                              ),
+                            ),
+                            AppButtonTertiary(
+                              onPressed: () {
+                                context.go(loginPath);
+                              },
+                              text: 'Log in',
+                            ),
+                          ],
                         ),
                       ],
                     ),

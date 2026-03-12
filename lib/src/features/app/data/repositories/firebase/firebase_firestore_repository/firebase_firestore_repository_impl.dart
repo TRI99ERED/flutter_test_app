@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:test_app/src/features/app/data/models/chat_model.dart';
 import 'package:test_app/src/features/app/data/models/message_model.dart';
+import 'package:test_app/src/features/app/data/models/project_feedback_model.dart';
 import 'package:test_app/src/features/app/data/models/project_model.dart';
 import 'package:test_app/src/features/app/data/models/user_model.dart';
 import 'package:test_app/src/features/app/data/repositories/firebase/firebase_firestore_repository/ifirebase_firestore_repository.dart';
@@ -357,6 +358,34 @@ class FirebaseFirestoreRepositoryImpl implements IFirebaseFirestoreRepository {
   }
 
   @override
+  Future<ProjectFeedback> submitProjectFeedback({
+    required String projectId,
+    required String userId,
+    required int starRating,
+    required Set<String> likes,
+    required Set<String> dislikes,
+    required String feedback,
+  }) async {
+    try {
+      final doc = _projects.doc(projectId).collection('feedback').doc(userId);
+
+      final projectFeedback = ProjectFeedback(
+        feedbackId: doc.id,
+        projectId: projectId,
+        userId: userId,
+        starRating: starRating,
+        likes: likes,
+        dislikes: dislikes,
+        feedback: feedback,
+      );
+      await doc.set(projectFeedback.toFirestore());
+      return projectFeedback;
+    } catch (e) {
+      throw Exception('Failed to submit project feedback: $e');
+    }
+  }
+
+  @override
   Future<void> updateDirectChatLastMessage({
     required String chatId,
     required String lastMessage,
@@ -384,9 +413,9 @@ class FirebaseFirestoreRepositoryImpl implements IFirebaseFirestoreRepository {
   }
 
   @override
-  Future<void> updateGroupChat(GroupChat chat) {
+  Future<void> updateGroupChat(GroupChat chat) async {
     try {
-      return _groupChats.doc(chat.id).update(chat.toFirestore());
+      await _groupChats.doc(chat.id).update(chat.toFirestore());
     } catch (e) {
       throw Exception('Failed to update group chat: $e');
     }

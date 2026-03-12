@@ -3,9 +3,11 @@ import 'package:test_app/src/features/app/app_controller/app_controller.dart';
 import 'package:test_app/src/features/app/app_scope.dart';
 import 'package:test_app/src/features/chat_screen/chat_screen.dart';
 import 'package:test_app/src/features/email_confirmation_screen/email_confirmation_screen.dart';
+import 'package:test_app/src/features/forgot_password_screen/forgot_password_screen.dart';
 import 'package:test_app/src/features/home_screen/home_screen.dart';
 import 'package:test_app/src/features/onboarding_screen/onboarding_screen.dart';
 import 'package:test_app/src/features/login_screen/login_screen.dart';
+import 'package:test_app/src/features/project_feedback_screen/project_feedback_screen.dart';
 import 'package:test_app/src/features/project_screen/project_screen.dart';
 import 'package:test_app/src/features/register_screen/register_screen.dart';
 
@@ -17,6 +19,7 @@ const emailConfirmationPath = '/email-confirmation';
 const forgotPasswordPath = '/forgot-password';
 const chatPath = '/chats/:chatType/:chatId';
 const projectPath = '/projects/:projectId';
+const projectFeedbackPath = '/projects/:projectId/feedback';
 
 GoRouter generateRouter(AppController appController) {
   return GoRouter(
@@ -41,6 +44,10 @@ GoRouter generateRouter(AppController appController) {
         builder: (context, state) => const EmailConfirmationScreen(),
       ),
       GoRoute(
+        path: forgotPasswordPath,
+        builder: (context, state) => const ForgotPasswordScreen(),
+      ),
+      GoRoute(
         path: chatPath,
         builder: (context, state) {
           final chatId = state.pathParameters['chatId'] ?? '';
@@ -56,6 +63,13 @@ GoRouter generateRouter(AppController appController) {
         builder: (context, state) {
           final projectId = state.pathParameters['projectId'] ?? '';
           return ProjectScreen(projectId: projectId);
+        },
+      ),
+      GoRoute(
+        path: projectFeedbackPath,
+        builder: (context, state) {
+          final projectId = state.pathParameters['projectId'] ?? '';
+          return ProjectFeedbackScreen(projectId: projectId);
         },
       ),
     ],

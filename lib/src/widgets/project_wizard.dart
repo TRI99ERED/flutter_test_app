@@ -52,11 +52,16 @@ class _ProjectWizardState extends State<ProjectWizard> {
   @override
   void initState() {
     super.initState();
+    _initializeFields();
+  }
+
+  void _initializeFields() {
     if (widget.mode == ProjectWizardMode.edit && widget.projectToEdit != null) {
-      _nameController.text = widget.projectToEdit!.name;
-      _descriptionController.text = widget.projectToEdit!.description;
-      _participants.value = widget.projectToEdit!.participants;
-      _selectedStatus.value = widget.projectToEdit!.status;
+      final project = widget.projectToEdit!;
+      _nameController.text = project.name;
+      _descriptionController.text = project.description;
+      _participants.value = project.participants;
+      _selectedStatus.value = project.status;
     }
   }
 
@@ -76,244 +81,13 @@ class _ProjectWizardState extends State<ProjectWizard> {
           child: Column(
             spacing: spacing8,
             children: [
-              AppListTitle(
-                title: switch (widget.mode) {
-                  ProjectWizardMode.create => 'Create a Project',
-                  ProjectWizardMode.edit => 'Edit Project',
-                },
-              ),
-              Expanded(
-                child: Form(
-                  key: _formKey,
-                  child: SizedBox(
-                    height: MediaQuery.sizeOf(context).height * 0.6,
-                    child: ListView(
-                      children: [
-                        AppTextField(
-                          title: 'Project name',
-                          placeholder: 'Enter project name',
-                          controller: _nameController,
-                          validator: getValidatorForKeyboardType(
-                            TextInputType.text,
-                          ),
-                        ),
-                        if (widget.mode == ProjectWizardMode.edit)
-                          const SizedBox(height: spacing16),
-                        if (widget.mode == ProjectWizardMode.edit &&
-                            widget.projectToEdit!.status !=
-                                ProjectStatus.finished)
-                          ValueListenableBuilder(
-                            valueListenable: _selectedStatus,
-                            builder: (context, value, child) {
-                              if (widget.projectToEdit!.status !=
-                                  ProjectStatus.finished) {
-                                return Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(switch (widget.projectToEdit!.status) {
-                                      ProjectStatus.todo => 'In Progress',
-                                      ProjectStatus.inProgress => 'Finished',
-                                      ProjectStatus.finished => 'Finished',
-                                    }),
-                                    AppCheckbox(
-                                      value: switch (widget
-                                          .projectToEdit!
-                                          .status) {
-                                        ProjectStatus.todo =>
-                                          _selectedStatus.value ==
-                                              ProjectStatus.inProgress,
-                                        ProjectStatus.inProgress =>
-                                          _selectedStatus.value ==
-                                              ProjectStatus.finished,
-                                        ProjectStatus.finished => true,
-                                      },
-                                      onChanged: (newValue) {
-                                        if (newValue == null) return;
-                                        if (widget.projectToEdit!.status ==
-                                            ProjectStatus.todo) {
-                                          _selectedStatus.value = newValue
-                                              ? ProjectStatus.inProgress
-                                              : ProjectStatus.todo;
-                                        } else if (widget
-                                                .projectToEdit!
-                                                .status ==
-                                            ProjectStatus.inProgress) {
-                                          _selectedStatus.value = newValue
-                                              ? ProjectStatus.finished
-                                              : ProjectStatus.inProgress;
-                                        }
-                                      },
-                                    ),
-                                  ],
-                                );
-                              }
-                              return const SizedBox.shrink();
-                            },
-                          ),
-                        const SizedBox(height: spacing16),
-                        AppTextArea(
-                          title: 'Description',
-                          placeholder: 'Enter project description',
-                          controller: _descriptionController,
-                        ),
-                        const SizedBox(height: spacing16),
-                        Align(
-                          alignment: Alignment.centerRight,
-                          child: AppButtonPrimary(
-                            text: 'Add a member',
-                            onPressed: switch (widget.mode) {
-                              ProjectWizardMode.create => () {
-                                UserPicker.pickUser(
-                                  context,
-                                  UserPickerFlag.friendsOnly.value,
-                                ).then((selectedUser) {
-                                  if (selectedUser != null &&
-                                      !_participants.value.contains(
-                                        selectedUser.id,
-                                      )) {
-                                    _participants.value = [
-                                      ..._participants.value,
-                                      selectedUser.id,
-                                    ];
-                                  }
-                                });
-                              },
-                              ProjectWizardMode.edit => () {
-                                if (widget.projectToEdit == null) {
-                                  return;
-                                }
-
-                                UserPicker.pickUser(
-                                  context,
-                                  UserPickerFlag.friendsOnly.value |
-                                      UserPickerFlag
-                                          .excludeProjectParticipants
-                                          .value,
-                                  widget.projectToEdit!.id,
-                                ).then((selectedUser) {
-                                  if (selectedUser != null) {
-                                    _participants.value = [
-                                      ..._participants.value,
-                                      selectedUser.id,
-                                    ];
-                                  }
-                                });
-                              },
-                            },
-                          ),
-                        ),
-                        const SizedBox(height: spacing16),
-                        ValueListenableBuilder(
-                          valueListenable: _participants,
-                          builder: (context, value, child) {
-                            return ListView.builder(
-                              shrinkWrap: true,
-                              physics: const NeverScrollableScrollPhysics(),
-                              itemCount: _participants.value.length,
-                              itemBuilder: (context, index) {
-                                final memberId = _participants.value[index];
-                                return Column(
-                                  children: [
-                                    StreamBuilder(
-                                      stream: context.appController
-                                          .watchUserWithId(memberId),
-                                      builder: (context, snapshot) {
-                                        final participant = snapshot.data;
-                                        if (participant == null) {
-                                          return const SizedBox.shrink();
-                                        }
-                                        return AppListItem(
-                                          title: participant.name,
-                                          description: '@${participant.handle}',
-                                          avatar: AppAvatar.avatarOrPlaceholder(
-                                            participant,
-                                            AvatarSize.small,
-                                          ),
-                                          control:
-                                              _participants.value[index] ==
-                                                  (context.appState.user
-                                                          as AuthorizedUser)
-                                                      .id
-                                              ? AppListItemControl.none
-                                              : AppListItemControl.largeButton,
-                                          largeButtonText:
-                                              _participants.value[index] ==
-                                                  (context.appState.user
-                                                          as AuthorizedUser)
-                                                      .id
-                                              ? null
-                                              : 'Remove',
-                                          onPressed:
-                                              _participants.value[index] ==
-                                                  (context.appState.user
-                                                          as AuthorizedUser)
-                                                      .id
-                                              ? null
-                                              : () {
-                                                  _participants.value = [
-                                                    ..._participants.value
-                                                      ..removeAt(index),
-                                                  ];
-                                                },
-                                        );
-                                      },
-                                    ),
-                                    const SizedBox(height: spacing16),
-                                  ],
-                                );
-                              },
-                            );
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
+              AppListTitle(title: _getTitle()),
+              Expanded(child: _buildForm(context)),
               SizedBox(
                 width: double.infinity,
                 child: AppButtonPrimary(
                   text: 'Save',
-                  onPressed: () async {
-                    if (_formKey.currentState?.validate() ?? false) {
-                      final user = context.appState.user as AuthorizedUser;
-                      switch (widget.mode) {
-                        case ProjectWizardMode.create:
-                          final project = await context.appController
-                              .createProjectForUser(
-                                projectName: _nameController.text,
-                                projectDescription: _descriptionController.text,
-                                participants: {
-                                  user.id,
-                                  ..._participants.value.map((id) => id),
-                                }.toList(),
-                              );
-
-                          if (!context.mounted) return;
-                          context.pop(project);
-                          break;
-                        case ProjectWizardMode.edit:
-                          final updatedProject = widget.projectToEdit!.copyWith(
-                            name: _nameController.text,
-                            description: _descriptionController.text,
-                            participants: {
-                              ..._participants.value.map((id) => id),
-                            }.toList(),
-                            status: _selectedStatus.value,
-                            lastUpdated: DateTime.now(),
-                          );
-
-                          await context.appController.updateProject(
-                            updatedProject,
-                          );
-
-                          if (!context.mounted) return;
-                          context.pop(updatedProject);
-                          break;
-                      }
-                    }
-                  },
+                  onPressed: () => _onSavePressed(context),
                 ),
               ),
               SizedBox(
@@ -328,6 +102,212 @@ class _ProjectWizardState extends State<ProjectWizard> {
         ),
       ),
     );
+  }
+
+  String _getTitle() {
+    return widget.mode == ProjectWizardMode.create
+        ? 'Create a Project'
+        : 'Edit Project';
+  }
+
+  Widget _buildForm(BuildContext context) {
+    return Form(
+      key: _formKey,
+      child: SizedBox(
+        height: MediaQuery.sizeOf(context).height * 0.6,
+        child: ListView(
+          children: [
+            AppTextField(
+              title: 'Project name',
+              placeholder: 'Enter project name',
+              controller: _nameController,
+              validator: getValidatorForKeyboardType(TextInputType.text),
+            ),
+            if (widget.mode == ProjectWizardMode.edit)
+              const SizedBox(height: spacing16),
+            if (widget.mode == ProjectWizardMode.edit &&
+                widget.projectToEdit!.status != ProjectStatus.finished)
+              _buildStatusCheckbox(context),
+            const SizedBox(height: spacing16),
+            AppTextArea(
+              title: 'Description',
+              placeholder: 'Enter project description',
+              controller: _descriptionController,
+            ),
+            const SizedBox(height: spacing16),
+            Align(
+              alignment: Alignment.centerRight,
+              child: AppButtonPrimary(
+                text: 'Add a member',
+                onPressed: () => _onAddMemberPressed(context),
+              ),
+            ),
+            const SizedBox(height: spacing16),
+            _buildParticipantsList(context),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStatusCheckbox(BuildContext context) {
+    final status = widget.projectToEdit!.status;
+    return ValueListenableBuilder<ProjectStatus>(
+      valueListenable: _selectedStatus,
+      builder: (context, value, child) {
+        if (status == ProjectStatus.finished) {
+          return const SizedBox.shrink();
+        }
+        return Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(_getStatusLabel(status)),
+            AppCheckbox(
+              value: _getCheckboxValue(status),
+              onChanged: (newValue) => _onStatusChanged(status, newValue),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  String _getStatusLabel(ProjectStatus status) {
+    switch (status) {
+      case ProjectStatus.todo:
+        return 'In Progress';
+      case ProjectStatus.inProgress:
+      case ProjectStatus.finished:
+        return 'Finished';
+    }
+  }
+
+  bool _getCheckboxValue(ProjectStatus status) {
+    switch (status) {
+      case ProjectStatus.todo:
+        return _selectedStatus.value == ProjectStatus.inProgress;
+      case ProjectStatus.inProgress:
+        return _selectedStatus.value == ProjectStatus.finished;
+      case ProjectStatus.finished:
+        return true;
+    }
+  }
+
+  void _onStatusChanged(ProjectStatus status, bool? newValue) {
+    if (newValue == null) return;
+    if (status == ProjectStatus.todo) {
+      _selectedStatus.value = newValue
+          ? ProjectStatus.inProgress
+          : ProjectStatus.todo;
+    } else if (status == ProjectStatus.inProgress) {
+      _selectedStatus.value = newValue
+          ? ProjectStatus.finished
+          : ProjectStatus.inProgress;
+    }
+  }
+
+  void _onAddMemberPressed(BuildContext context) {
+    if (widget.mode == ProjectWizardMode.create) {
+      UserPicker.pickUser(context, UserPickerFlag.friendsOnly.value).then((
+        selectedUser,
+      ) {
+        if (selectedUser != null &&
+            !_participants.value.contains(selectedUser.id)) {
+          _participants.value = [..._participants.value, selectedUser.id];
+        }
+      });
+    } else {
+      if (widget.projectToEdit == null) return;
+      UserPicker.pickUser(
+        context,
+        UserPickerFlag.friendsOnly.value |
+            UserPickerFlag.excludeProjectParticipants.value,
+        widget.projectToEdit!.id,
+      ).then((selectedUser) {
+        if (selectedUser != null) {
+          _participants.value = [..._participants.value, selectedUser.id];
+        }
+      });
+    }
+  }
+
+  Widget _buildParticipantsList(BuildContext context) {
+    return ValueListenableBuilder<List<String>>(
+      valueListenable: _participants,
+      builder: (context, value, child) {
+        return ListView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: value.length,
+          itemBuilder: (context, index) {
+            final memberId = value[index];
+            return Column(
+              children: [
+                StreamBuilder(
+                  stream: context.appController.watchUserWithId(memberId),
+                  builder: (context, snapshot) {
+                    final participant = snapshot.data;
+                    if (participant == null) {
+                      return const SizedBox.shrink();
+                    }
+                    final currentUserId =
+                        (context.appState.user as AuthorizedUser).id;
+                    final isCurrentUser = memberId == currentUserId;
+                    return AppListItem(
+                      title: participant.name,
+                      description: '@${participant.handle}',
+                      avatar: AppAvatar.avatarOrPlaceholder(
+                        participant,
+                        AvatarSize.small,
+                      ),
+                      control: isCurrentUser
+                          ? AppListItemControl.none
+                          : AppListItemControl.largeButton,
+                      largeButtonText: isCurrentUser ? null : 'Remove',
+                      onPressed: isCurrentUser
+                          ? null
+                          : () {
+                              _participants.value = [..._participants.value]
+                                ..removeAt(index);
+                            },
+                    );
+                  },
+                ),
+                const SizedBox(height: spacing16),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Future<void> _onSavePressed(BuildContext context) async {
+    if (!(_formKey.currentState?.validate() ?? false)) return;
+    final user = context.appState.user as AuthorizedUser;
+    switch (widget.mode) {
+      case ProjectWizardMode.create:
+        final project = await context.appController.createProjectForUser(
+          projectName: _nameController.text,
+          projectDescription: _descriptionController.text,
+          participants: {user.id, ..._participants.value}.toList(),
+        );
+        if (!context.mounted) return;
+        context.pop(project);
+        break;
+      case ProjectWizardMode.edit:
+        final updatedProject = widget.projectToEdit!.copyWith(
+          name: _nameController.text,
+          description: _descriptionController.text,
+          participants: [..._participants.value],
+          status: _selectedStatus.value,
+          lastUpdated: DateTime.now(),
+        );
+        await context.appController.updateProject(updatedProject);
+        if (!context.mounted) return;
+        context.pop(updatedProject);
+        break;
+    }
   }
 
   @override

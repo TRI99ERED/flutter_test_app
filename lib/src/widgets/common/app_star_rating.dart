@@ -32,30 +32,28 @@ class _AppStarRatingState extends State<AppStarRating> {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: List.generate(5, (index) {
-          return IconButton(
-            icon: Icon(
-              index < _rating ? AppIcons.starFilled : AppIcons.starOutlined,
-              color: index < _rating
-                  ? HighlightColor.darkest.color
-                  : LightColor.dark.color,
-              size: 24,
-            ),
-            onPressed: widget.onRatingChanged != null
-                ? () {
-                    final newRating = index + 1 == _rating ? index : index + 1;
-                    setState(() {
-                      _rating = newRating;
-                    });
-                    widget.onRatingChanged!(newRating);
-                  }
-                : null,
-          );
-        }),
-      ),
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: List.generate(5, (index) {
+        return IconButton(
+          icon: Icon(
+            index < _rating ? AppIcons.starFilled : AppIcons.starOutlined,
+            color: index < _rating
+                ? HighlightColor.darkest.color
+                : LightColor.dark.color,
+            size: 24,
+          ),
+          onPressed: widget.onRatingChanged != null
+              ? () {
+                  final newRating = index + 1 == _rating ? index : index + 1;
+                  setState(() {
+                    _rating = newRating;
+                  });
+                  widget.onRatingChanged!(newRating);
+                }
+              : null,
+        );
+      }),
     );
   }
 }

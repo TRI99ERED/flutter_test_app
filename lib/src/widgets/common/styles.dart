@@ -111,6 +111,7 @@ const spacing9 = 9.0;
 const spacing10 = 10.0;
 const spacing12 = 12.0;
 const spacing16 = 16.0;
+const spacing20 = 20.0;
 const spacing24 = 24.0;
 const spacing32 = 32.0;
 const spacing40 = 40.0;

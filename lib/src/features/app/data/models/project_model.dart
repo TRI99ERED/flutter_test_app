@@ -25,6 +25,7 @@ class Project {
   final String ownerId;
   final List<String> participants;
   final ProjectStatus status;
+  final String groupChatId;
   final DateTime createdAt;
   final DateTime lastUpdated;
 
@@ -35,6 +36,7 @@ class Project {
     required this.ownerId,
     required this.participants,
     required this.status,
+    this.groupChatId = '',
     required this.createdAt,
     required this.lastUpdated,
   });
@@ -51,6 +53,7 @@ class Project {
         (e) => e.toString() == 'ProjectStatus.${data['status'] ?? 'todo'}',
         orElse: () => ProjectStatus.todo,
       ),
+      groupChatId: data['groupChatId'] ?? '',
       createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
       lastUpdated:
           (data['lastUpdated'] as Timestamp?)?.toDate() ?? DateTime.now(),
@@ -64,6 +67,7 @@ class Project {
     String? ownerId,
     List<String>? participants,
     ProjectStatus? status,
+    String? groupChatId,
     DateTime? createdAt,
     DateTime? lastUpdated,
   }) {
@@ -74,6 +78,7 @@ class Project {
       ownerId: ownerId ?? this.ownerId,
       participants: participants ?? this.participants,
       status: status ?? this.status,
+      groupChatId: groupChatId ?? this.groupChatId,
       createdAt: createdAt ?? this.createdAt,
       lastUpdated: lastUpdated ?? this.lastUpdated,
     );
@@ -90,6 +95,7 @@ class Project {
         other.ownerId == ownerId &&
         listEquals(other.participants, participants) &&
         other.status == status &&
+        other.groupChatId == groupChatId &&
         other.createdAt == createdAt &&
         other.lastUpdated == lastUpdated;
   }
@@ -103,6 +109,7 @@ class Project {
       ownerId,
       Object.hashAll(participants),
       status,
+      groupChatId,
       createdAt,
       lastUpdated,
     );
@@ -115,6 +122,7 @@ class Project {
       'ownerId': ownerId,
       'participants': participants,
       'status': status.toString().split('.').last,
+      'groupChatId': groupChatId,
       'createdAt': Timestamp.fromDate(createdAt),
       'lastUpdated': Timestamp.fromDate(lastUpdated),
     };
