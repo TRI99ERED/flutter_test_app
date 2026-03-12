@@ -196,7 +196,7 @@ class _ProjectsSectionState extends State<_ProjectsSection> {
                       return Padding(
                         padding: const EdgeInsets.symmetric(vertical: spacing4),
                         child: SizedBox(
-                          height: 40,
+                          height: 80,
                           child: ValueListenableBuilder(
                             valueListenable: widget._editPressed,
                             builder: (context, editPressed, child) {

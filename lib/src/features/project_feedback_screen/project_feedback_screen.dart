@@ -39,12 +39,17 @@ class _ProjectFeedbackScreenState extends State<ProjectFeedbackScreen> {
         }
       },
       child: Scaffold(
-        appBar: AppNavBar(
-          title: 'Feedback',
-          leftIcon: AppIcons.arrowLeft,
-          onPressedLeft: () {
-            context.pop();
-          },
+        appBar: PreferredSize(
+          preferredSize: const Size.fromHeight(kToolbarHeight),
+          child: SafeArea(
+            child: AppNavBar(
+              title: 'Feedback',
+              leftIcon: AppIcons.arrowLeft,
+              onPressedLeft: () {
+                context.pop();
+              },
+            ),
+          ),
         ),
         body: Padding(
           padding: const EdgeInsets.all(spacing24),

@@ -159,7 +159,7 @@ class ProjectScreen extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              'Created by @${owner.handle} at ${project.createdAt.toLocal().toString().split('.').first}.\nLast updated at ${project.lastUpdated.toLocal().toString().split('.').first}',
+              'Created by @${owner.handle}\nat ${project.createdAt.toLocal().toString().split('.').first}\nLast updated at ${project.lastUpdated.toLocal().toString().split('.').first}',
               style: TextStyle(
                 fontSize: bMSize,
                 fontWeight: bMWeight,
