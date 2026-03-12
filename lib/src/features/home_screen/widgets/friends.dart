@@ -13,6 +13,7 @@ import 'package:test_app/src/widgets/common/app_search_bar.dart';
 import 'package:test_app/src/widgets/common/empty_state.dart';
 import 'package:test_app/src/widgets/common/error_state.dart';
 import 'package:test_app/src/widgets/common/styles.dart';
+import 'package:test_app/src/widgets/user_profile.dart';
 
 enum FriendsSectionType { friends, incomingRequests, outgoingRequests }
 
@@ -262,7 +263,13 @@ class _FriendsSectionState extends State<_FriendsSection> {
                                 friend,
                                 AvatarSize.small,
                               ),
-                              onAvatarPressed: () {},
+                              onAvatarPressed: () {
+                                UserProfile.show(
+                                  context,
+                                  friend,
+                                  mode: UserProfileMode.view,
+                                );
+                              },
                               leftButtonText: switch (widget._sectionType) {
                                 FriendsSectionType.incomingRequests =>
                                   'Decline',

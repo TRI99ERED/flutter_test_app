@@ -454,6 +454,15 @@ class FirebaseFirestoreRepositoryImpl implements IFirebaseFirestoreRepository {
   }
 
   @override
+  Future<void> updateUser(AuthorizedUser updatedUser) {
+    try {
+      return _users.doc(updatedUser.id).update(updatedUser.toFirestore());
+    } catch (e) {
+      throw Exception('Failed to update user: $e');
+    }
+  }
+
+  @override
   Future<void> updateUserAvatarUrl({
     required String userId,
     required String url,

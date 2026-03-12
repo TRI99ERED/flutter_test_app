@@ -9,6 +9,7 @@ import 'package:test_app/src/widgets/common/app_divider.dart';
 import 'package:test_app/src/widgets/common/app_list_item.dart';
 import 'package:test_app/src/widgets/common/app_nav_bar.dart';
 import 'package:test_app/src/widgets/common/styles.dart';
+import 'package:test_app/src/widgets/user_profile.dart';
 
 class Settings extends StatelessWidget {
   const Settings({super.key});
@@ -34,8 +35,12 @@ class Settings extends StatelessWidget {
                       style: IconButton.styleFrom(
                         backgroundColor: HighlightColor.darkest.color,
                       ),
-                      onPressed: () async {
-                        await context.appController.uploadUserAvatar();
+                      onPressed: () {
+                        UserProfile.show(
+                          context,
+                          user,
+                          mode: UserProfileMode.edit,
+                        );
                       },
                       icon: Icon(
                         AppIcons.edit,

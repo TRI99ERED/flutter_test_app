@@ -96,6 +96,8 @@ abstract interface class IFirebaseFirestoreRepository {
 
   Future<void> updateProject(Project project);
 
+  Future<void> updateUser(AuthorizedUser updatedUser);
+
   Future<void> updateUserAvatarUrl({
     required String userId,
     required String url,

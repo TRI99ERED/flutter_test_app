@@ -17,6 +17,7 @@ import 'package:test_app/src/widgets/common/empty_state.dart';
 import 'package:test_app/src/widgets/common/error_state.dart';
 import 'package:test_app/src/widgets/common/placeholders.dart';
 import 'package:test_app/src/widgets/common/styles.dart';
+import 'package:test_app/src/widgets/user_profile.dart';
 
 enum ChatType { direct, group }
 
@@ -111,7 +112,7 @@ class _ChatScreenState extends State<ChatScreen> {
               context.pop();
             },
             onPressedRight: () {
-              // TODO: navigate to user profile
+              UserProfile.show(context, otherUser, mode: UserProfileMode.view);
             },
           );
         },

@@ -209,9 +209,7 @@ class FirebaseAuthRepositoryImpl implements IFirebaseAuthRepository {
       id: user.uid,
       name: user.displayName ?? 'user_${user.uid.substring(0, 8)}',
       email: user.email ?? '',
-      handle: user.displayName != null
-          ? user.displayName!.toLowerCase().replaceAll(' ', '')
-          : 'user_${user.uid.substring(0, 8)}',
+      handle: '',
       avatarUrl: user.photoURL ?? '',
     );
   }

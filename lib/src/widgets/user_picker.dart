@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:test_app/src/features/app/app_controller/app_controller.dart';
 import 'package:test_app/src/features/app/app_scope.dart';
 import 'package:test_app/src/features/app/data/models/user_model.dart';
 import 'package:test_app/src/widgets/common/app_button.dart';
@@ -46,20 +47,18 @@ class UserPicker extends StatefulWidget {
     if (!context.mounted) {
       return null;
     }
-
+    final AppController appController = context.appController;
     List<AuthorizedUser>? users =
         (flags & UserPickerFlag.friendsOnly.value) != 0
-        ? await context.appController.watchFriendsForUser(userId).first
-        : await context.appController.watchAllUsers().first;
+        ? await appController.watchFriendsForUser(userId).first
+        : await appController.watchAllUsers().first;
 
     if (!context.mounted) {
       return null;
     }
 
     if ((flags & UserPickerFlag.excludeFriends.value) != 0) {
-      final friends = await context.appController
-          .watchFriendsForUser(userId)
-          .first;
+      final friends = await appController.watchFriendsForUser(userId).first;
       final friendIds = friends?.map((f) => f.id).toSet();
       users = users
           ?.where((u) => !(friendIds?.contains(u.id) ?? false))
@@ -71,9 +70,7 @@ class UserPicker extends StatefulWidget {
         return null;
       }
 
-      final project = await context.appController
-          .watchProjectWithId(projectId)
-          .first;
+      final project = await appController.watchProjectWithId(projectId).first;
       final participantIds = project?.participants;
       users = users
           ?.where((u) => !(participantIds?.contains(u.id) ?? false))
@@ -104,14 +101,14 @@ class UserPicker extends StatefulWidget {
 class _UserPickerState extends State<UserPicker> {
   final _searchQuery = ValueNotifier<String>('');
 
-  String get title {
+  String get _title {
     if ((widget.flags & UserPickerFlag.friendsOnly.value) != 0) {
       return 'Select a friend';
     }
     return 'Select a user';
   }
 
-  String get errorLabel {
+  String get _errorLabel {
     if ((widget.flags & UserPickerFlag.friendsOnly.value) != 0) {
       return 'friends';
     }
@@ -128,7 +125,7 @@ class _UserPickerState extends State<UserPicker> {
 
     return Center(
       child: Container(
-        padding: const EdgeInsets.all(spacing16),
+        padding: const EdgeInsets.all(spacing32),
         width: MediaQuery.sizeOf(context).width * 0.8,
         height: MediaQuery.sizeOf(context).height * 0.8,
         decoration: BoxDecoration(
@@ -137,59 +134,56 @@ class _UserPickerState extends State<UserPicker> {
         ),
         child: Material(
           color: Colors.transparent,
-          child: Padding(
-            padding: const EdgeInsets.all(spacing16),
-            child: Column(
-              spacing: spacing8,
-              children: [
-                AppListTitle(title: title),
-                AppSearchBar(
-                  onChanged: (value) {
-                    _searchQuery.value = value;
-                  },
-                  onSubmitted: (value) {
-                    _searchQuery.value = value;
-                  },
-                ),
-                Expanded(
-                  child: ValueListenableBuilder(
-                    valueListenable: _searchQuery,
-                    builder: (context, value, child) {
-                      final filteredUsers = users.where((user) {
-                        final query = _searchQuery.value.toLowerCase();
-                        return user.name.toLowerCase().contains(query) ||
-                            user.handle.toLowerCase().contains(query);
-                      }).toList();
+          child: Column(
+            spacing: spacing8,
+            children: [
+              AppListTitle(title: _title),
+              AppSearchBar(
+                onChanged: (value) {
+                  _searchQuery.value = value;
+                },
+                onSubmitted: (value) {
+                  _searchQuery.value = value;
+                },
+              ),
+              Expanded(
+                child: ValueListenableBuilder(
+                  valueListenable: _searchQuery,
+                  builder: (context, value, child) {
+                    final filteredUsers = users.where((user) {
+                      final query = _searchQuery.value.toLowerCase();
+                      return user.name.toLowerCase().contains(query) ||
+                          user.handle.toLowerCase().contains(query);
+                    }).toList();
 
-                      if (filteredUsers.isEmpty) {
-                        return Center(
-                          child: Text('No $errorLabel match your search'),
-                        );
-                      }
-
-                      return ListView.builder(
-                        itemCount: filteredUsers.length,
-                        itemBuilder: (context, index) {
-                          final user = filteredUsers[index];
-                          return AppListItem(
-                            title: user.name,
-                            description: '@${user.handle}',
-                            onPressed: () => context.pop(user),
-                          );
-                        },
+                    if (filteredUsers.isEmpty) {
+                      return Center(
+                        child: Text('No $_errorLabel match your search'),
                       );
-                    },
-                  ),
+                    }
+
+                    return ListView.builder(
+                      itemCount: filteredUsers.length,
+                      itemBuilder: (context, index) {
+                        final user = filteredUsers[index];
+                        return AppListItem(
+                          title: user.name,
+                          description: '@${user.handle}',
+                          onPressed: () => context.pop(user),
+                        );
+                      },
+                    );
+                  },
                 ),
-                SizedBox(
-                  width: double.infinity,
-                  child: AppButtonPrimary(
-                    onPressed: () => context.pop(),
-                    text: 'Cancel',
-                  ),
+              ),
+              SizedBox(
+                width: double.infinity,
+                child: AppButtonPrimary(
+                  onPressed: () => context.pop(),
+                  text: 'Cancel',
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),

@@ -1367,6 +1367,56 @@ final class AppController extends BaseController<AppState> {
         .map((chat) => chat?.avatarUrl ?? '');
   }
 
+  Future<void> updateUser(AuthorizedUser user) async =>
+      await serialExecutor.synchronized(() async {
+        try {
+          if (state.user is! AuthorizedUser) {
+            setState(
+              AppState.failed(
+                message: 'Cannot update user: No authorized user in state.',
+                user: state.user,
+              ),
+            );
+            return;
+          }
+          setState(
+            AppState.processing(
+              message: 'Updating user "${user.id}"...',
+              user: state.user,
+            ),
+          );
+          final currentUser = state.user as AuthorizedUser;
+          final updatedUser =
+              currentUser.copyWith(
+                    name: user.name,
+                    email: user.email,
+                    handle: user.handle,
+                    avatarUrl: user.avatarUrl,
+                    currentDirectChatId: user.currentDirectChatId,
+                    currentGroupChatId: user.currentGroupChatId,
+                  )
+                  as AuthorizedUser;
+          await _firestoreRepository.updateUser(updatedUser);
+          setState(
+            AppState.idle(
+              message: 'User "${user.id}" updated successfully.',
+              user: updatedUser,
+            ),
+          );
+        } catch (error, stackTrace) {
+          setState(
+            AppState.failed(
+              message:
+                  'Failed to update user "${user.id}": ${error.toString()}',
+              user: state.user,
+              error: error,
+              stackTrace: stackTrace,
+            ),
+          );
+          rethrow;
+        }
+      });
+
   @override
   void dispose() {
     super.dispose();

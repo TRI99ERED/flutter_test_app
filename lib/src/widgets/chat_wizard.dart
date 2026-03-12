@@ -72,7 +72,7 @@ class _ChatWizardState extends State<ChatWizard> {
   Widget build(BuildContext context) {
     return Center(
       child: Container(
-        padding: const EdgeInsets.all(spacing16),
+        padding: const EdgeInsets.all(spacing32),
         width: MediaQuery.sizeOf(context).width * 0.8,
         height: MediaQuery.sizeOf(context).height * 0.8,
         decoration: BoxDecoration(
@@ -81,245 +81,237 @@ class _ChatWizardState extends State<ChatWizard> {
         ),
         child: Material(
           color: Colors.transparent,
-          child: Padding(
-            padding: const EdgeInsets.all(spacing16),
-            child: Column(
-              spacing: spacing8,
-              children: [
-                AppListTitle(
-                  title: switch (widget.mode) {
-                    ChatWizardMode.create => 'Create a chat',
-                    ChatWizardMode.edit => 'Edit chat',
-                  },
-                ),
-                Expanded(
-                  child: Form(
-                    key: _formKey,
-                    child: SizedBox(
-                      height: MediaQuery.sizeOf(context).height * 0.6,
-                      child: ListView(
-                        children: [
-                          Align(
-                            alignment: Alignment.centerRight,
-                            child: AppButtonPrimary(
-                              text: 'Add a member',
-                              onPressed: () {
-                                UserPicker.pickUser(
-                                  context,
-                                  UserPickerFlag.friendsOnly.value,
-                                ).then((selectedUser) {
-                                  if (selectedUser != null &&
-                                      !_participants.value.contains(
-                                        selectedUser.id,
-                                      )) {
-                                    _participants.value = [
-                                      ..._participants.value,
+          child: Column(
+            spacing: spacing8,
+            children: [
+              AppListTitle(
+                title: switch (widget.mode) {
+                  ChatWizardMode.create => 'Create a chat',
+                  ChatWizardMode.edit => 'Edit chat',
+                },
+              ),
+              Expanded(
+                child: Form(
+                  key: _formKey,
+                  child: SizedBox(
+                    height: MediaQuery.sizeOf(context).height * 0.6,
+                    child: ListView(
+                      children: [
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: AppButtonPrimary(
+                            text: 'Add a member',
+                            onPressed: () {
+                              UserPicker.pickUser(
+                                context,
+                                UserPickerFlag.friendsOnly.value,
+                              ).then((selectedUser) {
+                                if (selectedUser != null &&
+                                    !_participants.value.contains(
                                       selectedUser.id,
-                                    ];
-                                  }
-                                });
-                              },
-                            ),
-                          ),
-                          const SizedBox(height: spacing16),
-                          ValueListenableBuilder(
-                            valueListenable: _participants,
-                            builder: (context, value, child) {
-                              return ListView.builder(
-                                shrinkWrap: true,
-                                physics: const NeverScrollableScrollPhysics(),
-                                itemCount: _participants.value.length,
-                                itemBuilder: (context, index) {
-                                  final participantId =
-                                      _participants.value[index];
-                                  return Column(
-                                    children: [
-                                      StreamBuilder(
-                                        stream: context.appController
-                                            .watchUserWithId(participantId),
-                                        builder: (context, snapshot) {
-                                          final participant = snapshot.data;
-                                          if (participant == null) {
-                                            return const SizedBox.shrink();
-                                          }
-                                          return AppListItem(
-                                            title: participant.name,
-                                            description:
-                                                '@${participant.handle}',
-                                            avatar:
-                                                AppAvatar.avatarOrPlaceholder(
-                                                  participant,
-                                                  AvatarSize.small,
-                                                ),
-                                            control:
-                                                _participants.value[index] ==
-                                                    (context.appState.user
-                                                            as AuthorizedUser)
-                                                        .id
-                                                ? AppListItemControl.none
-                                                : AppListItemControl
-                                                      .largeButton,
-                                            largeButtonText:
-                                                _participants.value[index] ==
-                                                    (context.appState.user
-                                                            as AuthorizedUser)
-                                                        .id
-                                                ? null
-                                                : 'Remove',
-                                            onPressed:
-                                                _participants.value[index] ==
-                                                    (context.appState.user
-                                                            as AuthorizedUser)
-                                                        .id
-                                                ? null
-                                                : () {
-                                                    _participants.value = [
-                                                      ..._participants.value
-                                                        ..removeAt(index),
-                                                    ];
-                                                  },
-                                          );
-                                        },
-                                      ),
-                                      const SizedBox(height: spacing16),
-                                    ],
-                                  );
-                                },
-                              );
+                                    )) {
+                                  _participants.value = [
+                                    ..._participants.value,
+                                    selectedUser.id,
+                                  ];
+                                }
+                              });
                             },
                           ),
-                          if (widget.mode == ChatWizardMode.edit &&
-                              widget.chatToEdit! is GroupChat)
-                            AppTextField(
-                              title: 'Chat name',
-                              placeholder: 'Enter chat name',
-                              controller: _nameController,
-                              keyboardType: TextInputType.name,
-                            ),
-                          if (widget.mode == ChatWizardMode.edit &&
-                              widget.chatToEdit! is GroupChat)
-                            const SizedBox(height: spacing16),
-                          if (widget.mode == ChatWizardMode.edit &&
-                              widget.chatToEdit! is GroupChat)
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                AppButtonPrimary(
-                                  text: 'Pick an avatar',
-                                  onPressed: () async {
-                                    await context.appController
-                                        .uploadGroupChatAvatar(
-                                          widget.chatToEdit!.id,
+                        ),
+                        const SizedBox(height: spacing16),
+                        ValueListenableBuilder(
+                          valueListenable: _participants,
+                          builder: (context, value, child) {
+                            return ListView.builder(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              itemCount: _participants.value.length,
+                              itemBuilder: (context, index) {
+                                final participantId =
+                                    _participants.value[index];
+                                return Column(
+                                  children: [
+                                    StreamBuilder(
+                                      stream: context.appController
+                                          .watchUserWithId(participantId),
+                                      builder: (context, snapshot) {
+                                        final participant = snapshot.data;
+                                        if (participant == null) {
+                                          return const SizedBox.shrink();
+                                        }
+                                        return AppListItem(
+                                          title: participant.name,
+                                          description: '@${participant.handle}',
+                                          avatar: AppAvatar.avatarOrPlaceholder(
+                                            participant,
+                                            AvatarSize.small,
+                                          ),
+                                          control:
+                                              _participants.value[index] ==
+                                                  (context.appState.user
+                                                          as AuthorizedUser)
+                                                      .id
+                                              ? AppListItemControl.none
+                                              : AppListItemControl.largeButton,
+                                          largeButtonText:
+                                              _participants.value[index] ==
+                                                  (context.appState.user
+                                                          as AuthorizedUser)
+                                                      .id
+                                              ? null
+                                              : 'Remove',
+                                          onPressed:
+                                              _participants.value[index] ==
+                                                  (context.appState.user
+                                                          as AuthorizedUser)
+                                                      .id
+                                              ? null
+                                              : () {
+                                                  _participants.value = [
+                                                    ..._participants.value
+                                                      ..removeAt(index),
+                                                  ];
+                                                },
                                         );
-                                  },
-                                ),
-                                StreamBuilder(
-                                  stream: context.appController
-                                      .watchGroupChatWithId(
+                                      },
+                                    ),
+                                    const SizedBox(height: spacing16),
+                                  ],
+                                );
+                              },
+                            );
+                          },
+                        ),
+                        if (widget.mode == ChatWizardMode.edit &&
+                            widget.chatToEdit! is GroupChat)
+                          AppTextField(
+                            title: 'Chat name',
+                            placeholder: 'Enter chat name',
+                            controller: _nameController,
+                            keyboardType: TextInputType.name,
+                          ),
+                        if (widget.mode == ChatWizardMode.edit &&
+                            widget.chatToEdit! is GroupChat)
+                          const SizedBox(height: spacing16),
+                        if (widget.mode == ChatWizardMode.edit &&
+                            widget.chatToEdit! is GroupChat)
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              AppButtonPrimary(
+                                text: 'Pick an avatar',
+                                onPressed: () async {
+                                  await context.appController
+                                      .uploadGroupChatAvatar(
                                         widget.chatToEdit!.id,
-                                      ),
-                                  builder: (context, asyncSnapshot) {
-                                    final chat = asyncSnapshot.data;
-                                    if (chat == null) {
-                                      return const SizedBox.shrink();
-                                    }
-                                    return AppAvatar.groupAvatarOrPlaceholder(
-                                      chat,
-                                      AvatarSize.large,
-                                    );
-                                  },
-                                ),
-                              ],
-                            ),
-                        ],
-                      ),
+                                      );
+                                },
+                              ),
+                              StreamBuilder(
+                                stream: context.appController
+                                    .watchGroupChatWithId(
+                                      widget.chatToEdit!.id,
+                                    ),
+                                builder: (context, asyncSnapshot) {
+                                  final chat = asyncSnapshot.data;
+                                  if (chat == null) {
+                                    return const SizedBox.shrink();
+                                  }
+                                  return AppAvatar.groupAvatarOrPlaceholder(
+                                    chat,
+                                    AvatarSize.large,
+                                  );
+                                },
+                              ),
+                            ],
+                          ),
+                      ],
                     ),
                   ),
                 ),
-                SizedBox(
-                  width: double.infinity,
-                  child: AppButtonPrimary(
-                    text: 'Save',
-                    onPressed: switch (widget.mode) {
-                      ChatWizardMode.create => () async {
-                        final user = context.appState.user as AuthorizedUser;
-                        final participants = {
-                          user.id,
-                          ..._participants.value,
-                        }.toList();
-                        String chatName;
-                        if (_nameController.text.isNotEmpty) {
-                          chatName = _nameController.text;
-                        } else {
-                          final names = await Future.wait(
-                            participants.map(
-                              (id) => context.appController
-                                  .watchUserWithId(id)
-                                  .first,
-                            ),
-                          );
-                          chatName = names
-                              .whereType<AuthorizedUser>()
-                              .map((user) => user.name)
-                              .join(', ');
-                        }
-                        if (!context.mounted) return;
+              ),
+              SizedBox(
+                width: double.infinity,
+                child: AppButtonPrimary(
+                  text: 'Save',
+                  onPressed: switch (widget.mode) {
+                    ChatWizardMode.create => () async {
+                      final user = context.appState.user as AuthorizedUser;
+                      final participants = {
+                        user.id,
+                        ..._participants.value,
+                      }.toList();
+                      String chatName;
+                      if (_nameController.text.isNotEmpty) {
+                        chatName = _nameController.text;
+                      } else {
+                        final names = await Future.wait(
+                          participants.map(
+                            (id) =>
+                                context.appController.watchUserWithId(id).first,
+                          ),
+                        );
+                        chatName = names
+                            .whereType<AuthorizedUser>()
+                            .map((user) => user.name)
+                            .join(', ');
+                      }
+                      if (!context.mounted) return;
 
-                        if (participants.length > 2) {
-                          final chat = await context.appController
-                              .createGroupChat(
-                                participants: participants,
-                                chatName: chatName,
-                              );
-                          if (!context.mounted) return;
-                          context.pop(chat);
-                          return;
-                        }
+                      if (participants.length > 2) {
                         final chat = await context.appController
-                            .createDirectChat(
+                            .createGroupChat(
                               participants: participants,
                               chatName: chatName,
                             );
                         if (!context.mounted) return;
                         context.pop(chat);
-                      },
-                      ChatWizardMode.edit => () async {
-                        if (widget.chatToEdit == null) return;
-                        final chat = widget.chatToEdit!;
-                        if (chat is GroupChat) {
-                          final newGroupChat = chat.copyWith(
-                            name: _nameController.text.isNotEmpty
-                                ? _nameController.text
-                                : chat.name,
-                            participants: _participants.value,
-                            avatarUrl: await context.appController
-                                .watchGroupChatWithId(chat.id)
-                                .first
-                                .then((chat) => chat?.avatarUrl),
-                            lastUpdated: DateTime.now(),
-                          );
-                          if (!context.mounted) return;
-                          await context.appController.updateGroupChat(
-                            newGroupChat,
-                          );
-                          if (!context.mounted) return;
-                          context.pop(newGroupChat);
-                        } else {
-                          context.pop(chat);
-                        }
-                      },
+                        return;
+                      }
+                      final chat = await context.appController.createDirectChat(
+                        participants: participants,
+                        chatName: chatName,
+                      );
+                      if (!context.mounted) return;
+                      context.pop(chat);
                     },
-                  ),
+                    ChatWizardMode.edit => () async {
+                      if (widget.chatToEdit == null) return;
+                      final chat = widget.chatToEdit!;
+                      if (chat is GroupChat) {
+                        final newGroupChat = chat.copyWith(
+                          name: _nameController.text.isNotEmpty
+                              ? _nameController.text
+                              : chat.name,
+                          participants: _participants.value,
+                          avatarUrl: await context.appController
+                              .watchGroupChatWithId(chat.id)
+                              .first
+                              .then((chat) => chat?.avatarUrl),
+                          lastUpdated: DateTime.now(),
+                        );
+                        if (!context.mounted) return;
+                        await context.appController.updateGroupChat(
+                          newGroupChat,
+                        );
+                        if (!context.mounted) return;
+                        context.pop(newGroupChat);
+                      } else {
+                        context.pop(chat);
+                      }
+                    },
+                  },
                 ),
-                SizedBox(
-                  width: double.infinity,
-                  child: AppButtonPrimary(
-                    onPressed: () => context.pop(),
-                    text: 'Cancel',
-                  ),
+              ),
+              SizedBox(
+                width: double.infinity,
+                child: AppButtonPrimary(
+                  onPressed: () => context.pop(),
+                  text: 'Cancel',
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),

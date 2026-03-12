@@ -132,9 +132,27 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           title: 'Confirm Password',
                           controller: _confirmPasswordController,
                           keyboardType: TextInputType.visiblePassword,
-                          validator: getValidatorForKeyboardType(
-                            TextInputType.visiblePassword,
-                          ),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please confirm your password';
+                            }
+                            if (value != _passwordController.text) {
+                              return 'Passwords do not match';
+                            }
+                            if (value.length < 8) {
+                              return 'Password must be at least 8 characters';
+                            }
+                            if (!RegExp(r'[A-Z]').hasMatch(value)) {
+                              return 'Password must contain at least one uppercase letter';
+                            }
+                            if (!RegExp(r'[a-z]').hasMatch(value)) {
+                              return 'Password must contain at least one lowercase letter';
+                            }
+                            if (!RegExp(r'[0-9]').hasMatch(value)) {
+                              return 'Password must contain at least one number';
+                            }
+                            return null;
+                          },
                           obscureText: true,
                           showVisibilityIcon: true,
                           onChanged: (_) => _validateForm(),
@@ -171,20 +189,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                         final email = _emailController.text;
                                         final password =
                                             _passwordController.text;
-                                        final confirmPassword =
-                                            _confirmPasswordController.text;
-                                        if (password != confirmPassword) {
-                                          ScaffoldMessenger.of(
-                                            context,
-                                          ).showSnackBar(
-                                            const SnackBar(
-                                              content: Text(
-                                                'Passwords do not match',
-                                              ),
-                                            ),
-                                          );
-                                          return;
-                                        }
                                         context.appController.register(
                                           email,
                                           password,
