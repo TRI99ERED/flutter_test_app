@@ -8,6 +8,7 @@ import 'package:test_app/src/features/app/data/models/chat_model.dart';
 import 'package:test_app/src/features/app/data/models/message_model.dart';
 import 'package:test_app/src/features/app/data/models/user_model.dart';
 import 'package:test_app/src/features/chat_screen/widgets/aligned_message_bubble.dart';
+import 'package:test_app/src/widgets/chat_wizard.dart';
 import 'package:test_app/src/widgets/common/app_avatar.dart';
 import 'package:test_app/src/widgets/common/app_loader.dart';
 import 'package:test_app/src/widgets/common/app_message_input.dart';
@@ -109,7 +110,9 @@ class _ChatScreenState extends State<ChatScreen> {
             onPressedLeft: () {
               context.pop();
             },
-            onPressedRight: () {},
+            onPressedRight: () {
+              // TODO: navigate to user profile
+            },
           );
         },
       );
@@ -122,7 +125,13 @@ class _ChatScreenState extends State<ChatScreen> {
         onPressedLeft: () {
           context.pop();
         },
-        onPressedRight: () {},
+        onPressedRight: () {
+          ChatWizard.manageChat(
+            context,
+            mode: ChatWizardMode.edit,
+            chatToEdit: chat,
+          );
+        },
       );
     }
     return AppNavBar(

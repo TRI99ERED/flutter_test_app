@@ -77,6 +77,8 @@ abstract interface class IFirebaseFirestoreRepository {
     required int unreadCount,
   });
 
+  Future<void> updateGroupChat(GroupChat chat);
+
   Future<void> updateGroupChatAvatarUrl({
     required String chatId,
     required String url,
@@ -97,7 +99,7 @@ abstract interface class IFirebaseFirestoreRepository {
   Future<void> updateUserAvatarUrl({
     required String userId,
     required String url,
-  }) async {}
+  });
 
   Future<void> updateUserCurrentDirectChatId({
     required String userId,

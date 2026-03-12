@@ -162,13 +162,24 @@ class ProjectScreen extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: spacing24),
-                    Text(
-                      'Participants:',
-                      style: TextStyle(
-                        fontSize: h3Size,
-                        fontWeight: h3Weight,
-                        color: DarkColor.darkest.color,
-                      ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Participants:',
+                          style: TextStyle(
+                            fontSize: h3Size,
+                            fontWeight: h3Weight,
+                            color: DarkColor.darkest.color,
+                          ),
+                        ),
+                        AppButtonPrimary(
+                          text: 'Chat',
+                          onPressed: () {
+                            // TODO
+                          },
+                        ),
+                      ],
                     ),
                     const SizedBox(height: spacing8),
                     StreamBuilder(
@@ -191,7 +202,11 @@ class ProjectScreen extends StatelessWidget {
                         final users = asyncSnapshot.data ?? [];
 
                         if (users.isEmpty) {
-                          return Center(child: Text('No participants found.'));
+                          return const Center(
+                            child: ErrorState(
+                              message: 'No participants found.',
+                            ),
+                          );
                         }
 
                         return Column(

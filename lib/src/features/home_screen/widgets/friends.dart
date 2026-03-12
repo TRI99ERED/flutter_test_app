@@ -142,7 +142,7 @@ class _FriendsSectionState extends State<_FriendsSection> {
       },
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: SizedBox(width: 32, child: AppLoader()));
+          return const Center(child: SizedBox(height: 72, child: AppLoader()));
         } else if (snapshot.hasError) {
           return ErrorState(
             message:
@@ -236,7 +236,7 @@ class _FriendsSectionState extends State<_FriendsSection> {
                   stream: stream,
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
-                      return SizedBox(width: 32, child: AppLoader());
+                      return const SizedBox(height: 72, child: AppLoader());
                     } else if (snapshot.hasError) {
                       return ErrorState(
                         message:

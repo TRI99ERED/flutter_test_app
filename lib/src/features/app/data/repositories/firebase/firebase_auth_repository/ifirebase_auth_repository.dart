@@ -11,10 +11,6 @@ abstract interface class IFirebaseAuthRepository {
 
   Future<void> reauthenticateWithPassword({required String password});
 
-  Future<void> resendEmailVerification();
-
-  Future<void> sendEmailVerification();
-
   Future<void> sendPasswordResetEmail({required String email});
 
   Future<AuthorizedUser> signInWithApple();
@@ -37,8 +33,6 @@ abstract interface class IFirebaseAuthRepository {
   });
 
   Future<AuthorizedUser> updateUserProfile({String? name, String? avatarUrl});
-
-  Future<void> verifyEmailCode({required String code});
 
   Stream<AuthorizedUser> watchAuthState();
 }

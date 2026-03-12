@@ -21,7 +21,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  bool _isFormValid = false;
+  final _isFormValid = ValueNotifier(false);
 
   @override
   void initState() {
@@ -31,29 +31,9 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _validateForm() {
-    if (!mounted) return;
-
-    // Check if fields have content and would pass validation
-    final email = _emailController.text;
-    final password = _passwordController.text;
-
-    final emailValidator = getValidatorForKeyboardType(
-      TextInputType.emailAddress,
-    );
-    final passwordValidator = getValidatorForKeyboardType(
-      TextInputType.visiblePassword,
-    );
-
-    final isValid =
-        email.isNotEmpty &&
-        password.isNotEmpty &&
-        (emailValidator == null || emailValidator(email) == null) &&
-        (passwordValidator == null || passwordValidator(password) == null);
-
-    if (isValid != _isFormValid) {
-      setState(() {
-        _isFormValid = isValid;
-      });
+    if (_formKey.currentState != null) {
+      final isValid = _formKey.currentState!.validate();
+      _isFormValid.value = isValid;
     }
   }
 
@@ -111,6 +91,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         validator: getValidatorForKeyboardType(
                           TextInputType.emailAddress,
                         ),
+                        onChanged: (_) => _validateForm(),
                       ),
                       AppTextField(
                         placeholder: 'Password',
@@ -121,6 +102,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         obscureText: true,
                         showVisibilityIcon: true,
+                        onChanged: (_) => _validateForm(),
                       ),
                       AppButtonTertiary(
                         onPressed: () => context.go(forgotPasswordPath),
@@ -128,19 +110,23 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       SizedBox(
                         width: double.infinity,
-                        child: AppButtonPrimary(
-                          onPressed: _isFormValid
-                              ? () async {
-                                  final email = _emailController.text;
-                                  final password = _passwordController.text;
-
-                                  await context.appController.login(
-                                    email,
-                                    password,
-                                  );
-                                }
-                              : null,
-                          text: 'Login',
+                        child: ValueListenableBuilder<bool>(
+                          valueListenable: _isFormValid,
+                          builder: (context, isValid, _) {
+                            return AppButtonPrimary(
+                              onPressed: isValid
+                                  ? () async {
+                                      final email = _emailController.text;
+                                      final password = _passwordController.text;
+                                      await context.appController.login(
+                                        email,
+                                        password,
+                                      );
+                                    }
+                                  : null,
+                              text: 'Login',
+                            );
+                          },
                         ),
                       ),
                       Row(
@@ -215,6 +201,7 @@ class _LoginScreenState extends State<LoginScreen> {
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
+    _isFormValid.dispose();
     super.dispose();
   }
 }

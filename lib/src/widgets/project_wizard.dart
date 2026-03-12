@@ -65,7 +65,7 @@ class _ProjectWizardState extends State<ProjectWizard> {
     return Center(
       child: Container(
         padding: const EdgeInsets.all(spacing16),
-        width: MediaQuery.sizeOf(context).width * 0.5,
+        width: MediaQuery.sizeOf(context).width * 0.8,
         height: MediaQuery.sizeOf(context).height * 0.8,
         decoration: BoxDecoration(
           color: LightColor.lightest.color,

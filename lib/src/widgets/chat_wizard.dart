@@ -21,7 +21,18 @@ class ChatWizard extends StatefulWidget {
     super.key,
     this.mode = ChatWizardMode.create,
     this.chatToEdit,
-  });
+  }) : assert(
+         mode == ChatWizardMode.create || chatToEdit != null,
+         'chatToEdit must be provided when mode is edit',
+       ),
+       assert(
+         chatToEdit == null || mode == ChatWizardMode.edit,
+         'mode must be edit when chatToEdit is provided',
+       ),
+       assert(
+         chatToEdit is GroupChat || mode == ChatWizardMode.create,
+         'Only group chats can be edited',
+       );
 
   static Future<Chat?> manageChat(
     BuildContext context, {
@@ -45,11 +56,24 @@ class _ChatWizardState extends State<ChatWizard> {
   final _nameController = TextEditingController();
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (widget.mode == ChatWizardMode.edit && widget.chatToEdit != null) {
+        _nameController.text = widget.chatToEdit!.name;
+        _participants.value = List<String>.from(
+          widget.chatToEdit!.participants,
+        );
+      }
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Center(
       child: Container(
         padding: const EdgeInsets.all(spacing16),
-        width: MediaQuery.sizeOf(context).width * 0.5,
+        width: MediaQuery.sizeOf(context).width * 0.8,
         height: MediaQuery.sizeOf(context).height * 0.8,
         decoration: BoxDecoration(
           color: LightColor.lightest.color,
@@ -63,9 +87,10 @@ class _ChatWizardState extends State<ChatWizard> {
               spacing: spacing8,
               children: [
                 AppListTitle(
-                  title: widget.mode == ChatWizardMode.create
-                      ? 'Create Chat'
-                      : 'Edit Chat',
+                  title: switch (widget.mode) {
+                    ChatWizardMode.create => 'Create a chat',
+                    ChatWizardMode.edit => 'Edit chat',
+                  },
                 ),
                 Expanded(
                   child: Form(
@@ -164,7 +189,7 @@ class _ChatWizardState extends State<ChatWizard> {
                             },
                           ),
                           if (widget.mode == ChatWizardMode.edit &&
-                              _participants.value.length > 1)
+                              widget.chatToEdit! is GroupChat)
                             AppTextField(
                               title: 'Chat name',
                               placeholder: 'Enter chat name',
@@ -172,17 +197,20 @@ class _ChatWizardState extends State<ChatWizard> {
                               keyboardType: TextInputType.name,
                             ),
                           if (widget.mode == ChatWizardMode.edit &&
-                              _participants.value.length > 1)
+                              widget.chatToEdit! is GroupChat)
                             const SizedBox(height: spacing16),
                           if (widget.mode == ChatWizardMode.edit &&
-                              _participants.value.length > 1)
+                              widget.chatToEdit! is GroupChat)
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 AppButtonPrimary(
                                   text: 'Pick an avatar',
                                   onPressed: () async {
-                                    // TODO
+                                    await context.appController
+                                        .uploadGroupChatAvatar(
+                                          widget.chatToEdit!.id,
+                                        );
                                   },
                                 ),
                                 StreamBuilder(
@@ -212,45 +240,74 @@ class _ChatWizardState extends State<ChatWizard> {
                   width: double.infinity,
                   child: AppButtonPrimary(
                     text: 'Save',
-                    onPressed: () async {
-                      final user = context.appState.user as AuthorizedUser;
-                      final participants = {
-                        user.id,
-                        ..._participants.value,
-                      }.toList();
-                      String chatName;
-                      if (_nameController.text.isNotEmpty) {
-                        chatName = _nameController.text;
-                      } else {
-                        final names = await Future.wait(
-                          participants.map(
-                            (id) =>
-                                context.appController.watchUserWithId(id).first,
-                          ),
-                        );
-                        chatName = names
-                            .whereType<AuthorizedUser>()
-                            .map((user) => user.name)
-                            .join(', ');
-                      }
-                      if (!context.mounted) return;
+                    onPressed: switch (widget.mode) {
+                      ChatWizardMode.create => () async {
+                        final user = context.appState.user as AuthorizedUser;
+                        final participants = {
+                          user.id,
+                          ..._participants.value,
+                        }.toList();
+                        String chatName;
+                        if (_nameController.text.isNotEmpty) {
+                          chatName = _nameController.text;
+                        } else {
+                          final names = await Future.wait(
+                            participants.map(
+                              (id) => context.appController
+                                  .watchUserWithId(id)
+                                  .first,
+                            ),
+                          );
+                          chatName = names
+                              .whereType<AuthorizedUser>()
+                              .map((user) => user.name)
+                              .join(', ');
+                        }
+                        if (!context.mounted) return;
 
-                      if (participants.length > 2) {
+                        if (participants.length > 2) {
+                          final chat = await context.appController
+                              .createGroupChat(
+                                participants: participants,
+                                chatName: chatName,
+                              );
+                          if (!context.mounted) return;
+                          context.pop(chat);
+                          return;
+                        }
                         final chat = await context.appController
-                            .createGroupChat(
+                            .createDirectChat(
                               participants: participants,
                               chatName: chatName,
                             );
                         if (!context.mounted) return;
                         context.pop(chat);
-                        return;
-                      }
-                      final chat = await context.appController.createDirectChat(
-                        participants: participants,
-                        chatName: chatName,
-                      );
-                      if (!context.mounted) return;
-                      context.pop(chat);
+                      },
+                      ChatWizardMode.edit => () async {
+                        if (widget.chatToEdit == null) return;
+                        final chat = widget.chatToEdit!;
+                        if (chat is GroupChat) {
+                          final newGroupChat = chat.copyWith(
+                            name: _nameController.text.isNotEmpty
+                                ? _nameController.text
+                                : chat.name,
+                            participants: _participants.value,
+                            avatarUrl: await context.appController
+                                .watchGroupChatWithId(chat.id)
+                                .first
+                                .then((chat) => chat?.avatarUrl),
+                            lastUpdated: DateTime.now(),
+                          );
+                          if (!context.mounted) return;
+                          await context.appController.updateGroupChat(
+                            newGroupChat,
+                          );
+                          if (!context.mounted) return;
+                          context.pop(newGroupChat);
+                        } else {
+                          context.pop(chat);
+                        }
+                      },
                     },
                   ),
                 ),

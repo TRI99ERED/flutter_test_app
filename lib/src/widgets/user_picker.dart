@@ -47,7 +47,6 @@ class UserPicker extends StatefulWidget {
       return null;
     }
 
-    if (!context.mounted) return null;
     List<AuthorizedUser>? users =
         (flags & UserPickerFlag.friendsOnly.value) != 0
         ? await context.appController.watchFriendsForUser(userId).first
@@ -130,7 +129,7 @@ class _UserPickerState extends State<UserPicker> {
     return Center(
       child: Container(
         padding: const EdgeInsets.all(spacing16),
-        width: MediaQuery.sizeOf(context).width * 0.5,
+        width: MediaQuery.sizeOf(context).width * 0.8,
         height: MediaQuery.sizeOf(context).height * 0.8,
         decoration: BoxDecoration(
           color: LightColor.lightest.color,

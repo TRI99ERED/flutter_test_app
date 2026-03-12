@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "fantasticon": "^4.1.0",
-    "svgpath": "^2.6.0"
+    "svgpath": "^2.6.0",
+    "@google-cloud/storage": "^7.19.0"
   }
 }

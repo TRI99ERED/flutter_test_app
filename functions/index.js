@@ -1,3 +1,5 @@
+const { Storage } = require('@google-cloud/storage');
+const storage = new Storage();
 const crypto = require("node:crypto");
 const admin = require("firebase-admin");
 const { onCall, HttpsError } = require("firebase-functions/v2/https");
@@ -136,5 +138,91 @@ exports.verifyEmailVerificationCode = onCall({ region: REGION }, async (request)
 	await codeRef.delete();
 
 	logger.info("Email verified with code", { uid: auth.uid });
+	return { success: true };
+});
+
+exports.uploadGroupAvatar = onCall({ region: REGION }, async (request) => {
+	logger.info("uploadGroupAvatar called", { requestData: request.data });
+	const auth = request.auth;
+	logger.info("Auth info", { auth });
+	const { chatId, filename, avatarBase64 } = request.data;
+
+	if (!auth?.uid) {
+		logger.info("No auth UID");
+		throw new HttpsError("unauthenticated", "You must be signed in.");
+	}
+	if (!chatId || !filename || !avatarBase64) {
+		logger.info("Missing parameters", { chatId, filename, avatarBase64 });
+		throw new HttpsError("invalid-argument", "chatId, filename, and avatarBase64 are required.");
+	}
+
+	logger.info("Fetching group doc", { chatId });
+	const groupDoc = await db.collection("groupChats").doc(chatId).get();
+	logger.info("Group doc fetched", { exists: groupDoc.exists });
+	if (!groupDoc.exists) {
+		logger.info("Group chat not found", { chatId });
+		throw new HttpsError("not-found", "Group chat not found.");
+	}
+	const groupData = groupDoc.data();
+	logger.info("Group data", { groupData });
+	if (groupData.ownerId !== auth.uid) {
+		logger.info("User not owner", { ownerId: groupData.ownerId, uid: auth.uid });
+		throw new HttpsError("permission-denied", "You are not the owner of this group.");
+	}
+
+	logger.info("Decoding avatar");
+	const buffer = Buffer.from(avatarBase64, 'base64');
+	const bucketName = admin.storage().bucket().name;
+	const filePath = `avatars/groupChats/${chatId}/${filename}`;
+	logger.info("Uploading to bucket", { bucketName, filePath });
+	const file = storage.bucket(bucketName).file(filePath);
+
+	await file.save(buffer, {
+		contentType: 'image/jpeg', // or detect from filename
+		public: true,
+	});
+
+	logger.info("Upload complete", { url: `https://storage.googleapis.com/${bucketName}/${filePath}` });
+	return { success: true, url: `https://storage.googleapis.com/${bucketName}/${filePath}` };
+});
+
+exports.deleteGroupAvatar = onCall({ region: REGION }, async (request) => {
+	logger.info("deleteGroupAvatar called", { requestData: request.data });
+	const auth = request.auth;
+	logger.info("Auth info", { auth });
+	const { chatId, filename } = request.data;
+
+	if (!auth?.uid) {
+		logger.info("No auth UID");
+		throw new HttpsError("unauthenticated", "You must be signed in.");
+	}
+	if (!chatId || !filename) {
+		logger.info("Missing parameters", { chatId, filename });
+		throw new HttpsError("invalid-argument", "chatId and filename are required.");
+	}
+
+	logger.info("Fetching group doc", { chatId });
+	const groupDoc = await db.collection("groupChats").doc(chatId).get();
+	logger.info("Group doc fetched", { exists: groupDoc.exists });
+	if (!groupDoc.exists) {
+		logger.info("Group chat not found", { chatId });
+		throw new HttpsError("not-found", "Group chat not found.");
+	}
+	const groupData = groupDoc.data();
+	logger.info("Group data", { groupData });
+	if (groupData.ownerId !== auth.uid) {
+		logger.info("User not owner", { ownerId: groupData.ownerId, uid: auth.uid });
+		throw new HttpsError("permission-denied", "You are not the owner of this group.");
+	}
+
+	logger.info("Deleting avatar", { chatId, filename });
+	const bucketName = admin.storage().bucket().name;
+	const filePath = `avatars/groupChats/${chatId}/${filename}`;
+	logger.info("Deleting from bucket", { bucketName, filePath });
+	const file = storage.bucket(bucketName).file(filePath);
+
+	await file.delete();
+
+	logger.info("Delete complete", { chatId, filename });
 	return { success: true };
 });

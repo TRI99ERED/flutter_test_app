@@ -21,7 +21,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
-  final _isFormValid = ValueNotifier<bool>(false);
+  final _isFormValid = ValueNotifier(false);
   final _termsAccepted = ValueNotifier<bool?>(false);
 
   @override
@@ -31,39 +31,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
     _emailController.addListener(_validateForm);
     _passwordController.addListener(_validateForm);
     _confirmPasswordController.addListener(_validateForm);
+    _termsAccepted.addListener(_validateForm);
   }
 
   void _validateForm() {
-    if (!mounted) return;
-
-    // Check if fields have content and would pass validation
-    final name = _nameController.text;
-    final email = _emailController.text;
-    final password = _passwordController.text;
-    final confirmPassword = _confirmPasswordController.text;
-
-    final nameValidator = getValidatorForKeyboardType(TextInputType.name);
-    final emailValidator = getValidatorForKeyboardType(
-      TextInputType.emailAddress,
-    );
-    final passwordValidator = getValidatorForKeyboardType(
-      TextInputType.visiblePassword,
-    );
-
-    final isValid =
-        name.isNotEmpty &&
-        email.isNotEmpty &&
-        password.isNotEmpty &&
-        confirmPassword.isNotEmpty &&
-        (nameValidator == null || nameValidator(name) == null) &&
-        (emailValidator == null || emailValidator(email) == null) &&
-        (passwordValidator == null || passwordValidator(password) == null) &&
-        (passwordValidator == null ||
-            passwordValidator(confirmPassword) == null) &&
-        (_termsAccepted.value == true);
-
-    if (isValid != _isFormValid.value) {
-      _isFormValid.value = isValid;
+    if (_formKey.currentState != null) {
+      final isValid = _formKey.currentState!.validate();
+      _isFormValid.value = isValid && (_termsAccepted.value == true);
     }
   }
 
@@ -72,14 +46,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
     return ControllerListener(
       controller: context.appController,
       listenWhen: (previous, current) {
-        // Listen for registration success
         return previous.isProcessing &&
             !current.isProcessing &&
             !current.isFailed &&
             current.isAuthorized;
       },
       listener: (context, previous, current) {
-        // Navigate after successful registration
         context.go(emailConfirmationPath);
       },
       child: ControllerListener(
@@ -134,6 +106,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           validator: getValidatorForKeyboardType(
                             TextInputType.name,
                           ),
+                          onChanged: (_) => _validateForm(),
                         ),
                         AppTextField(
                           title: 'Email Address',
@@ -142,6 +115,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           validator: getValidatorForKeyboardType(
                             TextInputType.emailAddress,
                           ),
+                          onChanged: (_) => _validateForm(),
                         ),
                         AppTextField(
                           title: 'Password',
@@ -152,6 +126,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           ),
                           obscureText: true,
                           showVisibilityIcon: true,
+                          onChanged: (_) => _validateForm(),
                         ),
                         AppTextField(
                           title: 'Confirm Password',
@@ -162,6 +137,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           ),
                           obscureText: true,
                           showVisibilityIcon: true,
+                          onChanged: (_) => _validateForm(),
                         ),
                         ValueListenableBuilder<bool?>(
                           valueListenable: _termsAccepted,
@@ -172,7 +148,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                   value: termsAccepted ?? false,
                                   onChanged: (value) {
                                     _termsAccepted.value = value;
-                                    _validateForm();
                                   },
                                 ),
                                 Expanded(
@@ -184,13 +159,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             );
                           },
                         ),
-                        ValueListenableBuilder<bool>(
-                          valueListenable: _isFormValid,
-                          builder: (context, isFormValid, child) {
-                            return SizedBox(
-                              width: double.infinity,
-                              child: AppButtonPrimary(
-                                onPressed: isFormValid
+                        SizedBox(
+                          width: double.infinity,
+                          child: ValueListenableBuilder<bool>(
+                            valueListenable: _isFormValid,
+                            builder: (context, isValid, _) {
+                              return AppButtonPrimary(
+                                onPressed: isValid
                                     ? () {
                                         final name = _nameController.text;
                                         final email = _emailController.text;
@@ -198,7 +173,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                             _passwordController.text;
                                         final confirmPassword =
                                             _confirmPasswordController.text;
-
                                         if (password != confirmPassword) {
                                           ScaffoldMessenger.of(
                                             context,
@@ -211,7 +185,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                           );
                                           return;
                                         }
-
                                         context.appController.register(
                                           email,
                                           password,
@@ -220,9 +193,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                       }
                                     : null,
                                 text: 'Register',
-                              ),
-                            );
-                          },
+                              );
+                            },
+                          ),
                         ),
                       ],
                     ),
@@ -242,8 +215,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
     _emailController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
-    _isFormValid.dispose();
     _termsAccepted.dispose();
+    _isFormValid.dispose();
     super.dispose();
   }
 }

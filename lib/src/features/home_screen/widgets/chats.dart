@@ -6,6 +6,7 @@ import 'package:test_app/src/features/app/data/models/chat_model.dart';
 import 'package:test_app/src/features/app/data/models/user_model.dart';
 import 'package:test_app/src/widgets/chat_wizard.dart';
 import 'package:test_app/src/widgets/common/app_avatar.dart';
+import 'package:test_app/src/widgets/common/app_loader.dart';
 import 'package:test_app/src/widgets/common/empty_state.dart';
 import 'package:test_app/src/widgets/common/error_state.dart';
 import 'package:test_app/src/widgets/common/app_list_item.dart';
@@ -47,6 +48,15 @@ class _ChatsState extends State<Chats> {
             child: StreamBuilder(
               stream: context.appController.watchAllChatsForUser(user.id),
               builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(
+                    child: SizedBox(height: 72, child: AppLoader()),
+                  );
+                } else if (snapshot.hasError) {
+                  return ErrorState(
+                    message: 'Error loading chats: ${snapshot.error}',
+                  );
+                }
                 final chats = snapshot.data ?? const [];
                 if (chats.isEmpty) {
                   return EmptyState(
@@ -148,9 +158,7 @@ class _FilteredChatsList extends StatelessWidget {
                 builder: (context, asyncSnapshot) {
                   final chat = asyncSnapshot.data;
                   if (chat == null) {
-                    return const Center(
-                      child: ErrorState(message: 'Chat not found'),
-                    );
+                    return const SizedBox(height: 72, child: AppLoader());
                   }
                   return _ChatListItem(
                     chat: chat,
@@ -167,9 +175,7 @@ class _FilteredChatsList extends StatelessWidget {
                 builder: (context, asyncSnapshot) {
                   final chat = asyncSnapshot.data;
                   if (chat == null) {
-                    return const Center(
-                      child: ErrorState(message: 'Chat not found'),
-                    );
+                    return const SizedBox(height: 72, child: AppLoader());
                   }
                   return _ChatListItem(
                     chat: chat,
@@ -212,7 +218,7 @@ class _ChatListItem extends StatelessWidget {
         builder: (context, chatSnapshot) {
           final directChat = chatSnapshot.data;
           if (directChat == null) {
-            return const Center(child: ErrorState(message: 'Chat not found'));
+            return const SizedBox(height: 72, child: AppLoader());
           }
           final participants = directChat.participants;
           final otherParticipantId = participants.firstWhere(
@@ -325,7 +331,7 @@ class _ChatListItem extends StatelessWidget {
         builder: (context, chatSnapshot) {
           final groupChat = chatSnapshot.data;
           if (groupChat == null) {
-            return const Center(child: ErrorState(message: 'Chat not found'));
+            return const SizedBox(height: 72, child: AppLoader());
           }
           return StreamBuilder(
             stream: context.appController.watchMessagesForGroupChat(

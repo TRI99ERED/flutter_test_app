@@ -384,6 +384,15 @@ class FirebaseFirestoreRepositoryImpl implements IFirebaseFirestoreRepository {
   }
 
   @override
+  Future<void> updateGroupChat(GroupChat chat) {
+    try {
+      return _groupChats.doc(chat.id).update(chat.toFirestore());
+    } catch (e) {
+      throw Exception('Failed to update group chat: $e');
+    }
+  }
+
+  @override
   Future<void> updateGroupChatAvatarUrl({
     required String chatId,
     required String url,

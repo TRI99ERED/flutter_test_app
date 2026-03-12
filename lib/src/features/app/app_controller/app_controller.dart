@@ -13,6 +13,8 @@ import 'package:test_app/src/features/app/data/repositories/firebase/firebase_au
 import 'package:test_app/src/features/app/data/repositories/firebase/firebase_auth_repository/ifirebase_auth_repository.dart';
 import 'package:test_app/src/features/app/data/repositories/firebase/firebase_firestore_repository/firebase_firestore_repository_impl.dart';
 import 'package:test_app/src/features/app/data/repositories/firebase/firebase_firestore_repository/ifirebase_firestore_repository.dart';
+import 'package:test_app/src/features/app/data/repositories/firebase/firebase_functions_repository/firebase_functions_repository_impl.dart';
+import 'package:test_app/src/features/app/data/repositories/firebase/firebase_functions_repository/ifirebase_functions_repository.dart';
 import 'package:test_app/src/features/app/data/repositories/firebase/firebase_storage_repository/firebase_storage_repository_impl.dart';
 import 'package:test_app/src/features/app/data/repositories/firebase/firebase_storage_repository/ifirebase_storage_repository.dart';
 
@@ -22,6 +24,7 @@ final class AppController extends BaseController<AppState> {
   final IFirebaseAuthRepository _authRepository;
   final IFirebaseFirestoreRepository _firestoreRepository;
   final IFirebaseStorageRepository _storageRepository;
+  final IFirebaseFunctionsRepository _functionsRepository;
   Stream<AuthorizedUser?>? _userStream;
   StreamSubscription<AuthorizedUser?>? _userStreamSubscription;
 
@@ -29,6 +32,7 @@ final class AppController extends BaseController<AppState> {
     : _authRepository = FirebaseAuthRepositoryImpl(),
       _firestoreRepository = FirebaseFirestoreRepositoryImpl(),
       _storageRepository = FirebaseStorageRepositoryImpl(),
+      _functionsRepository = FirebaseFunctionsRepositoryImpl(),
       super(
         state: const AppState.idle(
           message: 'initialized',
@@ -118,7 +122,7 @@ final class AppController extends BaseController<AppState> {
           ),
         );
         try {
-          await _authRepository.sendEmailVerification();
+          await _functionsRepository.sendEmailVerification();
           setState(
             AppState.idle(message: 'Verification code sent', user: state.user),
           );
@@ -188,7 +192,7 @@ final class AppController extends BaseController<AppState> {
       AppState.processing(message: 'Verifying email code...', user: state.user),
     );
     try {
-      await _authRepository.verifyEmailCode(code: code);
+      await _functionsRepository.verifyEmailCode(code: code);
       setState(
         AppState.idle(message: 'Email verified successfully', user: state.user),
       );
@@ -213,7 +217,7 @@ final class AppController extends BaseController<AppState> {
           ),
         );
         try {
-          await _authRepository.resendEmailVerification();
+          await _functionsRepository.resendEmailVerification();
           setState(
             AppState.idle(
               message: 'Verification code resent',
@@ -1154,22 +1158,9 @@ final class AppController extends BaseController<AppState> {
       ),
     );
     try {
-      File? imageFile;
-      if (!kIsWeb) {
-        final result = await FilePicker.platform.pickFiles(
-          type: FileType.image,
-        );
-        if (result != null && result.files.isNotEmpty) {
-          imageFile = File(result.files.single.path!);
-        }
-      } else {
-        final result = await FilePicker.platform.pickFiles(
-          type: FileType.image,
-        );
-        if (result != null && result.files.isNotEmpty) {
-          imageFile = File(result.files.single.path!);
-        }
-      }
+      final imageFile = await FilePicker.platform.pickFiles(
+        type: FileType.image,
+      );
       if (imageFile == null) {
         setState(
           AppState.idle(
@@ -1179,9 +1170,10 @@ final class AppController extends BaseController<AppState> {
         );
         return;
       }
-      final url = await _storageRepository.uploadGroupChatAvatar(
+      final url = await _functionsRepository.uploadGroupAvatar(
         chatId: chatId,
-        file: imageFile,
+        filename: imageFile.files.first.name,
+        avatarBytes: imageFile.files.first.bytes!,
       );
       await _firestoreRepository.updateGroupChatAvatarUrl(
         chatId: chatId,
@@ -1217,7 +1209,23 @@ final class AppController extends BaseController<AppState> {
       ),
     );
     try {
-      await _storageRepository.deleteGroupChatAvatar(chatId: chatId);
+      final currentAvatarUrl = await _firestoreRepository
+          .watchGroupChatWithId(chatId)
+          .map((chat) => chat?.avatarUrl)
+          .firstWhere((url) => url != null, orElse: () => null);
+      if (currentAvatarUrl == null || currentAvatarUrl.isEmpty) {
+        setState(
+          AppState.idle(
+            message: 'No avatar to delete for group chat "$chatId".',
+            user: state.user,
+          ),
+        );
+        return;
+      }
+      await _functionsRepository.deleteGroupAvatar(
+        chatId: chatId,
+        filename: currentAvatarUrl.split('/').last,
+      );
       setState(
         AppState.idle(
           message: 'Avatar deleted successfully for group chat "$chatId".',
@@ -1320,6 +1328,43 @@ final class AppController extends BaseController<AppState> {
 
   Stream<String?> watchUserCurrentGroupChatId(String userId) {
     return watchUserWithId(userId).map((user) => user?.currentGroupChatId);
+  }
+
+  Future<void> updateGroupChat(
+    GroupChat chat,
+  ) async => await serialExecutor.synchronized(() async {
+    setState(
+      AppState.processing(
+        message: 'Updating group chat "${chat.id}"...',
+        user: state.user,
+      ),
+    );
+    try {
+      await _firestoreRepository.updateGroupChat(chat);
+      setState(
+        AppState.idle(
+          message: 'Group chat "${chat.id}" updated successfully.',
+          user: state.user,
+        ),
+      );
+    } catch (error, stackTrace) {
+      setState(
+        AppState.failed(
+          message:
+              'Failed to update group chat "${chat.id}": ${error.toString()}',
+          user: state.user,
+          error: error,
+          stackTrace: stackTrace,
+        ),
+      );
+      rethrow;
+    }
+  });
+
+  Stream<String> watchGroupChatAvatarUrl(String chatId) {
+    return _firestoreRepository
+        .watchGroupChatWithId(chatId)
+        .map((chat) => chat?.avatarUrl ?? '');
   }
 
   @override

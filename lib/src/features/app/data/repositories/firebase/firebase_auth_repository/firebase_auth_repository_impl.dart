@@ -1,4 +1,3 @@
-import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:test_app/src/features/app/data/models/user_model.dart';
@@ -14,9 +13,6 @@ class FirebaseAuthRepositoryImpl implements IFirebaseAuthRepository {
           debugPrint('Auth state stream error (non-fatal): $error');
         });
   }
-
-  FirebaseFunctions get _functions =>
-      FirebaseFunctions.instanceFor(region: 'europe-central2');
 
   @override
   Future<void> deleteAccount() async {
@@ -61,38 +57,6 @@ class FirebaseAuthRepositoryImpl implements IFirebaseAuthRepository {
         password: password,
       );
       await user.reauthenticateWithCredential(credential);
-    } on FirebaseAuthException catch (e) {
-      throw _handleAuthException(e);
-    }
-  }
-
-  @override
-  Future<void> resendEmailVerification() async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
-      throw Exception('No user is currently signed in');
-    }
-
-    try {
-      await _functions.httpsCallable('sendEmailVerificationCode').call();
-    } on FirebaseFunctionsException catch (e) {
-      throw _handleFunctionsException(e);
-    } on FirebaseAuthException catch (e) {
-      throw _handleAuthException(e);
-    }
-  }
-
-  @override
-  Future<void> sendEmailVerification() async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
-      throw Exception('No user is currently signed in');
-    }
-
-    try {
-      await _functions.httpsCallable('sendEmailVerificationCode').call();
-    } on FirebaseFunctionsException catch (e) {
-      throw _handleFunctionsException(e);
     } on FirebaseAuthException catch (e) {
       throw _handleAuthException(e);
     }
@@ -197,28 +161,6 @@ class FirebaseAuthRepositoryImpl implements IFirebaseAuthRepository {
   }
 
   @override
-  Future<void> verifyEmailCode({required String code}) async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
-      throw Exception('No user is currently signed in');
-    }
-
-    try {
-      await _functions.httpsCallable('verifyEmailVerificationCode').call({
-        'code': code,
-      });
-
-      await user.reload();
-    } on FirebaseFunctionsException catch (e) {
-      throw _handleFunctionsException(e);
-    } on FirebaseAuthException catch (e) {
-      throw _handleAuthException(e);
-    } catch (e) {
-      throw Exception('Email verification failed: ${e.toString()}');
-    }
-  }
-
-  @override
   Stream<AuthorizedUser> watchAuthState() {
     return FirebaseAuth.instance
         .authStateChanges()
@@ -252,34 +194,6 @@ class FirebaseAuthRepositoryImpl implements IFirebaseAuthRepository {
         );
       default:
         return Exception(e.message ?? 'An authentication error occurred.');
-    }
-  }
-
-  Exception _handleFunctionsException(FirebaseFunctionsException e) {
-    switch (e.code) {
-      case 'invalid-argument':
-        return Exception(e.message ?? 'The verification code is invalid.');
-      case 'not-found':
-        return Exception(
-          e.message ?? 'No active verification code found. Please resend.',
-        );
-      case 'deadline-exceeded':
-        return Exception(
-          e.message ??
-              'The verification code has expired. Please request a new code.',
-        );
-      case 'permission-denied':
-        return Exception(
-          e.message ??
-              'Too many failed attempts. Please request a new verification code.',
-        );
-      case 'unauthenticated':
-        return Exception(e.message ?? 'Please sign in again and try.');
-      default:
-        return Exception(
-          e.message ??
-              'A verification service error occurred. Please try again.',
-        );
     }
   }
 
