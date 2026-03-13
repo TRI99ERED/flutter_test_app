@@ -4,7 +4,9 @@ import 'package:test_app/src/core/resources/app_icons.dart';
 import 'package:test_app/src/features/app/app_scope.dart';
 import 'package:test_app/src/features/app/data/models/project_model.dart';
 import 'package:test_app/src/features/app/data/models/user_model.dart';
+import 'package:test_app/src/widgets/common/app_filter.dart';
 import 'package:test_app/src/widgets/common/app_search_bar.dart';
+import 'package:test_app/src/widgets/common/app_sort.dart';
 import 'package:test_app/src/widgets/project_wizard.dart';
 import 'package:test_app/src/widgets/common/app_content_switcher.dart';
 import 'package:test_app/src/widgets/common/app_list_item.dart';
@@ -25,6 +27,9 @@ class Projects extends StatefulWidget {
 
 class _ProjectsState extends State<Projects> {
   final _sectionIndex = ValueNotifier<int>(0);
+  final _sortOption = ValueNotifier<String>('lastUpdated');
+  final _sortOrder = ValueNotifier<SortOrder>(SortOrder.descending);
+  final _filters = ValueNotifier<Map<String, Set<String>>>({});
 
   @override
   Widget build(BuildContext context) {
@@ -51,21 +56,32 @@ class _ProjectsState extends State<Projects> {
           Expanded(
             child: ValueListenableBuilder(
               valueListenable: _sectionIndex,
-              builder: (context, value, child) {
-                return switch (value) {
+              builder: (context, sectionIndex, child) {
+                return switch (sectionIndex) {
                   0 => _ProjectsSection(
                     sectionType: ProjectStatus.todo,
                     editPressed: widget.editPressed,
+                    sortOption: _sortOption,
+                    sortOrder: _sortOrder,
+                    filters: _filters,
                   ),
                   1 => _ProjectsSection(
                     sectionType: ProjectStatus.inProgress,
                     editPressed: widget.editPressed,
+                    sortOption: _sortOption,
+                    sortOrder: _sortOrder,
+                    filters: _filters,
                   ),
                   2 => _ProjectsSection(
                     sectionType: ProjectStatus.finished,
                     editPressed: widget.editPressed,
+                    sortOption: _sortOption,
+                    sortOrder: _sortOrder,
+                    filters: _filters,
                   ),
-                  _ => ErrorState(message: 'Invalid section index: $value'),
+                  _ => ErrorState(
+                    message: 'Invalid section index: $sectionIndex',
+                  ),
                 };
               },
             ),
@@ -78,6 +94,8 @@ class _ProjectsState extends State<Projects> {
   @override
   void dispose() {
     _sectionIndex.dispose();
+    _sortOption.dispose();
+    _sortOrder.dispose();
     super.dispose();
   }
 }
@@ -85,12 +103,21 @@ class _ProjectsState extends State<Projects> {
 class _ProjectsSection extends StatefulWidget {
   final ProjectStatus _sectionType;
   final ValueNotifier<bool> _editPressed;
+  final ValueNotifier<String> _sortOption;
+  final ValueNotifier<SortOrder> _sortOrder;
+  final ValueNotifier<Map<String, Set<String>>> _filters;
 
   const _ProjectsSection({
     required ProjectStatus sectionType,
     required ValueNotifier<bool> editPressed,
+    required ValueNotifier<String> sortOption,
+    required ValueNotifier<SortOrder> sortOrder,
+    required ValueNotifier<Map<String, Set<String>>> filters,
   }) : _sectionType = sectionType,
-       _editPressed = editPressed;
+       _editPressed = editPressed,
+       _sortOption = sortOption,
+       _sortOrder = sortOrder,
+       _filters = filters;
 
   @override
   State<_ProjectsSection> createState() => _ProjectsSectionState();
@@ -120,113 +147,335 @@ class _ProjectsSectionState extends State<_ProjectsSection> {
             _searchQuery.value = value;
           },
         ),
+        const SizedBox(height: spacing8),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            ValueListenableBuilder(
+              valueListenable: widget._sortOrder,
+              builder: (context, sortOrder, child) {
+                return AppSort(
+                  sortOrder: sortOrder,
+                  onPressed: () {
+                    AppSortMenu.show(
+                      context,
+                      sortOption: widget._sortOption,
+                      sortOrder: widget._sortOrder,
+                      sortOptions: {
+                        'lastUpdated': 'LAST UPDATED',
+                        'name': 'NAME',
+                        'createdAt': 'CREATED AT',
+                      },
+                      defaultSortOption: 'lastUpdated',
+                    );
+                  },
+                );
+              },
+            ),
+            ValueListenableBuilder(
+              valueListenable: widget._filters,
+              builder: (context, value, child) {
+                final creatorsFuture = switch (widget._sectionType) {
+                  ProjectStatus.todo => () async {
+                    final appController = context.appController;
+                    final userId = (context.appState.user as AuthorizedUser).id;
+                    final projects = await appController
+                        .watchToDoProjectsForUser(userId)
+                        .first;
+                    if (projects == null) return <AuthorizedUser>[];
+                    final creatorIds = projects.map((p) => p.ownerId).toSet()
+                      ..removeWhere((id) => id.isEmpty);
+                    final allUsers = await appController
+                        .watchAllUsers()
+                        .firstWhere(
+                          (users) =>
+                              users != null &&
+                              users.any((u) => creatorIds.contains(u.id)),
+                        );
+                    return allUsers
+                            ?.where((u) => creatorIds.contains(u.id))
+                            .toList() ??
+                        <AuthorizedUser>[];
+                  }(),
+                  ProjectStatus.inProgress => () async {
+                    final appController = context.appController;
+                    final userId = (context.appState.user as AuthorizedUser).id;
+                    final projects = await appController
+                        .watchInProgressProjectsForUser(userId)
+                        .first;
+                    if (projects == null) return <AuthorizedUser>[];
+                    final creatorIds = projects.map((p) => p.ownerId).toSet()
+                      ..removeWhere((id) => id.isEmpty);
+                    final allUsers = await appController
+                        .watchAllUsers()
+                        .firstWhere(
+                          (users) =>
+                              users != null &&
+                              users.any((u) => creatorIds.contains(u.id)),
+                        );
+                    return allUsers
+                            ?.where((u) => creatorIds.contains(u.id))
+                            .toList() ??
+                        <AuthorizedUser>[];
+                  }(),
+                  ProjectStatus.finished => () async {
+                    final appController = context.appController;
+                    final userId = (context.appState.user as AuthorizedUser).id;
+                    final projects = await appController
+                        .watchFinishedProjectsForUser(userId)
+                        .first;
+                    if (projects == null) return <AuthorizedUser>[];
+                    final creatorIds = projects.map((p) => p.ownerId).toSet()
+                      ..removeWhere((id) => id.isEmpty);
+                    final allUsers = await appController
+                        .watchAllUsers()
+                        .firstWhere(
+                          (users) =>
+                              users != null &&
+                              users.any((u) => creatorIds.contains(u.id)),
+                        );
+                    return allUsers
+                            ?.where((u) => creatorIds.contains(u.id))
+                            .toList() ??
+                        <AuthorizedUser>[];
+                  }(),
+                };
+
+                return FutureBuilder(
+                  future: creatorsFuture,
+                  builder: (context, asyncSnapshot) {
+                    if (asyncSnapshot.connectionState ==
+                        ConnectionState.waiting) {
+                      return const SizedBox(width: 32, child: AppLoader());
+                    } else if (asyncSnapshot.hasError) {
+                      return const AppFilter(filteredItemCount: 0);
+                    }
+
+                    final creators = asyncSnapshot.data ?? <AuthorizedUser>[];
+                    final creatorIdToHandle = {
+                      for (var u in creators) u.id: u.handle,
+                    };
+
+                    return AppFilter(
+                      filteredItemCount:
+                          widget._filters.value['creator']?.length ?? 0,
+                      onPressed: () {
+                        AppFilterMenu.show(
+                          context,
+                          filters: widget._filters,
+                          filterOptions: {
+                            MapEntry('creator', 'Creator'): creatorIdToHandle,
+                          },
+                        );
+                      },
+                    );
+                  },
+                );
+              },
+            ),
+          ],
+        ),
+        const SizedBox(height: spacing8),
         Expanded(
           child: ValueListenableBuilder(
-            valueListenable: _searchQuery,
+            valueListenable: widget._filters,
             builder: (context, value, child) {
-              return StreamBuilder(
-                stream: switch (widget._sectionType) {
-                  ProjectStatus.todo =>
-                    context.appController.watchToDoProjectsForUser(user.id),
-                  ProjectStatus.inProgress =>
-                    context.appController.watchInProgressProjectsForUser(
-                      user.id,
-                    ),
-                  ProjectStatus.finished =>
-                    context.appController.watchFinishedProjectsForUser(user.id),
-                },
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(
-                      child: SizedBox(width: 32, child: AppLoader()),
-                    );
-                  } else if (snapshot.hasError) {
-                    return Center(
-                      child: ErrorState(
-                        message:
-                            'Error loading ${switch (widget._sectionType) {
-                              ProjectStatus.todo => 'to do projects',
-                              ProjectStatus.inProgress => 'in progress projects',
-                              ProjectStatus.finished => 'finished projects',
-                            }}: ${snapshot.error}',
-                      ),
-                    );
-                  }
+              return ValueListenableBuilder(
+                valueListenable: widget._sortOrder,
+                builder: (context, value, child) {
+                  return ValueListenableBuilder(
+                    valueListenable: widget._sortOption,
+                    builder: (context, value, child) {
+                      return ValueListenableBuilder(
+                        valueListenable: _searchQuery,
+                        builder: (context, value, child) {
+                          return StreamBuilder(
+                            stream: switch (widget._sectionType) {
+                              ProjectStatus.todo =>
+                                context.appController
+                                    .watchToDoProjectsForUser(
+                                      user.id,
+                                      widget._sortOption.value,
+                                      widget._sortOrder.value ==
+                                          SortOrder.descending,
+                                    )
+                                    .asyncMap((projects) async {
+                                      if (projects == null) return null;
+                                      return projects.where((project) {
+                                        final creatorFilter =
+                                            widget._filters.value['creator'];
+                                        if (creatorFilter != null &&
+                                            creatorFilter.isNotEmpty &&
+                                            !creatorFilter.contains(
+                                              project.ownerId,
+                                            )) {
+                                          return false;
+                                        }
+                                        return true;
+                                      }).toList();
+                                    }),
+                              ProjectStatus.inProgress =>
+                                context.appController
+                                    .watchInProgressProjectsForUser(
+                                      user.id,
+                                      widget._sortOption.value,
+                                      widget._sortOrder.value ==
+                                          SortOrder.descending,
+                                    )
+                                    .asyncMap((projects) async {
+                                      if (projects == null) return null;
+                                      return projects.where((project) {
+                                        final creatorFilter =
+                                            widget._filters.value['creator'];
+                                        if (creatorFilter != null &&
+                                            creatorFilter.isNotEmpty &&
+                                            !creatorFilter.contains(
+                                              project.ownerId,
+                                            )) {
+                                          return false;
+                                        }
+                                        return true;
+                                      }).toList();
+                                    }),
+                              ProjectStatus.finished =>
+                                context.appController
+                                    .watchFinishedProjectsForUser(
+                                      user.id,
+                                      widget._sortOption.value,
+                                      widget._sortOrder.value ==
+                                          SortOrder.descending,
+                                    )
+                                    .asyncMap((projects) async {
+                                      if (projects == null) return null;
+                                      return projects.where((project) {
+                                        final creatorFilter =
+                                            widget._filters.value['creator'];
+                                        if (creatorFilter != null &&
+                                            creatorFilter.isNotEmpty &&
+                                            !creatorFilter.contains(
+                                              project.ownerId,
+                                            )) {
+                                          return false;
+                                        }
+                                        return true;
+                                      }).toList();
+                                    }),
+                            },
+                            builder: (context, snapshot) {
+                              if (snapshot.connectionState ==
+                                  ConnectionState.waiting) {
+                                return const Center(
+                                  child: SizedBox(
+                                    width: 32,
+                                    child: AppLoader(),
+                                  ),
+                                );
+                              } else if (snapshot.hasError) {
+                                return Center(
+                                  child: ErrorState(
+                                    message:
+                                        'Error loading ${switch (widget._sectionType) {
+                                          ProjectStatus.todo => 'to do projects',
+                                          ProjectStatus.inProgress => 'in progress projects',
+                                          ProjectStatus.finished => 'finished projects',
+                                        }}: ${snapshot.error}',
+                                  ),
+                                );
+                              }
 
-                  final projects = snapshot.data ?? [];
+                              final projects = snapshot.data ?? [];
 
-                  if (projects.isEmpty) {
-                    return Center(
-                      child: EmptyState(
-                        title: 'Nothing here. For now.',
-                        body: switch (widget._sectionType) {
-                          ProjectStatus.todo =>
-                            'This is where you\'ll find your to do projects.',
-                          ProjectStatus.inProgress =>
-                            'This is where you\'ll find your in progress projects.',
-                          ProjectStatus.finished =>
-                            'This is where you\'ll find your finished projects.',
-                        },
-                        buttonText: 'Start a project',
-                        onButtonPressed: () async {
-                          final project = await ProjectWizard.manageProject(
-                            context,
-                            ProjectWizardMode.create,
-                          );
+                              if (projects.isEmpty) {
+                                return Center(
+                                  child: EmptyState(
+                                    title: 'Nothing here. For now.',
+                                    body: switch (widget._sectionType) {
+                                      ProjectStatus.todo =>
+                                        'This is where you\'ll find your to do projects.',
+                                      ProjectStatus.inProgress =>
+                                        'This is where you\'ll find your in progress projects.',
+                                      ProjectStatus.finished =>
+                                        'This is where you\'ll find your finished projects.',
+                                    },
+                                    buttonText: 'Start a project',
+                                    onButtonPressed: () async {
+                                      final project =
+                                          await ProjectWizard.manageProject(
+                                            context,
+                                            ProjectWizardMode.create,
+                                          );
 
-                          if (project != null && context.mounted) {
-                            context.push('/projects/${project.id}');
-                          }
-                        },
-                      ),
-                    );
-                  }
-
-                  final filteredProjects = projects.where((project) {
-                    final query = value.toLowerCase();
-                    return project.name.toLowerCase().contains(query) ||
-                        project.description.toLowerCase().contains(query);
-                  }).toList();
-
-                  return ListView.builder(
-                    itemCount: filteredProjects.length,
-                    itemBuilder: (context, index) {
-                      final project = filteredProjects[index];
-
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(vertical: spacing4),
-                        child: SizedBox(
-                          height: 80,
-                          child: ValueListenableBuilder(
-                            valueListenable: widget._editPressed,
-                            builder: (context, editPressed, child) {
-                              return AppListItem(
-                                title: project.name,
-                                description: project.description.isEmpty
-                                    ? 'No description provided.'
-                                    : project.description,
-                                control:
-                                    editPressed && project.ownerId == user.id
-                                    ? AppListItemControl.largeButton
-                                    : AppListItemControl.none,
-                                largeButtonText:
-                                    editPressed && project.ownerId == user.id
-                                    ? 'Delete'
-                                    : null,
-                                onPressed:
-                                    editPressed && project.ownerId == user.id
-                                    ? () {
-                                        context.appController.deleteProject(
-                                          project.id,
-                                        );
-                                      }
-                                    : () {
+                                      if (project != null && context.mounted) {
                                         context.push('/projects/${project.id}');
+                                      }
+                                    },
+                                  ),
+                                );
+                              }
+
+                              final filteredProjects = projects.where((
+                                project,
+                              ) {
+                                final query = value.toLowerCase();
+                                return project.name.toLowerCase().contains(
+                                      query,
+                                    ) ||
+                                    project.description.toLowerCase().contains(
+                                      query,
+                                    );
+                              }).toList();
+
+                              return ListView.builder(
+                                itemCount: filteredProjects.length,
+                                itemBuilder: (context, index) {
+                                  final project = filteredProjects[index];
+
+                                  return Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: spacing4,
+                                    ),
+                                    child: ValueListenableBuilder(
+                                      valueListenable: widget._editPressed,
+                                      builder: (context, editPressed, child) {
+                                        return AppListItem(
+                                          title: project.name,
+                                          description:
+                                              project.description.isEmpty
+                                              ? 'No description provided.'
+                                              : project.description,
+                                          control:
+                                              editPressed &&
+                                                  project.ownerId == user.id
+                                              ? AppListItemControl.largeButton
+                                              : AppListItemControl.none,
+                                          largeButtonText:
+                                              editPressed &&
+                                                  project.ownerId == user.id
+                                              ? 'Delete'
+                                              : null,
+                                          onPressed:
+                                              editPressed &&
+                                                  project.ownerId == user.id
+                                              ? () {
+                                                  context.appController
+                                                      .deleteProject(
+                                                        project.id,
+                                                      );
+                                                }
+                                              : () {
+                                                  context.push(
+                                                    '/projects/${project.id}',
+                                                  );
+                                                },
+                                        );
                                       },
+                                    ),
+                                  );
+                                },
                               );
                             },
-                          ),
-                        ),
+                          );
+                        },
                       );
                     },
                   );

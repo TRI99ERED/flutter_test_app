@@ -802,10 +802,14 @@ class FirebaseFirestoreRepositoryImpl implements IFirebaseFirestoreRepository {
   }
 
   @override
-  Stream<List<Project>?> watchProjectsForUser(String userId) {
+  Stream<List<Project>?> watchProjectsForUser(
+    String userId,
+    String orderBy,
+    bool descending,
+  ) {
     return _projects
         .where('participants', arrayContains: userId)
-        .orderBy('lastUpdated', descending: true)
+        .orderBy(orderBy, descending: descending)
         .snapshots()
         .map((snapshot) => snapshot.docs.map(Project.fromFirestore).toList())
         .distinct((prev, next) {

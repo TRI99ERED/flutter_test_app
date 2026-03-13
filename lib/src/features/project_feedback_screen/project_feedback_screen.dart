@@ -54,169 +54,242 @@ class _ProjectFeedbackScreenState extends State<ProjectFeedbackScreen> {
         body: Padding(
           padding: const EdgeInsets.all(spacing24),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                spacing: spacing20,
-                children: [
-                  Text(
-                    'Your project is finished.',
-                    style: TextStyle(
-                      fontSize: h2Size,
-                      fontWeight: h2Weight,
-                      color: DarkColor.darkest.color,
+              Expanded(
+                child: ListView(
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      spacing: spacing20,
+                      children: [
+                        Text(
+                          'Your project is finished.',
+                          style: TextStyle(
+                            fontSize: h2Size,
+                            fontWeight: h2Weight,
+                            color: DarkColor.darkest.color,
+                          ),
+                        ),
+                        Text(
+                          'How would you rate the prototyping kit?',
+                          style: TextStyle(
+                            fontSize: bMSize,
+                            fontWeight: bMWeight,
+                            color: DarkColor.light.color,
+                          ),
+                        ),
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: ValueListenableBuilder<int>(
+                            valueListenable: _starRating,
+                            builder: (context, value, child) {
+                              return AppStarRating(
+                                rating: value,
+                                onRatingChanged: (newValue) {
+                                  _starRating.value = newValue;
+                                },
+                              );
+                            },
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                  Text(
-                    'How would you rate the prototyping kit?',
-                    style: TextStyle(
-                      fontSize: bMSize,
-                      fontWeight: bMWeight,
-                      color: DarkColor.light.color,
+                    const SizedBox(height: spacing40),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      spacing: spacing16,
+                      children: [
+                        Text(
+                          'What did you like about it?',
+                          style: TextStyle(
+                            fontSize: h5Size,
+                            fontWeight: h5Weight,
+                            color: DarkColor.darkest.color,
+                          ),
+                        ),
+                        Wrap(
+                          spacing: spacing8,
+                          runSpacing: spacing8,
+                          children: [
+                            AppTag(
+                              text: 'EASY TO USE',
+                              onChanged: (value) {
+                                if (value) {
+                                  _likes.value = {
+                                    ..._likes.value,
+                                    'EASY TO USE',
+                                  };
+                                } else {
+                                  _likes.value = _likes.value
+                                      .where((e) => e != 'EASY TO USE')
+                                      .toSet();
+                                }
+                              },
+                            ),
+                            AppTag(
+                              text: 'COMPLETE',
+                              onChanged: (value) {
+                                if (value) {
+                                  _likes.value = {..._likes.value, 'COMPLETE'};
+                                } else {
+                                  _likes.value = _likes.value
+                                      .where((e) => e != 'COMPLETE')
+                                      .toSet();
+                                }
+                              },
+                            ),
+                            AppTag(
+                              text: 'HELPFUL',
+                              onChanged: (value) {
+                                if (value) {
+                                  _likes.value = {..._likes.value, 'HELPFUL'};
+                                } else {
+                                  _likes.value = _likes.value
+                                      .where((e) => e != 'HELPFUL')
+                                      .toSet();
+                                }
+                              },
+                            ),
+                            AppTag(
+                              text: 'CONVENIENT',
+                              onChanged: (value) {
+                                if (value) {
+                                  _likes.value = {
+                                    ..._likes.value,
+                                    'CONVENIENT',
+                                  };
+                                } else {
+                                  _likes.value = _likes.value
+                                      .where((e) => e != 'CONVENIENT')
+                                      .toSet();
+                                }
+                              },
+                            ),
+                            AppTag(
+                              text: 'LOOKS GOOD',
+                              onChanged: (value) {
+                                if (value) {
+                                  _likes.value = {
+                                    ..._likes.value,
+                                    'LOOKS GOOD',
+                                  };
+                                } else {
+                                  _likes.value = _likes.value
+                                      .where((e) => e != 'LOOKS GOOD')
+                                      .toSet();
+                                }
+                              },
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
-                  ),
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: ValueListenableBuilder<int>(
-                      valueListenable: _starRating,
-                      builder: (context, value, child) {
-                        return AppStarRating(
-                          rating: value,
-                          onRatingChanged: (newValue) {
-                            _starRating.value = newValue;
-                          },
-                        );
-                      },
+                    const SizedBox(height: spacing40),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      spacing: spacing16,
+                      children: [
+                        Text(
+                          'What could be improved?',
+                          style: TextStyle(
+                            fontSize: h5Size,
+                            fontWeight: h5Weight,
+                            color: DarkColor.darkest.color,
+                          ),
+                        ),
+                        Wrap(
+                          spacing: spacing8,
+                          runSpacing: spacing8,
+                          children: [
+                            AppTag(
+                              text: 'COULD HAVE MORE COMPONENTS',
+                              onChanged: (value) {
+                                if (value) {
+                                  _dislikes.value = {
+                                    ..._dislikes.value,
+                                    'COULD HAVE MORE COMPONENTS',
+                                  };
+                                } else {
+                                  _dislikes.value = _dislikes.value
+                                      .where(
+                                        (e) =>
+                                            e != 'COULD HAVE MORE COMPONENTS',
+                                      )
+                                      .toSet();
+                                }
+                              },
+                            ),
+                            AppTag(
+                              text: 'COMPLEX',
+                              onChanged: (value) {
+                                if (value) {
+                                  _dislikes.value = {
+                                    ..._dislikes.value,
+                                    'COMPLEX',
+                                  };
+                                } else {
+                                  _dislikes.value = _dislikes.value
+                                      .where((e) => e != 'COMPLEX')
+                                      .toSet();
+                                }
+                              },
+                            ),
+                            AppTag(
+                              text: 'NOT INTERACTIVE',
+                              onChanged: (value) {
+                                if (value) {
+                                  _dislikes.value = {
+                                    ..._dislikes.value,
+                                    'NOT INTERACTIVE',
+                                  };
+                                } else {
+                                  _dislikes.value = _dislikes.value
+                                      .where((e) => e != 'NOT INTERACTIVE')
+                                      .toSet();
+                                }
+                              },
+                            ),
+                            AppTag(
+                              text: 'ONLY ENGLISH',
+                              onChanged: (value) {
+                                if (value) {
+                                  _dislikes.value = {
+                                    ..._dislikes.value,
+                                    'ONLY ENGLISH',
+                                  };
+                                } else {
+                                  _dislikes.value = _dislikes.value
+                                      .where((e) => e != 'ONLY ENGLISH')
+                                      .toSet();
+                                }
+                              },
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
-                  ),
-                ],
+                    const SizedBox(height: spacing40),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      spacing: spacing16,
+                      children: [
+                        Text(
+                          'Anything else?',
+                          style: TextStyle(
+                            fontSize: h5Size,
+                            fontWeight: h5Weight,
+                            color: DarkColor.darkest.color,
+                          ),
+                        ),
+                        AppTextArea(
+                          placeholder: 'Tell us everything.',
+                          controller: _feedbackController,
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
-              Spacer(),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                spacing: spacing16,
-                children: [
-                  Text(
-                    'What did you like about it?',
-                    style: TextStyle(
-                      fontSize: h5Size,
-                      fontWeight: h5Weight,
-                      color: DarkColor.darkest.color,
-                    ),
-                  ),
-                  Wrap(
-                    spacing: spacing8,
-                    runSpacing: spacing8,
-                    children: [
-                      AppTag(
-                        text: 'EASY TO USE',
-                        onPressed: () {
-                          _likes.value = {..._likes.value, 'EASY TO USE'};
-                        },
-                      ),
-                      AppTag(
-                        text: 'COMPLETE',
-                        onPressed: () {
-                          _likes.value = {..._likes.value, 'COMPLETE'};
-                        },
-                      ),
-                      AppTag(
-                        text: 'HELPFUL',
-                        onPressed: () {
-                          _likes.value = {..._likes.value, 'HELPFUL'};
-                        },
-                      ),
-                      AppTag(
-                        text: 'CONVENIENT',
-                        onPressed: () {
-                          _likes.value = {..._likes.value, 'CONVENIENT'};
-                        },
-                      ),
-                      AppTag(
-                        text: 'LOOKS GOOD',
-                        onPressed: () {
-                          _likes.value = {..._likes.value, 'LOOKS GOOD'};
-                        },
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-              Spacer(),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                spacing: spacing16,
-                children: [
-                  Text(
-                    'What could be improved?',
-                    style: TextStyle(
-                      fontSize: h5Size,
-                      fontWeight: h5Weight,
-                      color: DarkColor.darkest.color,
-                    ),
-                  ),
-                  Wrap(
-                    spacing: spacing8,
-                    runSpacing: spacing8,
-                    children: [
-                      AppTag(
-                        text: 'COULD HAVE MORE COMPONENTS',
-                        onPressed: () {
-                          _dislikes.value = {
-                            ..._dislikes.value,
-                            'COULD HAVE MORE COMPONENTS',
-                          };
-                        },
-                      ),
-                      AppTag(
-                        text: 'COMPLEX',
-                        onPressed: () {
-                          _dislikes.value = {..._dislikes.value, 'COMPLEX'};
-                        },
-                      ),
-                      AppTag(
-                        text: 'NOT INTERACTIVE',
-                        onPressed: () {
-                          _dislikes.value = {
-                            ..._dislikes.value,
-                            'NOT INTERACTIVE',
-                          };
-                        },
-                      ),
-                      AppTag(
-                        text: 'ONLY ENGLISH',
-                        onPressed: () {
-                          _dislikes.value = {
-                            ..._dislikes.value,
-                            'ONLY ENGLISH',
-                          };
-                        },
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-              Spacer(),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                spacing: spacing16,
-                children: [
-                  Text(
-                    'Anything else?',
-                    style: TextStyle(
-                      fontSize: h5Size,
-                      fontWeight: h5Weight,
-                      color: DarkColor.darkest.color,
-                    ),
-                  ),
-                  AppTextArea(
-                    placeholder: 'Tell us everything.',
-                    controller: _feedbackController,
-                  ),
-                ],
-              ),
-              Spacer(),
               Padding(
                 padding: EdgeInsets.all(spacing24),
                 child: SizedBox(
@@ -231,6 +304,10 @@ class _ProjectFeedbackScreenState extends State<ProjectFeedbackScreen> {
                         likes: _likes.value,
                         dislikes: _dislikes.value,
                         feedback: _feedbackController.text,
+                      );
+                      if (!context.mounted) return;
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Feedback submitted!')),
                       );
                     },
                   ),

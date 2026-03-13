@@ -69,17 +69,43 @@ class _ChatScreenState extends State<ChatScreen> {
     });
   }
 
-  Widget _buildNavBar(BuildContext context, Chat chat) {
-    final resolvedChatName = chat.name
-        .split((context.appState.user as AuthorizedUser).name)
-        .join()
-        .split(', ')
-        .join();
+  Future<Widget> _buildNavBar(BuildContext context, Chat chat) async {
+    final resolvedChatName = await context.appController
+        .watchAllUsers()
+        .first
+        .then((users) {
+          if (chat is DirectChat && chat.participants.length == 2) {
+            final otherId = chat.participants.firstWhere(
+              (id) => id != (context.appState.user as AuthorizedUser).id,
+              orElse: () => '',
+            );
+            if (users == null) {
+              return 'Unknown';
+            }
+            final otherUser = users.firstWhere(
+              (user) => user.id == otherId,
+              orElse: () => AuthorizedUser(
+                id: otherId,
+                name: 'Unknown',
+                email: '',
+                handle: '',
+                avatarUrl: '',
+              ),
+            );
+            return otherUser.name;
+          } else if (chat is GroupChat) {
+            return chat.name;
+          }
+          return 'Unknown';
+        });
     if (chat is DirectChat && chat.participants.length == 2) {
       final otherId = chat.participants.firstWhere(
         (id) => id != (context.appState.user as AuthorizedUser).id,
         orElse: () => '',
       );
+      if (!context.mounted) {
+        return const AppNavBar(title: 'Loading...');
+      }
       return StreamBuilder(
         stream: context.appController.watchUserWithId(otherId),
         builder: (context, asyncSnapshot) {
@@ -429,7 +455,21 @@ class _ChatScreenState extends State<ChatScreen> {
               return Scaffold(
                 appBar: PreferredSize(
                   preferredSize: const Size.fromHeight(kToolbarHeight),
-                  child: SafeArea(child: _buildNavBar(context, directChat)),
+                  child: SafeArea(
+                    child: FutureBuilder<Widget>(
+                      future: _buildNavBar(context, directChat),
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return const AppNavBar(title: 'Loading...');
+                        } else if (snapshot.hasError) {
+                          return const AppNavBar(title: 'Error');
+                        } else {
+                          return snapshot.data!;
+                        }
+                      },
+                    ),
+                  ),
                 ),
                 body: SafeArea(
                   child: Padding(
@@ -487,7 +527,21 @@ class _ChatScreenState extends State<ChatScreen> {
               return Scaffold(
                 appBar: PreferredSize(
                   preferredSize: const Size.fromHeight(kToolbarHeight),
-                  child: SafeArea(child: _buildNavBar(context, groupChat)),
+                  child: SafeArea(
+                    child: FutureBuilder<Widget>(
+                      future: _buildNavBar(context, groupChat),
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return const AppNavBar(title: 'Loading...');
+                        } else if (snapshot.hasError) {
+                          return const AppNavBar(title: 'Error');
+                        } else {
+                          return snapshot.data!;
+                        }
+                      },
+                    ),
+                  ),
                 ),
                 body: SafeArea(
                   child: Padding(

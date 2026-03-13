@@ -1129,7 +1129,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   width: 46,
                   child: AppTag(
                     text: 'TAG',
-                    onPressed: () => debugPrint('Tag pressed'),
+                    onChanged: (value) => debugPrint('Tag changed: $value'),
                   ),
                 ),
               ),

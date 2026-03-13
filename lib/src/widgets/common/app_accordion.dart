@@ -1,16 +1,20 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:test_app/src/core/resources/app_icons.dart';
+import 'package:test_app/src/widgets/common/app_badge.dart';
+import 'package:test_app/src/widgets/common/app_divider.dart';
 import 'package:test_app/src/widgets/common/styles.dart';
 
 class AppAccordion extends StatefulWidget {
   final String title;
   final List<Widget> children;
+  final int selectedCount;
   final ValueChanged<bool>? onExpansionChanged;
 
   const AppAccordion({
     super.key,
     required this.title,
     required this.children,
+    this.selectedCount = 0,
     this.onExpansionChanged,
   });
 
@@ -32,27 +36,38 @@ class _AppAccordionState extends State<AppAccordion> {
 
   @override
   Widget build(BuildContext context) {
-    return ExpansionTile(
-      title: Text(
-        widget.title,
-        style: TextStyle(
-          fontSize: bMSize,
-          fontWeight: bMWeight,
-          color: DarkColor.darkest.color,
+    return Column(
+      children: [
+        ExpansionTile(
+          title: Text(
+            widget.title,
+            style: TextStyle(
+              fontSize: bMSize,
+              fontWeight: bMWeight,
+              color: DarkColor.darkest.color,
+            ),
+          ),
+          shape: ContinuousRectangleBorder(borderRadius: BorderRadius.zero),
+          tilePadding: EdgeInsets.zero,
+          minTileHeight: 0,
+          trailing: widget.selectedCount == 0
+              ? Icon(
+                  _isExpanded ? AppIcons.arrowUp : AppIcons.arrowDown,
+                  size: 12,
+                  color: DarkColor.lightest.color,
+                )
+              : AppBadgeSymbol(
+                  symbol: widget.selectedCount.toString(),
+                  size: 24,
+                ),
+          onExpansionChanged: _handleExpansionChanged,
+          expandedCrossAxisAlignment: CrossAxisAlignment.start,
+          expandedAlignment: Alignment.centerLeft,
+          childrenPadding: EdgeInsets.zero,
+          children: widget.children,
         ),
-      ),
-      shape: ContinuousRectangleBorder(),
-      tilePadding: EdgeInsets.symmetric(horizontal: spacing8),
-      trailing: Icon(
-        _isExpanded ? AppIcons.arrowUp : AppIcons.arrowDown,
-        size: 12,
-        color: DarkColor.lightest.color,
-      ),
-      onExpansionChanged: _handleExpansionChanged,
-      expandedCrossAxisAlignment: CrossAxisAlignment.start,
-      expandedAlignment: Alignment.centerLeft,
-      childrenPadding: EdgeInsets.symmetric(horizontal: spacing8),
-      children: widget.children,
+        const AppDivider(),
+      ],
     );
   }
 }

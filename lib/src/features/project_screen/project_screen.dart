@@ -73,6 +73,15 @@ class ProjectScreen extends StatelessWidget {
     return StreamBuilder(
       stream: context.appController.watchProjectWithId(projectId),
       builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: AppLoader());
+        } else if (snapshot.hasError) {
+          return Center(
+            child: ErrorState(
+              message: 'Error loading project: ${snapshot.error}',
+            ),
+          );
+        }
         final project = snapshot.data;
         if (project == null) {
           return ErrorState(message: 'Project with id $projectId not found');
@@ -159,7 +168,9 @@ class ProjectScreen extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              'Created by @${owner.handle}\nat ${project.createdAt.toLocal().toString().split('.').first}\nLast updated at ${project.lastUpdated.toLocal().toString().split('.').first}',
+              'Created by @${owner.handle}\n'
+              'at ${project.createdAt.toLocal().toString().split('.').first}\n'
+              'Last updated at ${project.lastUpdated.toLocal().toString().split('.').first}',
               style: TextStyle(
                 fontSize: bMSize,
                 fontWeight: bMWeight,

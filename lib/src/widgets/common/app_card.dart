@@ -67,7 +67,12 @@ class AppCardLarge extends StatelessWidget {
         if (avatar != null)
           IconButton(icon: avatar!, onPressed: onAvatarPressed),
         const Spacer(),
-        if (tagText != null) AppTag(text: tagText, onPressed: onTagPressed),
+        if (tagText != null)
+          AppTag(
+            text: tagText,
+            isSelected: true,
+            onPressed: (onTagPressed != null) ? () => onTagPressed!() : null,
+          ),
       ],
     );
   }

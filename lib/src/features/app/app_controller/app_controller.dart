@@ -804,7 +804,11 @@ final class AppController extends BaseController<AppState> {
         try {
           await _firestoreRepository.deleteGroupChat(chatId);
           final projects = await _firestoreRepository
-              .watchProjectsForUser((state.user as AuthorizedUser).id)
+              .watchProjectsForUser(
+                (state.user as AuthorizedUser).id,
+                'lastUpdated',
+                true,
+              )
               .first;
           final associatedProject = projects?.firstWhere(
             (p) => p.groupChatId == chatId,
@@ -832,28 +836,46 @@ final class AppController extends BaseController<AppState> {
         }
       });
 
-  Stream<List<Project>?> watchToDoProjectsForUser(String userId) {
-    return _firestoreRepository.watchProjectsForUser(userId).map((projects) {
-      return projects
-          ?.where((project) => project.status == ProjectStatus.todo)
-          .toList();
-    });
+  Stream<List<Project>?> watchToDoProjectsForUser(
+    String userId, [
+    String orderBy = 'lastUpdated',
+    bool descending = true,
+  ]) {
+    return _firestoreRepository
+        .watchProjectsForUser(userId, orderBy, descending)
+        .map((projects) {
+          return projects
+              ?.where((project) => project.status == ProjectStatus.todo)
+              .toList();
+        });
   }
 
-  Stream<List<Project>?> watchInProgressProjectsForUser(String userId) {
-    return _firestoreRepository.watchProjectsForUser(userId).map((projects) {
-      return projects
-          ?.where((project) => project.status == ProjectStatus.inProgress)
-          .toList();
-    });
+  Stream<List<Project>?> watchInProgressProjectsForUser(
+    String userId, [
+    String orderBy = 'lastUpdated',
+    bool descending = true,
+  ]) {
+    return _firestoreRepository
+        .watchProjectsForUser(userId, orderBy, descending)
+        .map((projects) {
+          return projects
+              ?.where((project) => project.status == ProjectStatus.inProgress)
+              .toList();
+        });
   }
 
-  Stream<List<Project>?> watchFinishedProjectsForUser(String id) {
-    return _firestoreRepository.watchProjectsForUser(id).map((projects) {
-      return projects
-          ?.where((project) => project.status == ProjectStatus.finished)
-          .toList();
-    });
+  Stream<List<Project>?> watchFinishedProjectsForUser(
+    String userId, [
+    String orderBy = 'lastUpdated',
+    bool descending = true,
+  ]) {
+    return _firestoreRepository
+        .watchProjectsForUser(userId, orderBy, descending)
+        .map((projects) {
+          return projects
+              ?.where((project) => project.status == ProjectStatus.finished)
+              .toList();
+        });
   }
 
   Future<Project> createProjectForUser({

@@ -155,7 +155,11 @@ abstract interface class IFirebaseFirestoreRepository {
 
   Stream<List<Message>?> watchMessagesForGroupChat({required String chatId});
 
-  Stream<List<Project>?> watchProjectsForUser(String userId);
+  Stream<List<Project>?> watchProjectsForUser(
+    String userId,
+    String orderBy,
+    bool descending,
+  );
 
   Stream<Project?> watchProjectWithId(String projectId);
 }
