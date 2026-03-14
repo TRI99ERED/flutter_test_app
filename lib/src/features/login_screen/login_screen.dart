@@ -146,8 +146,9 @@ class _LoginScreenState extends State<LoginScreen> {
                         spacing: spacing12,
                         children: [
                           IconButton(
-                            onPressed: () =>
-                                debugPrint('Google login is disabled'),
+                            onPressed: () async {
+                              await context.appController.signInWithGoogle();
+                            },
                             style: IconButton.styleFrom(
                               backgroundColor: ErrorColor.dark.color,
                               fixedSize: Size(40, 40),
@@ -159,8 +160,15 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                           ),
                           IconButton(
-                            onPressed: () =>
-                                debugPrint('Apple login is disabled'),
+                            onPressed: () {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    'Apple Sign-In not implemented',
+                                  ),
+                                ),
+                              );
+                            },
                             style: IconButton.styleFrom(
                               backgroundColor: DarkColor.darkest.color,
                               fixedSize: Size(40, 40),
@@ -172,8 +180,15 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                           ),
                           IconButton(
-                            onPressed: () =>
-                                debugPrint('Facebook login is disabled'),
+                            onPressed: () {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    'Facebook Sign-In not implemented',
+                                  ),
+                                ),
+                              );
+                            },
                             style: IconButton.styleFrom(
                               backgroundColor: HighlightColor.darkest.color,
                               fixedSize: Size(40, 40),

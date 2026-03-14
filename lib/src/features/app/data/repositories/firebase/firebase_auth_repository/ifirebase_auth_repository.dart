@@ -22,7 +22,7 @@ abstract interface class IFirebaseAuthRepository {
 
   Future<AuthorizedUser> signInWithFacebook();
 
-  Future<AuthorizedUser> signInWithGoogle();
+  Future<AuthorizedUser?> signInWithGoogle();
 
   Future<void> signOut();
 

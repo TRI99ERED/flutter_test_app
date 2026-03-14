@@ -1528,6 +1528,53 @@ final class AppController extends BaseController<AppState> {
     }
   });
 
+  Future<AuthorizedUser?> signInWithGoogle() async {
+    setState(
+      AppState.processing(
+        message: 'Signing in with Google...',
+        user: state.user,
+      ),
+    );
+    try {
+      final user = await _authRepository.signInWithGoogle();
+      if (user == null) {
+        setState(
+          AppState.idle(
+            message: 'Google sign-in was cancelled.',
+            user: state.user,
+          ),
+        );
+        return null;
+      }
+      await _firestoreRepository.createUser(user: user);
+      setState(
+        AppState.idle(
+          message: 'Signed in with Google successfully.',
+          user: user,
+        ),
+      );
+      return user;
+    } on GoogleSignInCanceledException catch (_) {
+      setState(
+        AppState.idle(
+          message: 'Google sign-in was canceled.',
+          user: state.user,
+        ),
+      );
+      return null;
+    } catch (error, stackTrace) {
+      setState(
+        AppState.failed(
+          message: 'Failed to sign in with Google: ${error.toString()}',
+          user: state.user,
+          error: error,
+          stackTrace: stackTrace,
+        ),
+      );
+      rethrow;
+    }
+  }
+
   @override
   void dispose() {
     super.dispose();

@@ -1,7 +1,20 @@
+import 'dart:async';
+import 'dart:io';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:test_app/src/features/app/data/models/user_model.dart';
 import 'package:test_app/src/features/app/data/repositories/firebase/firebase_auth_repository/ifirebase_auth_repository.dart';
+
+class GoogleSignInCanceledException implements Exception {
+  final String message;
+  GoogleSignInCanceledException([
+    this.message = 'Sign-in was canceled by the user.',
+  ]);
+  @override
+  String toString() => message;
+}
 
 class FirebaseAuthRepositoryImpl implements IFirebaseAuthRepository {
   @override
@@ -102,8 +115,75 @@ class FirebaseAuthRepositoryImpl implements IFirebaseAuthRepository {
   }
 
   @override
-  Future<AuthorizedUser> signInWithGoogle() async {
-    throw UnimplementedError('Google Sign-In requires google_sign_in package');
+  Future<AuthorizedUser?> signInWithGoogle() async {
+    try {
+      final String? clientId = kIsWeb
+          ? '503645418605-m55u2bsiqj2edouhrmdhmf66gbd6jrsp.apps.googleusercontent.com'
+          : Platform.isIOS
+          ? '503645418605-up6nflc7f9a7f1oueo1n1hepopu1sc25.apps.googleusercontent.com'
+          : Platform.isAndroid
+          ? '503645418605-c9hi3up5de2qhbn3u75f6ffsuidfue70.apps.googleusercontent.com'
+          : null;
+
+      const String? serverClientId = kIsWeb
+          ? null
+          : '503645418605-m55u2bsiqj2edouhrmdhmf66gbd6jrsp.apps.googleusercontent.com';
+
+      final GoogleSignIn signIn = GoogleSignIn.instance;
+      final completer = Completer<GoogleSignInAccount?>();
+      StreamSubscription? sub;
+      await signIn.initialize(
+        clientId: clientId,
+        serverClientId: serverClientId,
+      );
+      sub = signIn.authenticationEvents.listen(
+        (event) async {
+          final user = switch (event) {
+            GoogleSignInAuthenticationEventSignIn() => event.user,
+            GoogleSignInAuthenticationEventSignOut() => null,
+          };
+          if (!completer.isCompleted) {
+            completer.complete(user);
+          }
+        },
+        onError: (error) {
+          if (!completer.isCompleted) {
+            if (error is GoogleSignInException &&
+                error.code == GoogleSignInExceptionCode.canceled) {
+              completer.completeError(GoogleSignInCanceledException());
+            } else {
+              completer.completeError(
+                Exception('Google Sign-In authentication error: $error'),
+              );
+            }
+          }
+        },
+      );
+      signIn.authenticate();
+      final GoogleSignInAccount? user;
+      try {
+        user = await completer.future;
+      } on GoogleSignInCanceledException {
+        await sub.cancel();
+        throw GoogleSignInCanceledException();
+      }
+      await sub.cancel();
+      if (user != null) {
+        final googleAuth = user.authentication;
+        final credential = GoogleAuthProvider.credential(
+          idToken: googleAuth.idToken,
+        );
+        final userCredential = await FirebaseAuth.instance.signInWithCredential(
+          credential,
+        );
+        return _mapFirebaseUserToAuthorized(userCredential.user!);
+      } else {
+        return null;
+      }
+    } catch (e) {
+      if (e is GoogleSignInCanceledException) rethrow;
+      throw Exception('Google Sign-In failed: $e');
+    }
   }
 
   @override
