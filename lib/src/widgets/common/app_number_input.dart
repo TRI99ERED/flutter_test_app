@@ -28,19 +28,19 @@ class AppNumberInput extends StatefulWidget {
 }
 
 class _AppNumberInputState extends State<AppNumberInput> {
-  late int _value;
+  late ValueNotifier<int> _value;
 
   @override
   void initState() {
     super.initState();
-    _value = widget.value;
+    _value = ValueNotifier<int>(widget.value);
   }
 
   @override
   void didUpdateWidget(AppNumberInput oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.value != oldWidget.value) {
-      _value = widget.value;
+      _value.value = widget.value;
     }
   }
 
@@ -59,13 +59,12 @@ class _AppNumberInputState extends State<AppNumberInput> {
             ),
             child: IconButton(
               onPressed:
-                  (widget.min == null || _value > widget.min!) && widget.enabled
+                  (widget.min == null || _value.value > widget.min!) &&
+                      widget.enabled
                   ? () {
-                      setState(() {
-                        --_value;
-                      });
+                      --_value.value;
                       if (widget.onChanged != null) {
-                        widget.onChanged!(_value);
+                        widget.onChanged!(_value.value);
                       }
                     }
                   : null,
@@ -81,16 +80,21 @@ class _AppNumberInputState extends State<AppNumberInput> {
           ),
           ConstrainedBox(
             constraints: const BoxConstraints(minWidth: spacing40),
-            child: Text(
-              '$_value',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: widget.enabled
-                    ? widget.textColor ?? DarkColor.darkest.color
-                    : DarkColor.light.color,
-                fontSize: bMSize,
-                fontWeight: bMWeight,
-              ),
+            child: ValueListenableBuilder<int>(
+              valueListenable: _value,
+              builder: (context, value, _) {
+                return Text(
+                  '$value',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: widget.enabled
+                        ? widget.textColor ?? DarkColor.darkest.color
+                        : DarkColor.light.color,
+                    fontSize: bMSize,
+                    fontWeight: bMWeight,
+                  ),
+                );
+              },
             ),
           ),
           ConstrainedBox(
@@ -100,13 +104,12 @@ class _AppNumberInputState extends State<AppNumberInput> {
             ),
             child: IconButton(
               onPressed:
-                  (widget.max == null || _value < widget.max!) && widget.enabled
+                  (widget.max == null || _value.value < widget.max!) &&
+                      widget.enabled
                   ? () {
-                      setState(() {
-                        ++_value;
-                      });
+                      ++_value.value;
                       if (widget.onChanged != null) {
-                        widget.onChanged!(_value);
+                        widget.onChanged!(_value.value);
                       }
                     }
                   : null,

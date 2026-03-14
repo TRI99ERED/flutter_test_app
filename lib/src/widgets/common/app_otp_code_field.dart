@@ -33,9 +33,12 @@ class AppOtpCodeField extends StatefulWidget {
 }
 
 class _AppOtpCodeFieldState extends State<AppOtpCodeField> {
+  late final ValueNotifier<bool> _shouldRebuild;
+
   @override
   void initState() {
     super.initState();
+    _shouldRebuild = ValueNotifier<bool>(false);
     widget.controller.addListener(_onTextChanged);
     widget.focusNode.addListener(_onFocusChanged);
   }
@@ -57,7 +60,7 @@ class _AppOtpCodeFieldState extends State<AppOtpCodeField> {
     if (!mounted) {
       return;
     }
-    setState(() {});
+    _shouldRebuild.value = !_shouldRebuild.value;
   }
 
   void _onTextChanged() {
@@ -85,7 +88,7 @@ class _AppOtpCodeFieldState extends State<AppOtpCodeField> {
       }
     }
 
-    setState(() {});
+    _shouldRebuild.value = !_shouldRebuild.value;
   }
 
   String _normalizeCodeInput(String rawText) {
@@ -206,55 +209,60 @@ class _AppOtpCodeFieldState extends State<AppOtpCodeField> {
         (widget.boxWidth * widget.length) +
         (widget.boxSpacing * (widget.length - 1));
 
-    return SizedBox(
-      width: inputWidth,
-      height: widget.boxHeight,
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          TextField(
-            controller: widget.controller,
-            focusNode: widget.focusNode,
-            keyboardType: TextInputType.number,
-            onTap: () {
-              final length = widget.controller.text.length;
-              widget.controller.selection = TextSelection.collapsed(
-                offset: length,
-              );
-            },
-            showCursor: false,
-            enableInteractiveSelection: true,
-            contextMenuBuilder: (context, editableTextState) {
-              return AdaptiveTextSelectionToolbar.buttonItems(
-                anchors: editableTextState.contextMenuAnchors,
-                buttonItems: [
-                  ContextMenuButtonItem(
-                    label: 'Paste code',
-                    onPressed: () async {
-                      ContextMenuController.removeAny();
-                      await _pasteCodeFromClipboard();
-                    },
-                  ),
-                ],
-              );
-            },
-            style: const TextStyle(color: Colors.transparent),
-            cursorColor: Colors.transparent,
-            decoration: const InputDecoration(
-              border: InputBorder.none,
-              counterText: '',
-              contentPadding: EdgeInsets.zero,
-            ),
+    return ValueListenableBuilder<bool>(
+      valueListenable: _shouldRebuild,
+      builder: (context, _, _) {
+        return SizedBox(
+          width: inputWidth,
+          height: widget.boxHeight,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              TextField(
+                controller: widget.controller,
+                focusNode: widget.focusNode,
+                keyboardType: TextInputType.number,
+                onTap: () {
+                  final length = widget.controller.text.length;
+                  widget.controller.selection = TextSelection.collapsed(
+                    offset: length,
+                  );
+                },
+                showCursor: false,
+                enableInteractiveSelection: true,
+                contextMenuBuilder: (context, editableTextState) {
+                  return AdaptiveTextSelectionToolbar.buttonItems(
+                    anchors: editableTextState.contextMenuAnchors,
+                    buttonItems: [
+                      ContextMenuButtonItem(
+                        label: 'Paste code',
+                        onPressed: () async {
+                          ContextMenuController.removeAny();
+                          await _pasteCodeFromClipboard();
+                        },
+                      ),
+                    ],
+                  );
+                },
+                style: const TextStyle(color: Colors.transparent),
+                cursorColor: Colors.transparent,
+                decoration: const InputDecoration(
+                  border: InputBorder.none,
+                  counterText: '',
+                  contentPadding: EdgeInsets.zero,
+                ),
+              ),
+              IgnorePointer(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  spacing: widget.boxSpacing,
+                  children: List.generate(widget.length, _buildCodeDigitBox),
+                ),
+              ),
+            ],
           ),
-          IgnorePointer(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              spacing: widget.boxSpacing,
-              children: List.generate(widget.length, _buildCodeDigitBox),
-            ),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 
@@ -262,6 +270,7 @@ class _AppOtpCodeFieldState extends State<AppOtpCodeField> {
   void dispose() {
     widget.controller.removeListener(_onTextChanged);
     widget.focusNode.removeListener(_onFocusChanged);
+    _shouldRebuild.dispose();
     super.dispose();
   }
 }
@@ -275,39 +284,44 @@ class _BlinkingCaret extends StatefulWidget {
 
 class _BlinkingCaretState extends State<_BlinkingCaret> {
   Timer? _blinkTimer;
-  bool _isVisible = true;
+  late final ValueNotifier<bool> _isVisible;
 
   @override
   void initState() {
     super.initState();
+    _isVisible = ValueNotifier<bool>(true);
     _blinkTimer = Timer.periodic(const Duration(milliseconds: 500), (_) {
       if (!mounted) {
         return;
       }
-      setState(() {
-        _isVisible = !_isVisible;
-      });
+      _isVisible.value = !_isVisible.value;
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    return Opacity(
-      opacity: _isVisible ? 1 : 0,
-      child: Container(
-        width: 2,
-        height: 24,
-        decoration: BoxDecoration(
-          color: HighlightColor.darkest.color,
-          borderRadius: BorderRadius.circular(2),
-        ),
-      ),
+    return ValueListenableBuilder<bool>(
+      valueListenable: _isVisible,
+      builder: (context, isVisible, _) {
+        return Opacity(
+          opacity: isVisible ? 1 : 0,
+          child: Container(
+            width: 2,
+            height: 24,
+            decoration: BoxDecoration(
+              color: HighlightColor.darkest.color,
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+        );
+      },
     );
   }
 
   @override
   void dispose() {
     _blinkTimer?.cancel();
+    _isVisible.dispose();
     super.dispose();
   }
 }

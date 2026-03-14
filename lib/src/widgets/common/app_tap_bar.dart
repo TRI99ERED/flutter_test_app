@@ -42,9 +42,7 @@ class _AppTapBarState extends State<AppTapBar> {
   void didUpdateWidget(AppTapBar oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.selectedIndex != oldWidget.selectedIndex) {
-      setState(() {
-        _selectedIndex = widget.selectedIndex;
-      });
+      _selectedIndex = widget.selectedIndex;
     }
   }
 
@@ -65,9 +63,7 @@ class _AppTapBarState extends State<AppTapBar> {
               text: widget.tabTitles[index],
               icon: widget.tabIcons[index],
               onPressed: () {
-                setState(() {
-                  _selectedIndex = index;
-                });
+                _selectedIndex = index;
                 if (widget.onTabSelected != null) {
                   widget.onTabSelected!(index);
                 }

@@ -36,9 +36,7 @@ class _AppTabsState extends State<AppTabs> {
   void didUpdateWidget(AppTabs oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.selectedIndex != oldWidget.selectedIndex) {
-      setState(() {
-        _selectedIndex = widget.selectedIndex;
-      });
+      _selectedIndex = widget.selectedIndex;
     }
   }
 
@@ -73,9 +71,7 @@ class _AppTabsState extends State<AppTabs> {
                 child: _Tab(
                   text: widget.tabTitles[index],
                   onPressed: () {
-                    setState(() {
-                      _selectedIndex = index;
-                    });
+                    _selectedIndex = index;
                     if (widget.onTabSelected != null) {
                       widget.onTabSelected!(index);
                     }

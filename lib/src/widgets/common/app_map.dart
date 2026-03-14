@@ -25,79 +25,6 @@ enum MyLocationMarkerSize {
   const MyLocationMarkerSize(this.size);
 }
 
-Future<BitmapDescriptor> _createCustomPinMarker(Size size) async {
-  final recorder = ui.PictureRecorder();
-  final canvas = Canvas(recorder);
-  final radius = size.width / 2;
-
-  final trianglePaint = Paint()
-    ..color = HighlightColor.darkest.color
-    ..style = PaintingStyle.fill;
-
-  final cx = radius;
-  final cy = radius;
-  final py = size.height;
-  final d = py - cy;
-
-  final ty = cy + (radius * radius) / d;
-  final dx = radius * sqrt((d * d - radius * radius)) / d;
-
-  final path = Path();
-  path.moveTo(cx - dx, ty);
-  path.lineTo(cx + dx, ty);
-  path.lineTo(radius, size.height);
-  path.close();
-
-  canvas.drawPath(path, trianglePaint);
-
-  final outerCirclePaint = Paint()..color = HighlightColor.darkest.color;
-
-  canvas.drawCircle(Offset(radius, radius), radius, outerCirclePaint);
-
-  final innerCirclePaint = Paint()..color = LightColor.lightest.color;
-  canvas.drawCircle(Offset(radius, radius), radius / 3, innerCirclePaint);
-
-  final picture = recorder.endRecording();
-  final img = await picture.toImage(size.width.toInt(), size.height.toInt());
-  final byteData = await img.toByteData(format: ui.ImageByteFormat.png);
-  final bytes = byteData!.buffer.asUint8List();
-
-  return BitmapDescriptor.bytes(bytes);
-}
-
-Future<BitmapDescriptor> _createCustomMyLocationMarker(double radius) async {
-  final recorder = ui.PictureRecorder();
-  final canvas = Canvas(recorder);
-
-  final outerCirclePaint = Paint()
-    ..color = HighlightColor.light.color
-    ..style = PaintingStyle.fill;
-  canvas.drawCircle(
-    Offset(radius * 2, radius * 2),
-    radius * 2,
-    outerCirclePaint,
-  );
-
-  final middleCirclePaint = Paint()
-    ..color = LightColor.lightest.color
-    ..style = PaintingStyle.fill;
-  canvas.drawCircle(Offset(radius * 2, radius * 2), radius, middleCirclePaint);
-
-  final innerCirclePaint = Paint()..color = HighlightColor.darkest.color;
-  canvas.drawCircle(
-    Offset(radius * 2, radius * 2),
-    radius * 0.5,
-    innerCirclePaint,
-  );
-
-  final picture = recorder.endRecording();
-  final img = await picture.toImage((radius * 4).toInt(), (radius * 4).toInt());
-  final byteData = await img.toByteData(format: ui.ImageByteFormat.png);
-  final bytes = byteData!.buffer.asUint8List();
-
-  return BitmapDescriptor.bytes(bytes);
-}
-
 class AppMap extends StatefulWidget {
   final LatLng center;
   final double zoom;
@@ -105,6 +32,7 @@ class AppMap extends StatefulWidget {
   final bool showUserLocation;
   final MyLocationMarkerSize userLocationMarkerSize;
   final ValueChanged<GoogleMapController>? onMapCreated;
+  final ValueChanged<AppMarker?>? onMarkerTapped;
 
   const AppMap({
     super.key,
@@ -114,6 +42,7 @@ class AppMap extends StatefulWidget {
     this.showUserLocation = true,
     this.userLocationMarkerSize = MyLocationMarkerSize.small,
     this.onMapCreated,
+    this.onMarkerTapped,
   });
 
   @override
@@ -121,9 +50,12 @@ class AppMap extends StatefulWidget {
 }
 
 class _AppMapState extends State<AppMap> {
-  BitmapDescriptor? _smallMarkerIcon;
-  BitmapDescriptor? _mediumMarkerIcon;
-  BitmapDescriptor? _largeMarkerIcon;
+  BitmapDescriptor? _smallMarkerSelectedIcon;
+  BitmapDescriptor? _mediumMarkerSelectedIcon;
+  BitmapDescriptor? _largeMarkerSelectedIcon;
+  BitmapDescriptor? _smallMarkerDeselectedIcon;
+  BitmapDescriptor? _mediumMarkerDeselectedIcon;
+  BitmapDescriptor? _largeMarkerDeselectedIcon;
   BitmapDescriptor? _locationMarkerIcon;
 
   late final LatLng _center = widget.center;
@@ -185,9 +117,7 @@ class _AppMapState extends State<AppMap> {
             debugPrint(
               'Location updated: ${position.latitude}, ${position.longitude}',
             );
-            setState(() {
-              _userLocation = LatLng(position.latitude, position.longitude);
-            });
+            _userLocation = LatLng(position.latitude, position.longitude);
           },
           onError: (error) {
             debugPrint('Error getting location: $error');
@@ -195,21 +125,128 @@ class _AppMapState extends State<AppMap> {
         );
   }
 
+  Future<BitmapDescriptor> _createCustomPinMarker(
+    Size size,
+    bool isSelected,
+  ) async {
+    final recorder = ui.PictureRecorder();
+    final canvas = Canvas(recorder);
+    final radius = size.width / 2;
+
+    final trianglePaint = Paint()
+      ..color = isSelected
+          ? HighlightColor.darkest.color
+          : LightColor.darkest.color
+      ..style = PaintingStyle.fill;
+
+    final cx = radius;
+    final cy = radius;
+    final py = size.height;
+    final d = py - cy;
+
+    final ty = cy + (radius * radius) / d;
+    final dx = radius * sqrt((d * d - radius * radius)) / d;
+
+    final path = Path();
+    path.moveTo(cx - dx, ty);
+    path.lineTo(cx + dx, ty);
+    path.lineTo(radius, size.height);
+    path.close();
+
+    canvas.drawPath(path, trianglePaint);
+
+    final outerCirclePaint = Paint()
+      ..color = isSelected
+          ? HighlightColor.darkest.color
+          : LightColor.darkest.color;
+
+    canvas.drawCircle(Offset(radius, radius), radius, outerCirclePaint);
+
+    final innerCirclePaint = Paint()..color = LightColor.lightest.color;
+    canvas.drawCircle(Offset(radius, radius), radius / 3, innerCirclePaint);
+
+    final picture = recorder.endRecording();
+    final img = await picture.toImage(size.width.toInt(), size.height.toInt());
+    final byteData = await img.toByteData(format: ui.ImageByteFormat.png);
+    final bytes = byteData!.buffer.asUint8List();
+
+    return BitmapDescriptor.bytes(bytes);
+  }
+
+  Future<BitmapDescriptor> _createCustomMyLocationMarker(double radius) async {
+    final recorder = ui.PictureRecorder();
+    final canvas = Canvas(recorder);
+
+    final outerCirclePaint = Paint()
+      ..color = HighlightColor.light.color
+      ..style = PaintingStyle.fill;
+    canvas.drawCircle(
+      Offset(radius * 2, radius * 2),
+      radius * 2,
+      outerCirclePaint,
+    );
+
+    final middleCirclePaint = Paint()
+      ..color = LightColor.lightest.color
+      ..style = PaintingStyle.fill;
+    canvas.drawCircle(
+      Offset(radius * 2, radius * 2),
+      radius,
+      middleCirclePaint,
+    );
+
+    final innerCirclePaint = Paint()..color = HighlightColor.darkest.color;
+    canvas.drawCircle(
+      Offset(radius * 2, radius * 2),
+      radius * 0.5,
+      innerCirclePaint,
+    );
+
+    final picture = recorder.endRecording();
+    final img = await picture.toImage(
+      (radius * 4).toInt(),
+      (radius * 4).toInt(),
+    );
+    final byteData = await img.toByteData(format: ui.ImageByteFormat.png);
+    final bytes = byteData!.buffer.asUint8List();
+
+    return BitmapDescriptor.bytes(bytes);
+  }
+
   Future<void> _initializeMarker() async {
-    _smallMarkerIcon = await _createCustomPinMarker(MapMarkerSize.small.size);
-    _mediumMarkerIcon = await _createCustomPinMarker(MapMarkerSize.medium.size);
-    _largeMarkerIcon = await _createCustomPinMarker(MapMarkerSize.large.size);
+    _smallMarkerSelectedIcon = await _createCustomPinMarker(
+      MapMarkerSize.small.size,
+      true,
+    );
+    _mediumMarkerSelectedIcon = await _createCustomPinMarker(
+      MapMarkerSize.medium.size,
+      true,
+    );
+    _largeMarkerSelectedIcon = await _createCustomPinMarker(
+      MapMarkerSize.large.size,
+      true,
+    );
+    _smallMarkerDeselectedIcon = await _createCustomPinMarker(
+      MapMarkerSize.small.size,
+      false,
+    );
+    _mediumMarkerDeselectedIcon = await _createCustomPinMarker(
+      MapMarkerSize.medium.size,
+      false,
+    );
+    _largeMarkerDeselectedIcon = await _createCustomPinMarker(
+      MapMarkerSize.large.size,
+      false,
+    );
     _locationMarkerIcon = await _createCustomMyLocationMarker(
       widget.userLocationMarkerSize.size,
     );
-    setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
     final markersList = <Marker>[];
 
-    // Add custom location marker
     if (_locationMarkerIcon != null &&
         _userLocation != null &&
         widget.showUserLocation) {
@@ -223,7 +260,6 @@ class _AppMapState extends State<AppMap> {
       );
     }
 
-    // Add other markers
     if (widget.markers != null) {
       markersList.addAll(
         List.generate(widget.markers!.length, (index) {
@@ -231,13 +267,19 @@ class _AppMapState extends State<AppMap> {
           BitmapDescriptor? icon;
           switch (marker.size) {
             case MapMarkerSize.small:
-              icon = _smallMarkerIcon;
+              icon = marker.isSelected
+                  ? _smallMarkerSelectedIcon
+                  : _smallMarkerDeselectedIcon;
               break;
             case MapMarkerSize.medium:
-              icon = _mediumMarkerIcon;
+              icon = marker.isSelected
+                  ? _mediumMarkerSelectedIcon
+                  : _mediumMarkerDeselectedIcon;
               break;
             case MapMarkerSize.large:
-              icon = _largeMarkerIcon;
+              icon = marker.isSelected
+                  ? _largeMarkerSelectedIcon
+                  : _largeMarkerDeselectedIcon;
               break;
           }
 
@@ -250,6 +292,11 @@ class _AppMapState extends State<AppMap> {
                 title: marker.title,
                 snippet: marker.description,
               ),
+              onTap: () {
+                if (widget.onMarkerTapped != null) {
+                  widget.onMarkerTapped!(marker);
+                }
+              },
             );
           }
 
@@ -434,6 +481,7 @@ class AppMarker {
   final String id;
   final LatLng position;
   final MapMarkerSize size;
+  final bool isSelected;
   final String? title;
   final String? description;
 
@@ -441,6 +489,7 @@ class AppMarker {
     required this.id,
     required this.position,
     this.size = MapMarkerSize.small,
+    this.isSelected = false,
     this.title,
     this.description,
   });

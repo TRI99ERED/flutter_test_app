@@ -48,11 +48,7 @@ class _FriendsState extends State<Friends> {
         children: [
           AppContentSwitcher(
             sectionCount: 3,
-            sectionTitles: [
-              'Friends',
-              'Incoming requests',
-              'Outgoing requests',
-            ],
+            sectionTitles: ['Friends', 'Incoming', 'Outgoing'],
             selectedIndex: _sectionIndex.value,
             onSectionSelected: (value) {
               _sectionIndex.value = value;
@@ -263,7 +259,7 @@ class _FriendsSectionState extends State<_FriendsSection> {
                   stream: stream,
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
-                      return const SizedBox(height: 72, child: AppLoader());
+                      return const SizedBox.shrink();
                     } else if (snapshot.hasError) {
                       return ErrorState(
                         message:
@@ -284,7 +280,9 @@ class _FriendsSectionState extends State<_FriendsSection> {
                           builder: (context, editPressed, child) {
                             return AppCardSmall(
                               title: friend.name,
-                              subtitle: '@${friend.handle}',
+                              subtitle: friend.handle.isNotEmpty
+                                  ? '@${friend.handle}'
+                                  : null,
                               avatar: AppAvatar.avatarOrPlaceholder(
                                 friend,
                                 AvatarSize.small,

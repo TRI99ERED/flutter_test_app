@@ -28,6 +28,7 @@ class Project {
   final String groupChatId;
   final DateTime createdAt;
   final DateTime lastUpdated;
+  final DateTime deadline;
 
   const Project({
     required this.id,
@@ -39,6 +40,7 @@ class Project {
     this.groupChatId = '',
     required this.createdAt,
     required this.lastUpdated,
+    required this.deadline,
   });
 
   factory Project.fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) {
@@ -57,6 +59,7 @@ class Project {
       createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
       lastUpdated:
           (data['lastUpdated'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      deadline: (data['deadline'] as Timestamp?)?.toDate() ?? DateTime.now(),
     );
   }
 
@@ -70,6 +73,7 @@ class Project {
     String? groupChatId,
     DateTime? createdAt,
     DateTime? lastUpdated,
+    DateTime? deadline,
   }) {
     return Project(
       id: id ?? this.id,
@@ -81,6 +85,7 @@ class Project {
       groupChatId: groupChatId ?? this.groupChatId,
       createdAt: createdAt ?? this.createdAt,
       lastUpdated: lastUpdated ?? this.lastUpdated,
+      deadline: deadline ?? this.deadline,
     );
   }
 
@@ -97,7 +102,8 @@ class Project {
         other.status == status &&
         other.groupChatId == groupChatId &&
         other.createdAt == createdAt &&
-        other.lastUpdated == lastUpdated;
+        other.lastUpdated == lastUpdated &&
+        other.deadline == deadline;
   }
 
   @override
@@ -112,6 +118,7 @@ class Project {
       groupChatId,
       createdAt,
       lastUpdated,
+      deadline,
     );
   }
 
@@ -125,6 +132,7 @@ class Project {
       'groupChatId': groupChatId,
       'createdAt': Timestamp.fromDate(createdAt),
       'lastUpdated': Timestamp.fromDate(lastUpdated),
+      'deadline': Timestamp.fromDate(deadline),
     };
   }
 }

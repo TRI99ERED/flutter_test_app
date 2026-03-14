@@ -40,39 +40,39 @@ class AppDropdown extends StatefulWidget {
 }
 
 class _AppDropdownState extends State<AppDropdown> {
-  late int _selectedIndex;
-  String? _validatorErrorText;
-  bool _isSelected = false;
+  late final ValueNotifier<int> _selectedIndex;
+  late final ValueNotifier<String?> _validatorErrorText;
+  late final ValueNotifier<bool> _isSelected;
+  late final ValueNotifier<String> _searchQuery;
   late FocusNode _focusNode;
   OverlayEntry? _overlayEntry;
   final GlobalKey _textFieldKey = GlobalKey();
   final LayerLink _layerLink = LayerLink();
-  String _searchQuery = '';
   late TextEditingController _internalController;
 
-  String? _getDisplayErrorText() {
+  String? _getDisplayErrorText(String? validatorErrorText) {
     final customError = widget.errorText;
     if (customError != null && customError.isNotEmpty) {
       return customError;
     }
-    return _validatorErrorText;
+    return validatorErrorText;
   }
 
-  List<DropdownMenuEntry<String>> _getFilteredItems() {
-    if (_searchQuery.isEmpty) {
+  List<DropdownMenuEntry<String>> _getFilteredItems(String searchQuery) {
+    if (searchQuery.isEmpty) {
       return widget.items;
     }
     return widget.items
         .where(
           (item) =>
-              item.label.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-              item.value.toLowerCase().contains(_searchQuery.toLowerCase()),
+              item.label.toLowerCase().contains(searchQuery.toLowerCase()) ||
+              item.value.toLowerCase().contains(searchQuery.toLowerCase()),
         )
         .toList();
   }
 
   void _rebuildOverlay() {
-    if (_isSelected) {
+    if (_isSelected.value) {
       _hideOverlay();
       _showOverlay();
     }
@@ -82,15 +82,17 @@ class _AppDropdownState extends State<AppDropdown> {
   void initState() {
     super.initState();
     _focusNode = FocusNode();
-    _selectedIndex = widget.selectedIndex;
+    _selectedIndex = ValueNotifier<int>(widget.selectedIndex);
+    _validatorErrorText = ValueNotifier<String?>(null);
+    _isSelected = ValueNotifier<bool>(false);
+    _searchQuery = ValueNotifier<String>('');
     _internalController = TextEditingController();
 
     final controller = widget.controller ?? _internalController;
     if (widget.text != null) {
       controller.text = widget.text!;
-      _searchQuery = widget.text!;
-
-      _validatorErrorText = widget.validator?.call(widget.text!);
+      _searchQuery.value = widget.text!;
+      _validatorErrorText.value = widget.validator?.call(widget.text!);
     }
   }
 
@@ -161,61 +163,72 @@ class _AppDropdownState extends State<AppDropdown> {
                     maxHeight: 250.0,
                     maxWidth: size.width,
                   ),
-                  child: _getFilteredItems().isEmpty
-                      ? Center(
-                          child: Padding(
-                            padding: EdgeInsets.symmetric(
-                              vertical: spacing8,
-                              horizontal: spacing16,
-                            ),
-                            child: Text(
-                              'No options found',
-                              style: TextStyle(
-                                fontSize: bSSize,
-                                fontWeight: bSWeight,
-                                color: DarkColor.light.color,
+                  child: ValueListenableBuilder<String>(
+                    valueListenable: _searchQuery,
+                    builder: (context, searchQuery, _) {
+                      final filteredItems = _getFilteredItems(searchQuery);
+                      return filteredItems.isEmpty
+                          ? Center(
+                              child: Padding(
+                                padding: EdgeInsets.symmetric(
+                                  vertical: spacing8,
+                                  horizontal: spacing16,
+                                ),
+                                child: Text(
+                                  'No options found',
+                                  style: TextStyle(
+                                    fontSize: bSSize,
+                                    fontWeight: bSWeight,
+                                    color: DarkColor.light.color,
+                                  ),
+                                ),
                               ),
-                            ),
-                          ),
-                        )
-                      : ListView(
-                          padding: EdgeInsets.all(spacing8),
-                          shrinkWrap: true,
-                          children: _getFilteredItems().map((entry) {
-                            final isSelected =
-                                widget.items.indexOf(entry) == _selectedIndex;
-                            return Padding(
-                              padding: EdgeInsets.symmetric(vertical: spacing2),
-                              child: _AppDropdownOption(
-                                value: entry.label,
-                                selected: isSelected,
-                                onPressed: () {
-                                  setState(() {
-                                    _selectedIndex = widget.items.indexOf(
-                                      entry,
-                                    );
-                                    _searchQuery = '';
-                                  });
-                                  _hideOverlay();
-                                  _focusNode.unfocus();
+                            )
+                          : ValueListenableBuilder<int>(
+                              valueListenable: _selectedIndex,
+                              builder: (context, selectedIndex, _) {
+                                return ListView(
+                                  padding: EdgeInsets.all(spacing8),
+                                  shrinkWrap: true,
+                                  children: filteredItems.map((entry) {
+                                    final isSelected =
+                                        widget.items.indexOf(entry) ==
+                                        selectedIndex;
+                                    return Padding(
+                                      padding: EdgeInsets.symmetric(
+                                        vertical: spacing2,
+                                      ),
+                                      child: _AppDropdownOption(
+                                        value: entry.label,
+                                        selected: isSelected,
+                                        onPressed: () {
+                                          _selectedIndex.value = widget.items
+                                              .indexOf(entry);
+                                          _searchQuery.value = '';
+                                          _hideOverlay();
+                                          _focusNode.unfocus();
 
-                                  WidgetsBinding.instance.addPostFrameCallback((
-                                    _,
-                                  ) {
-                                    if (mounted) {
-                                      _effectiveController.clear();
-                                      widget.onSelected?.call((
-                                        entry.value,
-                                        _selectedIndex,
-                                      ));
-                                      _effectiveController.text = entry.label;
-                                    }
-                                  });
-                                },
-                              ),
+                                          WidgetsBinding.instance
+                                              .addPostFrameCallback((_) {
+                                                if (mounted) {
+                                                  _effectiveController.clear();
+                                                  widget.onSelected?.call((
+                                                    entry.value,
+                                                    _selectedIndex.value,
+                                                  ));
+                                                  _effectiveController.text =
+                                                      entry.label;
+                                                }
+                                              });
+                                        },
+                                      ),
+                                    );
+                                  }).toList(),
+                                );
+                              },
                             );
-                          }).toList(),
-                        ),
+                    },
+                  ),
                 ),
               ),
             ),
@@ -225,18 +238,14 @@ class _AppDropdownState extends State<AppDropdown> {
     );
 
     Overlay.of(context).insert(_overlayEntry!);
-    setState(() {
-      _isSelected = true;
-    });
+    _isSelected.value = true;
   }
 
   void _hideOverlay() {
     _overlayEntry?.remove();
     _overlayEntry = null;
     if (mounted) {
-      setState(() {
-        _isSelected = false;
-      });
+      _isSelected.value = false;
     }
   }
 
@@ -245,6 +254,10 @@ class _AppDropdownState extends State<AppDropdown> {
     _overlayEntry?.remove();
     _overlayEntry = null;
     _focusNode.dispose();
+    _selectedIndex.dispose();
+    _validatorErrorText.dispose();
+    _isSelected.dispose();
+    _searchQuery.dispose();
     if (widget.controller == null) {
       _internalController.dispose();
     }
@@ -253,135 +266,157 @@ class _AppDropdownState extends State<AppDropdown> {
 
   @override
   Widget build(BuildContext context) {
-    final displayErrorText = _getDisplayErrorText();
-
-    return Stack(
-      children: [
-        if (_isSelected)
-          Positioned.fill(
-            child: GestureDetector(
-              behavior: HitTestBehavior.translucent,
-              onTap: () {
-                _hideOverlay();
-                _focusNode.unfocus();
-              },
-            ),
-          ),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          spacing: 8,
-          children: [
-            if (widget.title != null)
-              Text(
-                widget.title!,
-                style: TextStyle(
-                  fontSize: h5Size,
-                  fontWeight: h5Weight,
-                  color: widget.enabled
-                      ? DarkColor.darkest.color
-                      : DarkColor.lightest.color,
-                ),
-              ),
-            CompositedTransformTarget(
-              link: _layerLink,
-              child: TextFormField(
-                key: _textFieldKey,
-                focusNode: _focusNode,
-                controller: _effectiveController,
-                onTap: widget.enabled ? () => _showOverlay() : null,
-                onChanged: (value) {
-                  setState(() {
-                    _searchQuery = value;
-                  });
-                  _rebuildOverlay();
-                  final nextError = widget.validator?.call(value);
-                  if (nextError != _validatorErrorText) {
-                    setState(() {
-                      _validatorErrorText = nextError;
-                    });
-                  }
-                },
-                validator: (value) => widget.validator?.call(value),
-                autovalidateMode: widget.autovalidateMode,
-                enabled: widget.enabled,
-                cursorColor: HighlightColor.darkest.color,
-                cursorErrorColor: ErrorColor.dark.color,
-                style: TextStyle(
-                  fontSize: bMSize,
-                  fontWeight: bMWeight,
-                  color: widget.enabled
-                      ? DarkColor.darkest.color
-                      : DarkColor.lightest.color,
-                ),
-                decoration: InputDecoration(
-                  hintText: widget.placeholder,
-                  hintStyle: TextStyle(
-                    fontSize: bMSize,
-                    fontWeight: bMWeight,
-                    color: DarkColor.lightest.color,
-                  ),
-                  errorText: displayErrorText == null ? null : '',
-                  errorStyle: TextStyle(fontSize: 0, height: 0),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.all(Radius.circular(12)),
-                    borderSide: BorderSide(
-                      color: LightColor.darkest.color,
-                      width: 2,
+    return ValueListenableBuilder<bool>(
+      valueListenable: _isSelected,
+      builder: (context, isSelected, _) {
+        return ValueListenableBuilder<String?>(
+          valueListenable: _validatorErrorText,
+          builder: (context, validatorErrorText, _) {
+            final displayErrorText = _getDisplayErrorText(validatorErrorText);
+            return Stack(
+              children: [
+                if (isSelected)
+                  Positioned.fill(
+                    child: GestureDetector(
+                      behavior: HitTestBehavior.translucent,
+                      onTap: () {
+                        _hideOverlay();
+                        _focusNode.unfocus();
+                      },
                     ),
                   ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.all(Radius.circular(12)),
-                    borderSide: BorderSide(
-                      color: HighlightColor.darkest.color,
-                      width: 2,
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  spacing: 8,
+                  children: [
+                    if (widget.title != null)
+                      Text(
+                        widget.title!,
+                        style: TextStyle(
+                          fontSize: h5Size,
+                          fontWeight: h5Weight,
+                          color: widget.enabled
+                              ? DarkColor.darkest.color
+                              : DarkColor.lightest.color,
+                        ),
+                      ),
+                    CompositedTransformTarget(
+                      link: _layerLink,
+                      child: ValueListenableBuilder<String>(
+                        valueListenable: _searchQuery,
+                        builder: (context, searchQuery, _) {
+                          return TextFormField(
+                            key: _textFieldKey,
+                            focusNode: _focusNode,
+                            controller: _effectiveController,
+                            onTap: widget.enabled ? () => _showOverlay() : null,
+                            onChanged: (value) {
+                              _searchQuery.value = value;
+                              _rebuildOverlay();
+                              final nextError = widget.validator?.call(value);
+                              if (nextError != _validatorErrorText.value) {
+                                _validatorErrorText.value = nextError;
+                              }
+                            },
+                            keyboardType: TextInputType.text,
+                            textInputAction: TextInputAction.search,
+                            validator: (value) => widget.validator?.call(value),
+                            autovalidateMode: widget.autovalidateMode,
+                            enabled: widget.enabled,
+                            cursorColor: HighlightColor.darkest.color,
+                            cursorErrorColor: ErrorColor.dark.color,
+                            style: TextStyle(
+                              fontSize: bMSize,
+                              fontWeight: bMWeight,
+                              color: widget.enabled
+                                  ? DarkColor.darkest.color
+                                  : DarkColor.lightest.color,
+                            ),
+                            decoration: InputDecoration(
+                              hintText: widget.placeholder,
+                              hintStyle: TextStyle(
+                                fontSize: bMSize,
+                                fontWeight: bMWeight,
+                                color: DarkColor.lightest.color,
+                              ),
+                              errorText: displayErrorText == null ? null : '',
+                              errorStyle: TextStyle(fontSize: 0, height: 0),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.all(
+                                  Radius.circular(12),
+                                ),
+                                borderSide: BorderSide(
+                                  color: LightColor.darkest.color,
+                                  width: 2,
+                                ),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.all(
+                                  Radius.circular(12),
+                                ),
+                                borderSide: BorderSide(
+                                  color: HighlightColor.darkest.color,
+                                  width: 2,
+                                ),
+                              ),
+                              errorBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.all(
+                                  Radius.circular(12),
+                                ),
+                                borderSide: BorderSide(
+                                  color: ErrorColor.medium.color,
+                                  width: 2,
+                                ),
+                              ),
+                              focusedErrorBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.all(
+                                  Radius.circular(12),
+                                ),
+                                borderSide: BorderSide(
+                                  color: ErrorColor.dark.color,
+                                  width: 2,
+                                ),
+                              ),
+                              fillColor: LightColor.darkest.color,
+                              filled: !widget.enabled,
+                              suffixIcon: Icon(
+                                isSelected
+                                    ? AppIcons.arrowUp
+                                    : AppIcons.arrowDown,
+                                size: 12,
+                                color: DarkColor.lightest.color,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
                     ),
-                  ),
-                  errorBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.all(Radius.circular(12)),
-                    borderSide: BorderSide(
-                      color: ErrorColor.medium.color,
-                      width: 2,
-                    ),
-                  ),
-                  focusedErrorBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.all(Radius.circular(12)),
-                    borderSide: BorderSide(
-                      color: ErrorColor.dark.color,
-                      width: 2,
-                    ),
-                  ),
-                  fillColor: LightColor.darkest.color,
-                  filled: !widget.enabled,
-                  suffixIcon: Icon(
-                    _isSelected ? AppIcons.arrowUp : AppIcons.arrowDown,
-                    size: 12,
-                    color: DarkColor.lightest.color,
-                  ),
+                    if (displayErrorText != null && displayErrorText.isNotEmpty)
+                      Text(
+                        displayErrorText,
+                        style: TextStyle(
+                          fontSize: bSSize,
+                          fontWeight: bSWeight,
+                          color: ErrorColor.dark.color,
+                        ),
+                      ),
+                    if (widget.supportText != null &&
+                        (displayErrorText == null || displayErrorText.isEmpty))
+                      Text(
+                        widget.supportText!,
+                        style: TextStyle(
+                          fontSize: bSSize,
+                          fontWeight: bSWeight,
+                          color: DarkColor.lightest.color,
+                        ),
+                      ),
+                  ],
                 ),
-              ),
-            ),
-            if (displayErrorText != null && displayErrorText.isNotEmpty)
-              Text(
-                displayErrorText,
-                style: TextStyle(
-                  fontSize: bSSize,
-                  fontWeight: bSWeight,
-                  color: ErrorColor.dark.color,
-                ),
-              ),
-            if (widget.supportText != null &&
-                (displayErrorText == null || displayErrorText.isEmpty))
-              Text(
-                widget.supportText!,
-                style: TextStyle(
-                  fontSize: bSSize,
-                  fontWeight: bSWeight,
-                  color: DarkColor.lightest.color,
-                ),
-              ),
-          ],
-        ),
-      ],
+              ],
+            );
+          },
+        );
+      },
     );
   }
 }

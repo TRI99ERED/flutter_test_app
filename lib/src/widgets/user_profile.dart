@@ -100,14 +100,15 @@ class _UserProfileState extends State<UserProfile> {
                 color: DarkColor.darkest.color,
               ),
             ),
-            Text(
-              '@${widget.user.handle}',
-              style: TextStyle(
-                fontSize: bMSize,
-                fontWeight: bMWeight,
-                color: DarkColor.darkest.color,
+            if (widget.user.handle.isNotEmpty)
+              Text(
+                '@${widget.user.handle}',
+                style: TextStyle(
+                  fontSize: bMSize,
+                  fontWeight: bMWeight,
+                  color: DarkColor.darkest.color,
+                ),
               ),
-            ),
           ],
         ),
       ],
@@ -179,7 +180,7 @@ class _UserProfileState extends State<UserProfile> {
                 controller: _handleController,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Handle cannot be empty';
+                    return null;
                   }
                   if (value.contains(' ')) {
                     return 'Handle cannot contain spaces';

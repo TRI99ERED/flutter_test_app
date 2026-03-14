@@ -37,9 +37,7 @@ class _AppStepperState extends State<AppStepper> {
   void didUpdateWidget(AppStepper oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.currentStep != oldWidget.currentStep) {
-      setState(() {
-        _currentStep = widget.currentStep;
-      });
+      _currentStep = widget.currentStep;
     }
   }
 
@@ -55,9 +53,7 @@ class _AppStepperState extends State<AppStepper> {
           number: index + 1,
           onPressed: widget.onStepTapped != null
               ? () {
-                  setState(() {
-                    _currentStep = index;
-                  });
+                  _currentStep = index;
                   widget.onStepTapped!(index);
                 }
               : null,

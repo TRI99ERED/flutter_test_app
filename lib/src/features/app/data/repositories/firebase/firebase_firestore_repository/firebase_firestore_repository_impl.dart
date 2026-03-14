@@ -182,6 +182,7 @@ class FirebaseFirestoreRepositoryImpl implements IFirebaseFirestoreRepository {
     String projectName,
     String projectDescription,
     List<String> participants,
+    DateTime deadline,
   ) async {
     try {
       final doc = _projects.doc();
@@ -195,6 +196,7 @@ class FirebaseFirestoreRepositoryImpl implements IFirebaseFirestoreRepository {
         status: ProjectStatus.todo,
         createdAt: DateTime.now(),
         lastUpdated: DateTime.now(),
+        deadline: deadline,
       );
       await doc.set(project.toFirestore());
       return project;
@@ -297,6 +299,13 @@ class FirebaseFirestoreRepositoryImpl implements IFirebaseFirestoreRepository {
     } catch (e) {
       throw Exception('Failed to delete project: $e');
     }
+  }
+
+  @override
+  Future<bool> doesUserExist(String id) {
+    return _users.doc(id).get().then((doc) => doc.exists).catchError((e) {
+      throw Exception('Failed to check if user exists: $e');
+    });
   }
 
   @override

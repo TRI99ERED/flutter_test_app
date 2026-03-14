@@ -74,8 +74,14 @@ class AppListItem extends StatelessWidget {
       onPressed: switch (control) {
         AppListItemControl.smallButton => onPressed,
         AppListItemControl.largeButton => onPressed,
-        AppListItemControl.toggle => () => onChanged?.call(!(value ?? false)),
-        AppListItemControl.checkbox => () => onChanged?.call(!(value ?? false)),
+        AppListItemControl.toggle => () {
+          onPressed?.call();
+          onChanged?.call(!(value ?? false));
+        },
+        AppListItemControl.checkbox => () {
+          onPressed?.call();
+          onChanged?.call(!(value ?? false));
+        },
         AppListItemControl.badge => onPressed,
         AppListItemControl.none => onPressed,
       },

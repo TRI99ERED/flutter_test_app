@@ -48,18 +48,18 @@ class AppTextArea extends StatefulWidget {
 }
 
 class _AppTextAreaState extends State<AppTextArea> {
-  String? _validatorErrorText;
+  late final ValueNotifier<String?> _validatorErrorText;
   late TextEditingController _internalController;
 
   TextEditingController get _effectiveController =>
       widget.controller ?? _internalController;
 
-  String? _getDisplayErrorText() {
+  String? _getDisplayErrorText(String? validatorErrorText) {
     final customError = widget.errorText;
     if (customError != null && customError.isNotEmpty) {
       return customError;
     }
-    return _validatorErrorText;
+    return validatorErrorText;
   }
 
   void _syncValidatorError(String? value) {
@@ -67,14 +67,12 @@ class _AppTextAreaState extends State<AppTextArea> {
       return;
     }
     final nextError = widget.validator!(value);
-    if (nextError != _validatorErrorText && mounted) {
+    if (nextError != _validatorErrorText.value && mounted) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) {
           return;
         }
-        setState(() {
-          _validatorErrorText = nextError;
-        });
+        _validatorErrorText.value = nextError;
       });
     }
   }
@@ -82,11 +80,12 @@ class _AppTextAreaState extends State<AppTextArea> {
   @override
   void initState() {
     super.initState();
+    _validatorErrorText = ValueNotifier<String?>(null);
     _internalController = TextEditingController();
 
     if (widget.text != null) {
       _effectiveController.text = widget.text!;
-      _validatorErrorText = widget.validator?.call(widget.text);
+      _validatorErrorText.value = widget.validator?.call(widget.text);
     }
   }
 
@@ -101,6 +100,7 @@ class _AppTextAreaState extends State<AppTextArea> {
 
   @override
   void dispose() {
+    _validatorErrorText.dispose();
     if (widget.controller == null) {
       _internalController.dispose();
     }
@@ -109,105 +109,118 @@ class _AppTextAreaState extends State<AppTextArea> {
 
   @override
   Widget build(BuildContext context) {
-    final displayErrorText = _getDisplayErrorText();
+    return ValueListenableBuilder<String?>(
+      valueListenable: _validatorErrorText,
+      builder: (context, validatorErrorText, _) {
+        final displayErrorText = _getDisplayErrorText(validatorErrorText);
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      spacing: 8,
-      children: [
-        if (widget.title != null)
-          Text(
-            widget.title!,
-            style: TextStyle(
-              fontSize: h5Size,
-              fontWeight: h5Weight,
-              color: widget.enabled
-                  ? DarkColor.darkest.color
-                  : DarkColor.lightest.color,
-            ),
-          ),
-        TextFormField(
-          controller: _effectiveController,
-          onChanged: (value) {
-            final nextError = widget.validator?.call(value);
-            if (nextError != _validatorErrorText) {
-              setState(() {
-                _validatorErrorText = nextError;
-              });
-            }
-            widget.onChanged?.call(value);
-          },
-          onFieldSubmitted: widget.onSubmitted,
-          validator: (value) {
-            final result = widget.validator?.call(value);
-            _syncValidatorError(value);
-            return result;
-          },
-          autovalidateMode: widget.autovalidateMode,
-          maxLines: widget.maxLines,
-          enabled: widget.enabled,
-          cursorColor: HighlightColor.darkest.color,
-          cursorErrorColor: ErrorColor.dark.color,
-          style: TextStyle(
-            fontSize: bMSize,
-            fontWeight: bMWeight,
-            color: widget.enabled
-                ? DarkColor.darkest.color
-                : DarkColor.lightest.color,
-          ),
-          decoration: InputDecoration(
-            hintText: widget.placeholder,
-            hintStyle: TextStyle(
-              fontSize: bMSize,
-              fontWeight: bMWeight,
-              color: DarkColor.lightest.color,
-            ),
-            errorText: displayErrorText == null ? null : '',
-            errorStyle: TextStyle(fontSize: 0, height: 0),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.all(Radius.circular(12)),
-              borderSide: BorderSide(color: LightColor.darkest.color, width: 2),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.all(Radius.circular(12)),
-              borderSide: BorderSide(
-                color: HighlightColor.darkest.color,
-                width: 2,
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          spacing: 8,
+          children: [
+            if (widget.title != null)
+              Text(
+                widget.title!,
+                style: TextStyle(
+                  fontSize: h5Size,
+                  fontWeight: h5Weight,
+                  color: widget.enabled
+                      ? DarkColor.darkest.color
+                      : DarkColor.lightest.color,
+                ),
+              ),
+            TextFormField(
+              controller: _effectiveController,
+              onChanged: (value) {
+                final nextError = widget.validator?.call(value);
+                if (nextError != _validatorErrorText.value) {
+                  _validatorErrorText.value = nextError;
+                }
+                widget.onChanged?.call(value);
+              },
+              onFieldSubmitted: widget.onSubmitted,
+              validator: (value) {
+                final result = widget.validator?.call(value);
+                _syncValidatorError(value);
+                return result;
+              },
+              autovalidateMode: widget.autovalidateMode,
+              maxLines: widget.maxLines,
+              enabled: widget.enabled,
+              cursorColor: HighlightColor.darkest.color,
+              cursorErrorColor: ErrorColor.dark.color,
+              textInputAction: TextInputAction.newline,
+              style: TextStyle(
+                fontSize: bMSize,
+                fontWeight: bMWeight,
+                color: widget.enabled
+                    ? DarkColor.darkest.color
+                    : DarkColor.lightest.color,
+              ),
+              decoration: InputDecoration(
+                hintText: widget.placeholder,
+                hintStyle: TextStyle(
+                  fontSize: bMSize,
+                  fontWeight: bMWeight,
+                  color: DarkColor.lightest.color,
+                ),
+                errorText: displayErrorText == null ? null : '',
+                errorStyle: TextStyle(fontSize: 0, height: 0),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(12)),
+                  borderSide: BorderSide(
+                    color: LightColor.darkest.color,
+                    width: 2,
+                  ),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(12)),
+                  borderSide: BorderSide(
+                    color: HighlightColor.darkest.color,
+                    width: 2,
+                  ),
+                ),
+                errorBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(12)),
+                  borderSide: BorderSide(
+                    color: ErrorColor.medium.color,
+                    width: 2,
+                  ),
+                ),
+                focusedErrorBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(12)),
+                  borderSide: BorderSide(
+                    color: ErrorColor.dark.color,
+                    width: 2,
+                  ),
+                ),
+                fillColor: LightColor.darkest.color,
+                filled: !widget.enabled,
+                prefixText: widget.unit != null ? '${widget.unit} ' : null,
               ),
             ),
-            errorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.all(Radius.circular(12)),
-              borderSide: BorderSide(color: ErrorColor.medium.color, width: 2),
-            ),
-            focusedErrorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.all(Radius.circular(12)),
-              borderSide: BorderSide(color: ErrorColor.dark.color, width: 2),
-            ),
-            fillColor: LightColor.darkest.color,
-            filled: !widget.enabled,
-            prefixText: widget.unit != null ? '${widget.unit} ' : null,
-          ),
-        ),
-        if (displayErrorText != null && displayErrorText.isNotEmpty)
-          Text(
-            displayErrorText,
-            style: TextStyle(
-              fontSize: bSSize,
-              fontWeight: bSWeight,
-              color: ErrorColor.dark.color,
-            ),
-          ),
-        if (widget.supportText != null &&
-            (displayErrorText == null || displayErrorText.isEmpty))
-          Text(
-            widget.supportText!,
-            style: TextStyle(
-              fontSize: bSSize,
-              fontWeight: bSWeight,
-              color: DarkColor.lightest.color,
-            ),
-          ),
-      ],
+            if (displayErrorText != null && displayErrorText.isNotEmpty)
+              Text(
+                displayErrorText,
+                style: TextStyle(
+                  fontSize: bSSize,
+                  fontWeight: bSWeight,
+                  color: ErrorColor.dark.color,
+                ),
+              ),
+            if (widget.supportText != null &&
+                (displayErrorText == null || displayErrorText.isEmpty))
+              Text(
+                widget.supportText!,
+                style: TextStyle(
+                  fontSize: bSSize,
+                  fontWeight: bSWeight,
+                  color: DarkColor.lightest.color,
+                ),
+              ),
+          ],
+        );
+      },
     );
   }
 }

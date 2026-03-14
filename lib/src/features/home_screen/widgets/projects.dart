@@ -276,7 +276,7 @@ class _ProjectsSectionState extends State<_ProjectsSection> {
                   builder: (context, asyncSnapshot) {
                     if (asyncSnapshot.connectionState ==
                         ConnectionState.waiting) {
-                      return const SizedBox(width: 32, child: AppLoader());
+                      return const AppFilter(filteredItemCount: 0);
                     } else if (asyncSnapshot.hasError) {
                       return const AppFilter(filteredItemCount: 0);
                     }

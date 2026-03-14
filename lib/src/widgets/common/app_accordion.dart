@@ -26,9 +26,7 @@ class _AppAccordionState extends State<AppAccordion> {
   bool _isExpanded = false;
 
   void _handleExpansionChanged(bool expanded) {
-    setState(() {
-      _isExpanded = expanded;
-    });
+    _isExpanded = expanded;
     if (widget.onExpansionChanged != null) {
       widget.onExpansionChanged!(expanded);
     }

@@ -73,7 +73,7 @@ GoRouter generateRouter(AppController appController) {
         },
       ),
     ],
-    redirect: (context, state) {
+    redirect: (context, state) async {
       final isAuthorized = context.appState.isAuthorized;
       final location = state.matchedLocation;
 

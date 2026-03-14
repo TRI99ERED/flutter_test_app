@@ -8,6 +8,7 @@ import 'package:test_app/src/features/app/data/models/project_model.dart';
 import 'package:test_app/src/features/app/data/models/user_model.dart';
 import 'package:test_app/src/widgets/common/app_avatar.dart';
 import 'package:test_app/src/widgets/common/app_button.dart';
+import 'package:test_app/src/widgets/common/app_calendar.dart';
 import 'package:test_app/src/widgets/common/app_divider.dart';
 import 'package:test_app/src/widgets/common/app_list_item.dart';
 import 'package:test_app/src/widgets/common/app_loader.dart';
@@ -129,6 +130,17 @@ class ProjectScreen extends StatelessWidget {
             _buildParticipantsRow(context, project),
             const SizedBox(height: spacing8),
             _buildParticipantsList(context, project),
+            const SizedBox(height: spacing24),
+            Text(
+              'Deadline:',
+              style: TextStyle(
+                fontSize: h3Size,
+                fontWeight: h3Weight,
+                color: DarkColor.darkest.color,
+              ),
+            ),
+            const SizedBox(height: spacing8),
+            _buildDeadlineCalendar(context, project),
             if (project.status == ProjectStatus.finished) ...[
               const SizedBox(height: spacing24),
               const AppDivider(),
@@ -161,7 +173,14 @@ class ProjectScreen extends StatelessWidget {
       builder: (context, asyncSnapshot) {
         final owner = asyncSnapshot.data;
         if (owner == null) {
-          return Text('Created by unknown');
+          return Text(
+            'Created by unknown',
+            style: TextStyle(
+              fontSize: bMSize,
+              fontWeight: bMWeight,
+              color: DarkColor.light.color,
+            ),
+          );
         }
         final user = context.appState.user as AuthorizedUser;
         return Row(
@@ -233,7 +252,9 @@ class ProjectScreen extends StatelessWidget {
           (c) => c.id == project.groupChatId,
         );
         return AppButtonPrimary(
-          text: 'Chat',
+          text: doesGroupChatExistForProject || project.participants.length == 2
+              ? 'Chat'
+              : 'Create Chat',
           onPressed: _getChatButtonOnPressed(
             context,
             project,
@@ -250,9 +271,10 @@ class ProjectScreen extends StatelessWidget {
     bool doesGroupChatExistForProject,
   ) {
     final user = context.appState.user as AuthorizedUser;
+    final appController = context.appController;
     if (project.participants.length == 2) {
       return () {
-        context.appController
+        appController
             .watchAllUsers()
             .firstWhere((users) {
               if (users == null || users.isEmpty) return false;
@@ -273,9 +295,8 @@ class ProjectScreen extends StatelessWidget {
               final otherUser = users.firstWhere(
                 (u) => project.participants.contains(u.id) && u.id != user.id,
               );
-              if (!context.mounted) return;
               final chat =
-                  (await context.appController
+                  (await appController
                           .watchDirectChatsForUser(user.id)
                           .firstWhere((chats) {
                             if (chats == null || chats.isEmpty) return false;
@@ -293,10 +314,9 @@ class ProjectScreen extends StatelessWidget {
                             c.participants.contains(user.id),
                       );
               if (chat == null) {
-                if (!context.mounted) return;
                 final participants = [otherUser.id, user.id];
                 final participantNames = [otherUser.name, user.name];
-                final newChat = await context.appController.createDirectChat(
+                final newChat = await appController.createDirectChat(
                   participants: participants,
                   chatName: participantNames.join(', '),
                 );
@@ -312,9 +332,7 @@ class ProjectScreen extends StatelessWidget {
         project.ownerId != user.id &&
         doesGroupChatExistForProject) {
       return () {
-        context.appController.watchGroupChatsForUser(user.id).first.then((
-          chats,
-        ) async {
+        appController.watchGroupChatsForUser(user.id).first.then((chats) async {
           Chat? matchingChat;
           if (project.groupChatId.isNotEmpty &&
               chats != null &&
@@ -338,9 +356,7 @@ class ProjectScreen extends StatelessWidget {
       };
     } else if (project.participants.length > 2 && project.ownerId == user.id) {
       return () {
-        context.appController.watchGroupChatsForUser(user.id).first.then((
-          chats,
-        ) async {
+        appController.watchGroupChatsForUser(user.id).first.then((chats) async {
           Chat? matchingChat;
           if (project.groupChatId.isNotEmpty &&
               chats != null &&
@@ -352,16 +368,15 @@ class ProjectScreen extends StatelessWidget {
             context.push('/chats/group/${matchingChat.id}');
             return;
           }
-          if (!context.mounted) return;
-          final chat = await context.appController.createGroupChat(
+          final chat = await appController.createGroupChat(
             chatName: 'Project "${project.name}"',
             participants: project.participants,
           );
-          if (!context.mounted) return;
-          context.push('/chats/group/${chat.id}');
-          await context.appController.updateProject(
+          await appController.updateProject(
             project.copyWith(groupChatId: chat.id),
           );
+          if (!context.mounted) return;
+          context.push('/chats/group/${chat.id}');
         });
       };
     }
@@ -394,11 +409,22 @@ class ProjectScreen extends StatelessWidget {
           children: users.map((user) {
             return AppListItem(
               title: user.name,
-              description: '@${user.handle}',
+              description: user.handle.isNotEmpty ? '@${user.handle}' : null,
               avatar: AppAvatar.avatarOrPlaceholder(user, AvatarSize.small),
             );
           }).toList(),
         );
+      },
+    );
+  }
+
+  Widget _buildDeadlineCalendar(BuildContext context, Project project) {
+    return AppCalendarMonthly(
+      initialDate: project.deadline,
+      immutable: true,
+      onDateSelected: (date) async {
+        final updatedProject = project.copyWith(deadline: date);
+        await context.appController.updateProject(updatedProject);
       },
     );
   }

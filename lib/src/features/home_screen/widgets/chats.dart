@@ -189,7 +189,7 @@ class _FilteredChatsList extends StatelessWidget {
                 builder: (context, asyncSnapshot) {
                   final chat = asyncSnapshot.data;
                   if (chat == null) {
-                    return const SizedBox(height: 72, child: AppLoader());
+                    return const SizedBox.shrink();
                   }
                   return _ChatListItem(
                     chat: chat,
@@ -206,7 +206,7 @@ class _FilteredChatsList extends StatelessWidget {
                 builder: (context, asyncSnapshot) {
                   final chat = asyncSnapshot.data;
                   if (chat == null) {
-                    return const SizedBox(height: 72, child: AppLoader());
+                    return const SizedBox.shrink();
                   }
                   return _ChatListItem(
                     chat: chat,
@@ -249,7 +249,7 @@ class _ChatListItem extends StatelessWidget {
         builder: (context, chatSnapshot) {
           final directChat = chatSnapshot.data;
           if (directChat == null) {
-            return const SizedBox(height: 72, child: AppLoader());
+            return const SizedBox.shrink();
           }
           final participants = directChat.participants;
           final otherParticipantId = participants.firstWhere(
@@ -362,7 +362,7 @@ class _ChatListItem extends StatelessWidget {
         builder: (context, chatSnapshot) {
           final groupChat = chatSnapshot.data;
           if (groupChat == null) {
-            return const SizedBox(height: 72, child: AppLoader());
+            return const SizedBox.shrink();
           }
           return StreamBuilder(
             stream: context.appController.watchMessagesForGroupChat(

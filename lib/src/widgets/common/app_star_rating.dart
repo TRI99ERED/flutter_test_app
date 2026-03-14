@@ -46,9 +46,7 @@ class _AppStarRatingState extends State<AppStarRating> {
           onPressed: widget.onRatingChanged != null
               ? () {
                   final newRating = index + 1 == _rating ? index : index + 1;
-                  setState(() {
-                    _rating = newRating;
-                  });
+                  _rating = newRating;
                   widget.onRatingChanged!(newRating);
                 }
               : null,

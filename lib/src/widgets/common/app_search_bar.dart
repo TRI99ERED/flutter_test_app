@@ -1,6 +1,9 @@
-﻿import 'package:flutter/material.dart';
+﻿import 'dart:async';
+
+import 'package:flutter/material.dart';
 import 'package:test_app/src/core/resources/app_icons.dart';
 import 'package:test_app/src/widgets/common/styles.dart';
+import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
 
 class AppSearchBar extends StatefulWidget {
   final String? text;
@@ -36,6 +39,9 @@ class _AppSearchBarState extends State<AppSearchBar> {
   final GlobalKey _textFieldKey = GlobalKey();
   late TextEditingController _internalController;
 
+  late final KeyboardVisibilityController _keyboardVisibilityController;
+  late final StreamSubscription<bool> _keyboardSubscription;
+
   TextEditingController get _effectiveController =>
       widget.controller ?? _internalController;
 
@@ -46,6 +52,15 @@ class _AppSearchBarState extends State<AppSearchBar> {
     if (widget.text != null) {
       _effectiveController.text = widget.text!;
     }
+
+    _keyboardVisibilityController = KeyboardVisibilityController();
+    _keyboardSubscription = _keyboardVisibilityController.onChange.listen((
+      bool visible,
+    ) {
+      if (!visible) {
+        _hideOverlay();
+      }
+    });
   }
 
   @override
@@ -59,6 +74,7 @@ class _AppSearchBarState extends State<AppSearchBar> {
   @override
   void dispose() {
     _hideOverlay();
+    _keyboardSubscription.cancel();
     _focusNode.dispose();
     if (widget.controller == null) {
       _internalController.dispose();
@@ -252,7 +268,8 @@ class _AppSearchBarState extends State<AppSearchBar> {
           fontWeight: bMWeight,
         ),
         maxLines: 1,
-        keyboardType: TextInputType.text,
+        textInputAction: TextInputAction.search,
+        keyboardType: TextInputType.webSearch,
         decoration: InputDecoration(
           hintText: widget.placeholder,
           hintStyle: TextStyle(

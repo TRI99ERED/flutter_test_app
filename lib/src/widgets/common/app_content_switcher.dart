@@ -29,99 +29,108 @@ class AppContentSwitcher extends StatefulWidget {
 
 class _AppContentSwitcherState extends State<AppContentSwitcher>
     with SingleTickerProviderStateMixin {
-  late int _selectedIndex;
+  late final ValueNotifier<int> _selectedIndex;
 
   @override
   void initState() {
     super.initState();
-    _selectedIndex = widget.selectedIndex;
+    _selectedIndex = ValueNotifier<int>(widget.selectedIndex);
   }
 
   @override
   void didUpdateWidget(covariant AppContentSwitcher oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.selectedIndex != widget.selectedIndex) {
-      _selectedIndex = widget.selectedIndex;
+      _selectedIndex.value = widget.selectedIndex;
     }
   }
 
   @override
+  void dispose() {
+    _selectedIndex.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: LightColor.light.color,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final sectionWidth = constraints.maxWidth / widget.sectionCount;
-          return SizedBox(
-            height: 40,
-            child: Stack(
-              children: [
-                AnimatedAlign(
-                  alignment: Alignment(
-                    -1 + (_selectedIndex * 2) / (widget.sectionCount - 1),
-                    0,
-                  ),
-                  duration: const Duration(milliseconds: 300),
-                  curve: Curves.easeInOut,
-                  child: SizedBox(
-                    width: sectionWidth,
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: spacing12,
-                        vertical: spacing4,
+    return ValueListenableBuilder<int>(
+      valueListenable: _selectedIndex,
+      builder: (context, selectedIndex, _) {
+        return Container(
+          decoration: BoxDecoration(
+            color: LightColor.light.color,
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final sectionWidth = constraints.maxWidth / widget.sectionCount;
+              return SizedBox(
+                height: 40,
+                child: Stack(
+                  children: [
+                    AnimatedAlign(
+                      alignment: Alignment(
+                        -1 + (selectedIndex * 2) / (widget.sectionCount - 1),
+                        0,
                       ),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: LightColor.lightest.color,
-                          borderRadius: BorderRadius.circular(12),
+                      duration: const Duration(milliseconds: 300),
+                      curve: Curves.easeInOut,
+                      child: SizedBox(
+                        width: sectionWidth,
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: spacing12,
+                            vertical: spacing4,
+                          ),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: LightColor.lightest.color,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
                         ),
                       ),
                     ),
-                  ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: spacing8),
+                      child: Row(
+                        children: List.generate(widget.sectionCount * 2 - 1, (
+                          index,
+                        ) {
+                          if (index.isOdd) {
+                            return VerticalDivider(
+                              color: LightColor.darkest.color,
+                              indent: 9.5,
+                              endIndent: 9.5,
+                              thickness: 1,
+                            );
+                          }
+                          final sectionIdx = index ~/ 2;
+                          return Expanded(
+                            child: Padding(
+                              padding: EdgeInsets.all(spacing4),
+                              child: _AppSection(
+                                text: widget.sectionTitles[sectionIdx],
+                                onPressed: () {
+                                  _selectedIndex.value = sectionIdx;
+                                  if (widget.onSectionSelected != null) {
+                                    widget.onSectionSelected!(sectionIdx);
+                                  }
+                                },
+                                selected: sectionIdx == selectedIndex,
+                              ),
+                            ),
+                          );
+                        }),
+                      ),
+                    ),
+                  ],
                 ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: spacing8),
-                  child: Row(
-                    children: List.generate(widget.sectionCount * 2 - 1, (
-                      index,
-                    ) {
-                      if (index.isOdd) {
-                        return VerticalDivider(
-                          color: LightColor.darkest.color,
-                          indent: 9.5,
-                          endIndent: 9.5,
-                          thickness: 1,
-                        );
-                      }
-                      final sectionIdx = index ~/ 2;
-                      return Expanded(
-                        child: Padding(
-                          padding: EdgeInsets.all(spacing4),
-                          child: _AppSection(
-                            text: widget.sectionTitles[sectionIdx],
-                            onPressed: () {
-                              setState(() {
-                                _selectedIndex = sectionIdx;
-                              });
-                              if (widget.onSectionSelected != null) {
-                                widget.onSectionSelected!(sectionIdx);
-                              }
-                            },
-                            selected: sectionIdx == _selectedIndex,
-                          ),
-                        ),
-                      );
-                    }),
-                  ),
-                ),
-              ],
-            ),
-          );
-        },
-      ),
+              );
+            },
+          ),
+        );
+      },
     );
   }
 }

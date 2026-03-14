@@ -33,18 +33,16 @@ class AppNavBar extends StatelessWidget implements PreferredSizeWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Expanded(
-          child: Align(
-            alignment: Alignment.centerLeft,
-            child: (leftText != null || leftIcon != null || leftImage != null)
-                ? _AppControl(
-                    text: leftText,
-                    icon: leftIcon,
-                    image: leftImage,
-                    onPressed: onPressedLeft,
-                  )
-                : SizedBox.shrink(),
-          ),
+        Align(
+          alignment: Alignment.centerLeft,
+          child: (leftText != null || leftIcon != null || leftImage != null)
+              ? _AppControl(
+                  text: leftText,
+                  icon: leftIcon,
+                  image: leftImage,
+                  onPressed: onPressedLeft,
+                )
+              : SizedBox.shrink(),
         ),
         Expanded(
           child: Center(
@@ -54,23 +52,21 @@ class AppNavBar extends StatelessWidget implements PreferredSizeWidget {
                 fontSize: h4Size,
                 fontWeight: h4Weight,
                 color: DarkColor.darkest.color,
+                overflow: TextOverflow.ellipsis,
               ),
             ),
           ),
         ),
-        Expanded(
-          child: Align(
-            alignment: Alignment.centerRight,
-            child:
-                (rightText != null || rightIcon != null || rightImage != null)
-                ? _AppControl(
-                    text: rightText,
-                    icon: rightIcon,
-                    image: rightImage,
-                    onPressed: onPressedRight,
-                  )
-                : const SizedBox.shrink(),
-          ),
+        Align(
+          alignment: Alignment.centerRight,
+          child: (rightText != null || rightIcon != null || rightImage != null)
+              ? _AppControl(
+                  text: rightText,
+                  icon: rightIcon,
+                  image: rightImage,
+                  onPressed: onPressedRight,
+                )
+              : const SizedBox.shrink(),
         ),
       ],
     );

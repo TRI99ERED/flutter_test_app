@@ -43,6 +43,7 @@ abstract interface class IFirebaseFirestoreRepository {
     String projectName,
     String projectDescription,
     List<String> participants,
+    DateTime deadline,
   );
 
   Future<void> createUser({required AuthorizedUser user});
@@ -57,6 +58,8 @@ abstract interface class IFirebaseFirestoreRepository {
   Future<void> deleteGroupChat(String chatId);
 
   Future<void> deleteProject(String projectId);
+
+  Future<bool> doesUserExist(String id);
 
   Future<void> removeFriend({
     required String currentUserId,

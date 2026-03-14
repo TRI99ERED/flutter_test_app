@@ -4,6 +4,7 @@ import 'package:test_app/src/features/app/app_scope.dart';
 import 'package:test_app/src/features/app/data/models/project_model.dart';
 import 'package:test_app/src/features/app/data/models/user_model.dart';
 import 'package:test_app/src/widgets/common/app_avatar.dart';
+import 'package:test_app/src/widgets/common/app_calendar.dart';
 import 'package:test_app/src/widgets/common/app_checkbox.dart';
 import 'package:test_app/src/widgets/user_picker.dart';
 import 'package:test_app/src/widgets/common/app_button.dart';
@@ -45,6 +46,7 @@ class ProjectWizard extends StatefulWidget {
 class _ProjectWizardState extends State<ProjectWizard> {
   final _participants = ValueNotifier<List<String>>([]);
   final _selectedStatus = ValueNotifier<ProjectStatus>(ProjectStatus.todo);
+  final _deadline = ValueNotifier<DateTime>(DateTime.now());
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _descriptionController = TextEditingController();
@@ -62,6 +64,7 @@ class _ProjectWizardState extends State<ProjectWizard> {
       _descriptionController.text = project.description;
       _participants.value = project.participants;
       _selectedStatus.value = project.status;
+      _deadline.value = project.deadline;
     }
   }
 
@@ -135,15 +138,44 @@ class _ProjectWizardState extends State<ProjectWizard> {
               controller: _descriptionController,
             ),
             const SizedBox(height: spacing16),
-            Align(
-              alignment: Alignment.centerRight,
-              child: AppButtonPrimary(
-                text: 'Add a member',
-                onPressed: () => _onAddMemberPressed(context),
-              ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Participants',
+                  style: TextStyle(
+                    fontSize: h5Size,
+                    fontWeight: h5Weight,
+                    color: DarkColor.darkest.color,
+                  ),
+                ),
+                AppButtonPrimary(
+                  text: 'Add a participant',
+                  onPressed: () => _onAddMemberPressed(context),
+                ),
+              ],
             ),
             const SizedBox(height: spacing16),
             _buildParticipantsList(context),
+            const SizedBox(height: spacing16),
+            Text(
+              'Set Deadline',
+              style: TextStyle(
+                fontSize: h5Size,
+                fontWeight: h5Weight,
+                color: DarkColor.darkest.color,
+              ),
+            ),
+            AppCalendarMonthly(
+              initialDate:
+                  widget.mode == ProjectWizardMode.edit &&
+                      widget.projectToEdit != null
+                  ? _deadline.value
+                  : null,
+              onDateSelected: (value) {
+                _deadline.value = value;
+              },
+            ),
           ],
         ),
       ),
@@ -255,7 +287,9 @@ class _ProjectWizardState extends State<ProjectWizard> {
                     final isCurrentUser = memberId == currentUserId;
                     return AppListItem(
                       title: participant.name,
-                      description: '@${participant.handle}',
+                      description: participant.handle.isNotEmpty
+                          ? '@${participant.handle}'
+                          : null,
                       avatar: AppAvatar.avatarOrPlaceholder(
                         participant,
                         AvatarSize.small,
@@ -291,6 +325,7 @@ class _ProjectWizardState extends State<ProjectWizard> {
           projectName: _nameController.text,
           projectDescription: _descriptionController.text,
           participants: {user.id, ..._participants.value}.toList(),
+          deadline: _deadline.value,
         );
         if (!context.mounted) return;
         context.pop(project);
@@ -301,6 +336,7 @@ class _ProjectWizardState extends State<ProjectWizard> {
           description: _descriptionController.text,
           participants: [..._participants.value],
           status: _selectedStatus.value,
+          deadline: _deadline.value,
           lastUpdated: DateTime.now(),
         );
         await context.appController.updateProject(updatedProject);
@@ -313,6 +349,8 @@ class _ProjectWizardState extends State<ProjectWizard> {
   @override
   void dispose() {
     _participants.dispose();
+    _selectedStatus.dispose();
+    _deadline.dispose();
     _nameController.dispose();
     _descriptionController.dispose();
     super.dispose();

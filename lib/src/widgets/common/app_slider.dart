@@ -61,9 +61,7 @@ class _AppSliderState extends State<AppSlider> {
               onChanged: widget.onChanged == null
                   ? null
                   : (value) {
-                      setState(() {
-                        _currentValue = value;
-                      });
+                      _currentValue = value;
                       widget.onChanged?.call(value);
                     },
             ),
@@ -168,9 +166,7 @@ class _AppSliderDefaultState extends State<AppSliderDefault> {
               min: widget.min,
               max: widget.max,
               onChanged: (value) {
-                setState(() {
-                  _value = value;
-                });
+                _value = value;
                 widget.onChanged?.call(value);
               },
             ),
@@ -270,9 +266,7 @@ class _AppSliderTitledState extends State<AppSliderTitled> {
             min: widget.min,
             max: widget.max,
             onChanged: (value) {
-              setState(() {
-                _value = value;
-              });
+              _value = value;
               widget.onChanged?.call(value);
             },
           ),

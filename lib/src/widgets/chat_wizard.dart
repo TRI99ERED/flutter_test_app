@@ -142,7 +142,10 @@ class _ChatWizardState extends State<ChatWizard> {
                                         }
                                         return AppListItem(
                                           title: participant.name,
-                                          description: '@${participant.handle}',
+                                          description:
+                                              participant.handle.isNotEmpty
+                                              ? '@${participant.handle}'
+                                              : null,
                                           avatar: AppAvatar.avatarOrPlaceholder(
                                             participant,
                                             AvatarSize.small,

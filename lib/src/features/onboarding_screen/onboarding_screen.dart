@@ -4,7 +4,7 @@ import 'package:test_app/src/features/app/app_scope.dart';
 import 'package:test_app/src/core/widgets/controller_listener.dart';
 import 'package:test_app/src/router/routes.dart';
 import 'package:test_app/src/widgets/common/app_button.dart';
-import 'package:test_app/src/widgets/common/app_list_item.dart';
+import 'package:test_app/src/widgets/common/app_list_selectable.dart';
 import 'package:test_app/src/widgets/common/app_pagination_dots.dart';
 import 'package:test_app/src/widgets/common/app_progress_bar.dart';
 import 'package:test_app/src/widgets/common/placeholders.dart';
@@ -20,6 +20,7 @@ class OnboardingScreen extends StatefulWidget {
 class _OnboardingScreenState extends State<OnboardingScreen> {
   final _selectedSection = ValueNotifier<int>(0);
   final _selectedSubScreen = ValueNotifier<int>(0);
+  final _selectedInterests = ValueNotifier<Set<String>>({});
 
   static const _interestOptions = [
     'User Interface',
@@ -39,7 +40,19 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     'Marketing',
   ];
 
-  final _selectedInterests = ValueNotifier<Set<String>>({});
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final hasSeenOnboarding = await context.appController.hasSeenOnboarding();
+      if (!mounted) return;
+      if (hasSeenOnboarding) {
+        context.go(loginPath);
+        return;
+      }
+      context.appController.setHasSeenOnboarding(true);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -203,9 +216,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
                                 return SizedBox(
                                   width: 327,
-                                  child: AppListItem(
+                                  child: AppListSelectable(
                                     title: interest,
-                                    control: AppListItemControl.checkbox,
                                     value: isSelected,
                                     onChanged: (value) {
                                       final newSelected = Set<String>.from(

@@ -168,7 +168,9 @@ class _UserPickerState extends State<UserPicker> {
                         final user = filteredUsers[index];
                         return AppListItem(
                           title: user.name,
-                          description: '@${user.handle}',
+                          description: user.handle.isNotEmpty
+                              ? '@${user.handle}'
+                              : null,
                           onPressed: () => context.pop(user),
                         );
                       },

@@ -1398,7 +1398,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   width: 300,
                   child: AppCalendarMonthly(
                     initialDate: DateTime.now(),
-                    onDatePressed: (date) => debugPrint('Date pressed: $date'),
+                    onDateSelected: (date) => debugPrint('Date pressed: $date'),
                   ),
                 ),
               ),
@@ -1408,7 +1408,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   width: 300,
                   child: AppCalendarWeekly(
                     initialDate: DateTime.now(),
-                    onDatePressed: (date) => debugPrint('Date pressed: $date'),
+                    onDateSelected: (date) => debugPrint('Date pressed: $date'),
                   ),
                 ),
               ),

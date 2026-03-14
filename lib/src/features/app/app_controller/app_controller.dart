@@ -18,6 +18,8 @@ import 'package:test_app/src/features/app/data/repositories/firebase/firebase_fu
 import 'package:test_app/src/features/app/data/repositories/firebase/firebase_functions_repository/ifirebase_functions_repository.dart';
 import 'package:test_app/src/features/app/data/repositories/firebase/firebase_storage_repository/firebase_storage_repository_impl.dart';
 import 'package:test_app/src/features/app/data/repositories/firebase/firebase_storage_repository/ifirebase_storage_repository.dart';
+import 'package:test_app/src/features/app/data/repositories/shared_preferences/ishared_preferences_repository.dart';
+import 'package:test_app/src/features/app/data/repositories/shared_preferences/shared_preferences_repository_impl.dart';
 
 part 'app_state.dart';
 
@@ -26,6 +28,7 @@ final class AppController extends BaseController<AppState> {
   final IFirebaseFirestoreRepository _firestoreRepository;
   final IFirebaseStorageRepository _storageRepository;
   final IFirebaseFunctionsRepository _functionsRepository;
+  final ISharedPreferencesRepository _sharedPreferencesRepository;
   Stream<AuthorizedUser?>? _userStream;
   StreamSubscription<AuthorizedUser?>? _userStreamSubscription;
 
@@ -34,6 +37,7 @@ final class AppController extends BaseController<AppState> {
       _firestoreRepository = FirebaseFirestoreRepositoryImpl(),
       _storageRepository = FirebaseStorageRepositoryImpl(),
       _functionsRepository = FirebaseFunctionsRepositoryImpl(),
+      _sharedPreferencesRepository = SharedPreferencesRepositoryImpl(),
       super(
         state: const AppState.idle(
           message: 'initialized',
@@ -47,6 +51,15 @@ final class AppController extends BaseController<AppState> {
   void _listenToAuthState() {
     _userStreamSubscription?.cancel();
     _userStream = _authRepository.watchAuthState();
+    if (_userStream == null) {
+      setState(
+        const AppState.failed(
+          message: 'Failed to initialize auth state stream',
+          user: UnauthorizedUser(),
+        ),
+      );
+      return;
+    }
     _userStreamSubscription = _userStream!.listen(
       (user) {
         setState(
@@ -77,6 +90,15 @@ final class AppController extends BaseController<AppState> {
     }
     final userId = (state.user as AuthorizedUser).id;
     _userStream = watchUserWithId(userId);
+    if (_userStream == null) {
+      setState(
+        const AppState.failed(
+          message: 'Failed to initialize user sync stream',
+          user: UnauthorizedUser(),
+        ),
+      );
+      return;
+    }
     _userStreamSubscription?.cancel();
     _userStreamSubscription = _userStream!.listen((user) {
       setState(
@@ -882,6 +904,7 @@ final class AppController extends BaseController<AppState> {
     required String projectName,
     required String projectDescription,
     required List<String> participants,
+    required DateTime deadline,
   }) async => await serialExecutor.synchronized(() async {
     setState(
       AppState.processing(
@@ -895,6 +918,7 @@ final class AppController extends BaseController<AppState> {
         projectName,
         projectDescription,
         participants,
+        deadline,
       );
       setState(
         AppState.idle(
@@ -1546,6 +1570,20 @@ final class AppController extends BaseController<AppState> {
         );
         return null;
       }
+      final userExists = await _firestoreRepository.doesUserExist(user.id);
+      if (userExists) {
+        final existingUser = await _firestoreRepository
+            .watchAllUsers()
+            .map((users) => users?.firstWhere((u) => u.id == user.id))
+            .firstWhere((u) => u != null, orElse: () => null);
+        setState(
+          AppState.idle(
+            message: 'Signed in with Google successfully.',
+            user: existingUser ?? user,
+          ),
+        );
+        return existingUser;
+      }
       await _firestoreRepository.createUser(user: user);
       setState(
         AppState.idle(
@@ -1566,6 +1604,99 @@ final class AppController extends BaseController<AppState> {
       setState(
         AppState.failed(
           message: 'Failed to sign in with Google: ${error.toString()}',
+          user: state.user,
+          error: error,
+          stackTrace: stackTrace,
+        ),
+      );
+      rethrow;
+    }
+  }
+
+  Future<bool> doesUserExist(
+    String id,
+  ) async => await serialExecutor.synchronized(() async {
+    setState(
+      AppState.processing(
+        message: 'Checking if user with id "$id" exists...',
+        user: state.user,
+      ),
+    );
+    try {
+      final exists = await _firestoreRepository.doesUserExist(id);
+      setState(
+        AppState.idle(
+          message: 'User existence check for id "$id" completed: $exists',
+          user: state.user,
+        ),
+      );
+      return exists;
+    } catch (error, stackTrace) {
+      setState(
+        AppState.failed(
+          message:
+              'Failed to check if user with id "$id" exists: ${error.toString()}',
+          user: state.user,
+          error: error,
+          stackTrace: stackTrace,
+        ),
+      );
+      rethrow;
+    }
+  });
+
+  Future<void> setHasSeenOnboarding(
+    bool hasSeen,
+  ) async => await serialExecutor.synchronized(() async {
+    setState(
+      AppState.processing(
+        message: 'Updating onboarding status...',
+        user: state.user,
+      ),
+    );
+    try {
+      await _sharedPreferencesRepository.setBool('hasSeenOnboarding', hasSeen);
+      setState(
+        AppState.idle(
+          message: 'Onboarding status updated successfully.',
+          user: state.user,
+        ),
+      );
+    } catch (error, stackTrace) {
+      setState(
+        AppState.failed(
+          message: 'Failed to update onboarding status: ${error.toString()}',
+          user: state.user,
+          error: error,
+          stackTrace: stackTrace,
+        ),
+      );
+      rethrow;
+    }
+  });
+
+  Future<bool> hasSeenOnboarding() async {
+    setState(
+      AppState.processing(
+        message: 'Retrieving onboarding status...',
+        user: state.user,
+      ),
+    );
+    try {
+      final hasSeen =
+          await _sharedPreferencesRepository.getBool('hasSeenOnboarding') ??
+          false;
+      setState(
+        AppState.idle(
+          message: 'Onboarding status retrieved successfully: $hasSeen',
+          user: state.user,
+        ),
+      );
+      return hasSeen;
+    } catch (error, stackTrace) {
+      setState(
+        AppState.failed(
+          message: 'Failed to retrieve onboarding status: ${error.toString()}',
           user: state.user,
           error: error,
           stackTrace: stackTrace,

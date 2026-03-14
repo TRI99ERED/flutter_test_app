@@ -1,3 +1,4 @@
+import 'package:async/async.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:test_app/src/core/resources/app_icons.dart';
@@ -172,102 +173,6 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
-  Widget _buildMessageList(BuildContext context, Chat chat) {
-    final messageStream = chat is DirectChat
-        ? context.appController.watchMessagesForDirectChat(widget.chatId)
-        : context.appController.watchMessagesForGroupChat(widget.chatId);
-    return StreamBuilder(
-      stream: messageStream,
-      builder: (context, snapshot) {
-        if (snapshot.hasError) {
-          return Center(
-            child: ErrorState(
-              message: 'Failed to load messages: ${snapshot.error}',
-            ),
-          );
-        }
-        if (snapshot.connectionState == ConnectionState.waiting ||
-            snapshot.connectionState == ConnectionState.none) {
-          return const Center(child: AppLoader());
-        }
-        final messages = snapshot.data ?? [];
-        if ((snapshot.connectionState == ConnectionState.active ||
-                snapshot.connectionState == ConnectionState.done) &&
-            messages.isEmpty) {
-          return const EmptyState(title: 'No messages yet');
-        }
-        return StreamBuilder(
-          stream: context.appController.watchAllUsers(),
-          builder: (context, asyncSnapshot) {
-            if (asyncSnapshot.hasError) {
-              return Center(
-                child: ErrorState(
-                  message: 'Failed to load users: ${asyncSnapshot.error}',
-                ),
-              );
-            }
-            final users = asyncSnapshot.data ?? [];
-            final messagesWithSenderNames = <Message, String>{};
-            for (final message in messages) {
-              final sender = users.firstWhere(
-                (user) => user.id == message.senderId,
-                orElse: () {
-                  return AuthorizedUser(
-                    id: message.senderId,
-                    name: 'Unknown',
-                    email: '',
-                    handle: '',
-                    avatarUrl: '',
-                  );
-                },
-              );
-              messagesWithSenderNames[message] = sender.name;
-            }
-            return ListView.builder(
-              reverse: true,
-              itemCount: messages.length,
-              itemBuilder: (context, index) {
-                if ((index == 0 ||
-                        messages[index - 1].senderId !=
-                            messages[index].senderId) &&
-                    (index == messages.length - 1 ||
-                        messages[index + 1].senderId !=
-                            messages[index].senderId)) {
-                  return AlignedMessageBubble(
-                    messagesWithSenderNames: messagesWithSenderNames,
-                    index: index,
-                    isFirstInSequence: true,
-                    isLastInSequence: true,
-                  );
-                }
-                if (index == 0 ||
-                    messages[index - 1].senderId != messages[index].senderId) {
-                  return AlignedMessageBubble(
-                    messagesWithSenderNames: messagesWithSenderNames,
-                    index: index,
-                    isLastInSequence: true,
-                  );
-                }
-                if (index == messages.length - 1 ||
-                    messages[index + 1].senderId != messages[index].senderId) {
-                  return AlignedMessageBubble(
-                    messagesWithSenderNames: messagesWithSenderNames,
-                    index: index,
-                    isFirstInSequence: true,
-                  );
-                }
-                return AlignedMessageBubble(
-                  messagesWithSenderNames: messagesWithSenderNames,
-                  index: index,
-                );
-              },
-            );
-          },
-        );
-      },
-    );
-  }
-
   Widget _buildMessageInput(BuildContext context, Chat chat) {
     if (chat is DirectChat) {
       return StreamBuilder(
@@ -275,12 +180,15 @@ class _ChatScreenState extends State<ChatScreen> {
         builder: (context, asyncSnapshot) {
           if (asyncSnapshot.hasError) {
             return ErrorState(
-              message: 'Failed to load unread count: ${asyncSnapshot.error}',
+              message: 'Failed to load unread count: [${asyncSnapshot.error}]',
             );
           }
           final unreadCount = asyncSnapshot.data ?? 0;
           return AppMessageInput(
             onSendPressed: (value) async {
+              if (value.trim().isEmpty) {
+                return;
+              }
               final user = context.appState.user as AuthorizedUser;
               final appController = context.appController;
               await appController.createDirectChatMessage(
@@ -330,12 +238,16 @@ class _ChatScreenState extends State<ChatScreen> {
         builder: (context, asyncSnapshot) {
           if (asyncSnapshot.hasError) {
             return ErrorState(
-              message: 'Failed to load unread counts: ${asyncSnapshot.error}',
+              message:
+                  'Failed to load unread counts: [${asyncSnapshot.error}]',
             );
           }
           final unreadCounts = asyncSnapshot.data ?? {};
           return AppMessageInput(
             onSendPressed: (value) async {
+              if (value.trim().isEmpty) {
+                return;
+              }
               final user = context.appState.user as AuthorizedUser;
               final appController = context.appController;
               await appController.createGroupChatMessage(
@@ -386,21 +298,83 @@ class _ChatScreenState extends State<ChatScreen> {
     return const SizedBox.shrink();
   }
 
-  Scaffold _buildErrorState(BuildContext context) {
-    return Scaffold(
-      appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(kToolbarHeight),
-        child: SafeArea(
-          child: AppNavBar(
-            title: 'Chat not found',
-            leftIcon: AppIcons.arrowLeft,
-            onPressedLeft: () => context.pop(),
-          ),
-        ),
-      ),
-      body: SafeArea(
-        child: Center(child: ErrorState(message: 'Chat not found')),
-      ),
+  Widget _buildMessageList(BuildContext context, Chat chat) {
+    final messageStream = chat is DirectChat
+        ? context.appController.watchMessagesForDirectChat(widget.chatId)
+        : context.appController.watchMessagesForGroupChat(widget.chatId);
+    final usersStream = context.appController.watchAllUsers();
+    return StreamBuilder(
+      stream: StreamZip([messageStream, usersStream]),
+      builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return Center(
+            child: ErrorState(
+              message: 'Failed to load chat data: ${snapshot.error}',
+            ),
+          );
+        }
+        if (!snapshot.hasData || snapshot.data == null) {
+          return const Center(child: AppLoader());
+        }
+        final messages = (snapshot.data?[0] ?? []) as List<Message>;
+        final users = (snapshot.data?[1] ?? []) as List<AuthorizedUser>;
+        if (messages.isEmpty) {
+          return const EmptyState(title: 'No messages yet');
+        }
+        final messagesWithSenderNames = <Message, String>{};
+        for (final message in messages) {
+          final sender = users.firstWhere(
+            (user) => user.id == message.senderId,
+            orElse: () {
+              return AuthorizedUser(
+                id: message.senderId,
+                name: 'Unknown',
+                email: '',
+                handle: '',
+                avatarUrl: '',
+              );
+            },
+          );
+          messagesWithSenderNames[message] = sender.name;
+        }
+        return ListView.builder(
+          reverse: true,
+          itemCount: messages.length,
+          itemBuilder: (context, index) {
+            if ((index == 0 ||
+                    messages[index - 1].senderId != messages[index].senderId) &&
+                (index == messages.length - 1 ||
+                    messages[index + 1].senderId != messages[index].senderId)) {
+              return AlignedMessageBubble(
+                messagesWithSenderNames: messagesWithSenderNames,
+                index: index,
+                isFirstInSequence: true,
+                isLastInSequence: true,
+              );
+            }
+            if (index == 0 ||
+                messages[index - 1].senderId != messages[index].senderId) {
+              return AlignedMessageBubble(
+                messagesWithSenderNames: messagesWithSenderNames,
+                index: index,
+                isLastInSequence: true,
+              );
+            }
+            if (index == messages.length - 1 ||
+                messages[index + 1].senderId != messages[index].senderId) {
+              return AlignedMessageBubble(
+                messagesWithSenderNames: messagesWithSenderNames,
+                index: index,
+                isFirstInSequence: true,
+              );
+            }
+            return AlignedMessageBubble(
+              messagesWithSenderNames: messagesWithSenderNames,
+              index: index,
+            );
+          },
+        );
+      },
     );
   }
 
@@ -444,52 +418,46 @@ class _ChatScreenState extends State<ChatScreen> {
                 ),
               );
             }
-            final directLoading =
-                directSnapshot.connectionState == ConnectionState.waiting ||
-                directSnapshot.connectionState == ConnectionState.none;
             final directChat = directSnapshot.data;
-            if (directLoading) {
+
+            if (!directSnapshot.hasData || directChat == null) {
               return const Scaffold(body: Center(child: AppLoader()));
             }
-            if (directChat != null) {
-              return Scaffold(
-                appBar: PreferredSize(
-                  preferredSize: const Size.fromHeight(kToolbarHeight),
-                  child: SafeArea(
-                    child: FutureBuilder<Widget>(
-                      future: _buildNavBar(context, directChat),
-                      builder: (context, snapshot) {
-                        if (snapshot.connectionState ==
-                            ConnectionState.waiting) {
-                          return const AppNavBar(title: 'Loading...');
-                        } else if (snapshot.hasError) {
-                          return const AppNavBar(title: 'Error');
-                        } else {
-                          return snapshot.data!;
-                        }
-                      },
-                    ),
+            return Scaffold(
+              appBar: PreferredSize(
+                preferredSize: const Size.fromHeight(kToolbarHeight),
+                child: SafeArea(
+                  child: FutureBuilder<Widget>(
+                    future: _buildNavBar(context, directChat),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const AppNavBar(title: 'Loading...');
+                      } else if (snapshot.hasError) {
+                        return const AppNavBar(title: 'Error');
+                      } else {
+                        return snapshot.data!;
+                      }
+                    },
                   ),
                 ),
-                body: SafeArea(
-                  child: Padding(
-                    padding: const EdgeInsets.all(spacing8),
-                    child: Column(
-                      children: [
-                        Expanded(
-                          child: Padding(
-                            padding: const EdgeInsets.all(spacing8),
-                            child: _buildMessageList(context, directChat),
-                          ),
+              ),
+              body: SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.all(spacing8),
+                  child: Column(
+                    children: [
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.all(spacing8),
+                          child: _buildMessageList(context, directChat),
                         ),
-                        _buildMessageInput(context, directChat),
-                      ],
-                    ),
+                      ),
+                      _buildMessageInput(context, directChat),
+                    ],
                   ),
                 ),
-              );
-            }
-            return _buildErrorState(context);
+              ),
+            );
           },
         ),
         ChatType.group => StreamBuilder(
@@ -516,52 +484,46 @@ class _ChatScreenState extends State<ChatScreen> {
                 ),
               );
             }
-            final groupLoading =
-                groupSnapshot.connectionState == ConnectionState.waiting ||
-                groupSnapshot.connectionState == ConnectionState.none;
             final groupChat = groupSnapshot.data;
-            if (groupLoading) {
+
+            if (!groupSnapshot.hasData || groupChat == null) {
               return const Scaffold(body: Center(child: AppLoader()));
             }
-            if (groupChat != null) {
-              return Scaffold(
-                appBar: PreferredSize(
-                  preferredSize: const Size.fromHeight(kToolbarHeight),
-                  child: SafeArea(
-                    child: FutureBuilder<Widget>(
-                      future: _buildNavBar(context, groupChat),
-                      builder: (context, snapshot) {
-                        if (snapshot.connectionState ==
-                            ConnectionState.waiting) {
-                          return const AppNavBar(title: 'Loading...');
-                        } else if (snapshot.hasError) {
-                          return const AppNavBar(title: 'Error');
-                        } else {
-                          return snapshot.data!;
-                        }
-                      },
-                    ),
+            return Scaffold(
+              appBar: PreferredSize(
+                preferredSize: const Size.fromHeight(kToolbarHeight),
+                child: SafeArea(
+                  child: FutureBuilder<Widget>(
+                    future: _buildNavBar(context, groupChat),
+                    builder: (context, snapshot) {
+                      if (snapshot.hasError) {
+                        return const AppNavBar(title: 'Error');
+                      } else if (!snapshot.hasData || snapshot.data == null) {
+                        return const AppNavBar(title: 'Loading...');
+                      } else {
+                        return snapshot.data!;
+                      }
+                    },
                   ),
                 ),
-                body: SafeArea(
-                  child: Padding(
-                    padding: const EdgeInsets.all(spacing8),
-                    child: Column(
-                      children: [
-                        Expanded(
-                          child: Padding(
-                            padding: const EdgeInsets.all(spacing8),
-                            child: _buildMessageList(context, groupChat),
-                          ),
+              ),
+              body: SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.all(spacing8),
+                  child: Column(
+                    children: [
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.all(spacing8),
+                          child: _buildMessageList(context, groupChat),
                         ),
-                        _buildMessageInput(context, groupChat),
-                      ],
-                    ),
+                      ),
+                      _buildMessageInput(context, groupChat),
+                    ],
                   ),
                 ),
-              );
-            }
-            return _buildErrorState(context);
+              ),
+            );
           },
         ),
       },
