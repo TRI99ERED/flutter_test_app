@@ -142,9 +142,39 @@ class _ProjectsSectionState extends State<_ProjectsSection> {
 
     return Column(
       children: [
-        AppSearchBar(
-          onChanged: (value) {
-            _searchQuery.value = value;
+        StreamBuilder(
+          stream: context.appController.watchUserWithId(user.id),
+          builder: (context, asyncSnapshot) {
+            final syncedUser = asyncSnapshot.data;
+            return AppSearchBar(
+              recentSearches: syncedUser?.projectRecentSearches ?? [],
+              onChanged: (value) => _searchQuery.value = value,
+              onSubmitted: (value) async {
+                _searchQuery.value = value;
+                if (syncedUser == null) return;
+                if (value.trim().isEmpty) return;
+                final updatedSearches = [
+                  value,
+                  ...syncedUser.projectRecentSearches.where(
+                    (entry) => entry != value,
+                  ),
+                ];
+                await context.appController.updateUser(
+                  syncedUser.copyWith(projectRecentSearches: updatedSearches)
+                      as AuthorizedUser,
+                );
+              },
+              onDelete: (value) async {
+                if (syncedUser == null) return;
+                final updatedSearches = syncedUser.projectRecentSearches
+                    .where((entry) => entry != value)
+                    .toList();
+                await context.appController.updateUser(
+                  syncedUser.copyWith(projectRecentSearches: updatedSearches)
+                      as AuthorizedUser,
+                );
+              },
+            );
           },
         ),
         const SizedBox(height: spacing8),

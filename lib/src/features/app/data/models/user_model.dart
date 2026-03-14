@@ -21,6 +21,9 @@ final class AuthorizedUser extends UserEntity {
   final String avatarUrl;
   final String currentDirectChatId;
   final String currentGroupChatId;
+  final List<String> chatRecentSearches;
+  final List<String> friendRecentSearches;
+  final List<String> projectRecentSearches;
 
   const AuthorizedUser({
     required this.id,
@@ -30,6 +33,9 @@ final class AuthorizedUser extends UserEntity {
     this.avatarUrl = '',
     this.currentDirectChatId = '',
     this.currentGroupChatId = '',
+    this.chatRecentSearches = const [],
+    this.friendRecentSearches = const [],
+    this.projectRecentSearches = const [],
   });
 
   factory AuthorizedUser.fromFirestore(
@@ -44,6 +50,13 @@ final class AuthorizedUser extends UserEntity {
       avatarUrl: data['avatarUrl'] ?? '',
       currentDirectChatId: data['currentDirectChatId'] ?? '',
       currentGroupChatId: data['currentGroupChatId'] ?? '',
+      chatRecentSearches: List<String>.from(data['chatRecentSearches'] ?? []),
+      friendRecentSearches: List<String>.from(
+        data['friendRecentSearches'] ?? [],
+      ),
+      projectRecentSearches: List<String>.from(
+        data['projectRecentSearches'] ?? [],
+      ),
     );
   }
 
@@ -58,6 +71,9 @@ final class AuthorizedUser extends UserEntity {
     String? avatarUrl,
     String? currentDirectChatId,
     String? currentGroupChatId,
+    List<String>? chatRecentSearches,
+    List<String>? friendRecentSearches,
+    List<String>? projectRecentSearches,
   }) {
     return AuthorizedUser(
       id: id ?? this.id,
@@ -67,6 +83,10 @@ final class AuthorizedUser extends UserEntity {
       avatarUrl: avatarUrl ?? this.avatarUrl,
       currentDirectChatId: currentDirectChatId ?? this.currentDirectChatId,
       currentGroupChatId: currentGroupChatId ?? this.currentGroupChatId,
+      chatRecentSearches: chatRecentSearches ?? this.chatRecentSearches,
+      friendRecentSearches: friendRecentSearches ?? this.friendRecentSearches,
+      projectRecentSearches:
+          projectRecentSearches ?? this.projectRecentSearches,
     );
   }
 
@@ -80,7 +100,10 @@ final class AuthorizedUser extends UserEntity {
             other.handle == handle &&
             other.avatarUrl == avatarUrl &&
             other.currentDirectChatId == currentDirectChatId &&
-            other.currentGroupChatId == currentGroupChatId;
+            other.currentGroupChatId == currentGroupChatId &&
+            other.chatRecentSearches == chatRecentSearches &&
+            other.friendRecentSearches == friendRecentSearches &&
+            other.projectRecentSearches == projectRecentSearches;
   }
 
   @override
@@ -93,6 +116,9 @@ final class AuthorizedUser extends UserEntity {
     avatarUrl,
     currentDirectChatId,
     currentGroupChatId,
+    chatRecentSearches,
+    friendRecentSearches,
+    projectRecentSearches,
   );
 
   @override
@@ -108,6 +134,9 @@ final class AuthorizedUser extends UserEntity {
       'avatarUrl': avatarUrl,
       'currentDirectChatId': currentDirectChatId,
       'currentGroupChatId': currentGroupChatId,
+      'chatRecentSearches': chatRecentSearches,
+      'friendRecentSearches': friendRecentSearches,
+      'projectRecentSearches': projectRecentSearches,
     };
   }
 }

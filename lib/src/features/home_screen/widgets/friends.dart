@@ -58,13 +58,39 @@ class _FriendsState extends State<Friends> {
               _sectionIndex.value = value;
             },
           ),
-          AppSearchBar(
-            placeholder: 'Search',
-            onChanged: (value) {
-              _searchQuery.value = value;
-            },
-            onSubmitted: (value) {
-              _searchQuery.value = value;
+          StreamBuilder(
+            stream: context.appController.watchUserWithId(user.id),
+            builder: (context, asyncSnapshot) {
+              final syncedUser = asyncSnapshot.data;
+              return AppSearchBar(
+                recentSearches: syncedUser?.friendRecentSearches ?? [],
+                onChanged: (value) => _searchQuery.value = value,
+                onSubmitted: (value) async {
+                  _searchQuery.value = value;
+                  if (syncedUser == null) return;
+                  if (value.trim().isEmpty) return;
+                  final updatedSearches = [
+                    value,
+                    ...syncedUser.friendRecentSearches.where(
+                      (entry) => entry != value,
+                    ),
+                  ];
+                  await context.appController.updateUser(
+                    syncedUser.copyWith(friendRecentSearches: updatedSearches)
+                        as AuthorizedUser,
+                  );
+                },
+                onDelete: (value) async {
+                  if (syncedUser == null) return;
+                  final updatedSearches = syncedUser.friendRecentSearches
+                      .where((entry) => entry != value)
+                      .toList();
+                  await context.appController.updateUser(
+                    syncedUser.copyWith(friendRecentSearches: updatedSearches)
+                        as AuthorizedUser,
+                  );
+                },
+              );
             },
           ),
           Expanded(

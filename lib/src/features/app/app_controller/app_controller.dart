@@ -1426,6 +1426,9 @@ final class AppController extends BaseController<AppState> {
                     avatarUrl: user.avatarUrl,
                     currentDirectChatId: user.currentDirectChatId,
                     currentGroupChatId: user.currentGroupChatId,
+                    chatRecentSearches: user.chatRecentSearches,
+                    friendRecentSearches: user.friendRecentSearches,
+                    projectRecentSearches: user.projectRecentSearches,
                   )
                   as AuthorizedUser;
           await _firestoreRepository.updateUser(updatedUser);
