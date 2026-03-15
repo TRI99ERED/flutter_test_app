@@ -133,11 +133,12 @@ class _EmailConfirmationScreenState extends State<EmailConfirmationScreen> {
                             return AppButtonPrimary(
                               text: 'Continue',
                               onPressed: isFormValid
-                                  ? () {
+                                  ? () async {
                                       final code = _codeController.text;
-                                      context.appController.verifyEmailCode(
-                                        code,
-                                      );
+                                      await context.appController
+                                          .verifyEmailCode(code);
+                                      if (!context.mounted) return;
+                                      context.go(interestsPath);
                                     }
                                   : null,
                             );

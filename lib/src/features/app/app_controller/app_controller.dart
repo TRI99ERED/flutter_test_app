@@ -1441,25 +1441,11 @@ final class AppController extends BaseController<AppState> {
               user: state.user,
             ),
           );
-          final currentUser = state.user as AuthorizedUser;
-          final updatedUser =
-              currentUser.copyWith(
-                    name: user.name,
-                    email: user.email,
-                    handle: user.handle,
-                    avatarUrl: user.avatarUrl,
-                    currentDirectChatId: user.currentDirectChatId,
-                    currentGroupChatId: user.currentGroupChatId,
-                    chatRecentSearches: user.chatRecentSearches,
-                    friendRecentSearches: user.friendRecentSearches,
-                    projectRecentSearches: user.projectRecentSearches,
-                  )
-                  as AuthorizedUser;
-          await _firestoreRepository.updateUser(updatedUser);
+          await _firestoreRepository.updateUser(user);
           setState(
             AppState.idle(
               message: 'User "${user.id}" updated successfully.',
-              user: updatedUser,
+              user: user,
             ),
           );
         } catch (error, stackTrace) {

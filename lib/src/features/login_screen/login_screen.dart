@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:test_app/src/core/resources/app_icons.dart';
@@ -147,7 +148,19 @@ class _LoginScreenState extends State<LoginScreen> {
                         children: [
                           IconButton(
                             onPressed: () async {
+                              if (kIsWeb) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      'Google Sign-In is not available on web.',
+                                    ),
+                                  ),
+                                );
+                                return;
+                              }
                               await context.appController.signInWithGoogle();
+                              if (!context.mounted) return;
+                              context.go(interestsPath);
                             },
                             style: IconButton.styleFrom(
                               backgroundColor: ErrorColor.dark.color,

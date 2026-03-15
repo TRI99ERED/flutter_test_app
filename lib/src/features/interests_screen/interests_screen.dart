@@ -1,0 +1,155 @@
+import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:test_app/src/core/widgets/controller_listener.dart';
+import 'package:test_app/src/features/app/app_scope.dart';
+import 'package:test_app/src/features/app/data/models/user_model.dart';
+import 'package:test_app/src/router/routes.dart';
+import 'package:test_app/src/widgets/common/app_button.dart';
+import 'package:test_app/src/widgets/common/app_list_selectable.dart';
+import 'package:test_app/src/widgets/common/app_progress_bar.dart';
+import 'package:test_app/src/widgets/common/styles.dart';
+
+class InterestsScreen extends StatefulWidget {
+  const InterestsScreen({super.key});
+
+  @override
+  State<InterestsScreen> createState() => _InterestsScreenState();
+}
+
+class _InterestsScreenState extends State<InterestsScreen> {
+  final _selectedInterests = ValueNotifier<Set<String>>({});
+
+  static const _interestOptions = [
+    'User Interface',
+    'User Experience',
+    'User Research',
+    'UX Writing',
+    'User Testing',
+    'Service Design',
+    'Strategy',
+    'Design Systems',
+    'Prototyping',
+    'Accessibility',
+    'Collaboration',
+    'Project Management',
+    'Innovation',
+    'Entrepreneurship',
+    'Marketing',
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(spacing24),
+      child: ControllerListener(
+        controller: context.appController,
+        listenWhen: (previous, current) {
+          if (!previous.isFailed && current.isFailed) {
+            return true;
+          }
+          return false;
+        },
+        listener: (context, previous, current) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('Error: ${current.message}')));
+        },
+        child: Scaffold(
+          body: SafeArea(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              spacing: spacing40,
+              children: [
+                Center(
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: ValueListenableBuilder(
+                      valueListenable: _selectedInterests,
+                      builder: (context, selected, child) {
+                        return AppProgressBar(
+                          value: selected.length / _interestOptions.length,
+                        );
+                      },
+                    ),
+                  ),
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  spacing: spacing16,
+                  children: [
+                    Text(
+                      'Personalise your experience',
+                      style: TextStyle(
+                        fontSize: h1Size,
+                        fontWeight: h1Weight,
+                        color: DarkColor.darkest.color,
+                      ),
+                    ),
+                    Text(
+                      'Choose your interests.',
+                      style: TextStyle(
+                        fontSize: bSSize,
+                        fontWeight: bSWeight,
+                        color: DarkColor.light.color,
+                      ),
+                    ),
+                  ],
+                ),
+                Expanded(
+                  child: ValueListenableBuilder(
+                    valueListenable: _selectedInterests,
+                    builder: (context, selected, child) {
+                      return ListView.separated(
+                        itemCount: _interestOptions.length,
+                        separatorBuilder: (context, index) =>
+                            SizedBox(height: spacing8),
+                        itemBuilder: (context, index) {
+                          final interest = _interestOptions[index];
+                          final isSelected = selected.contains(interest);
+
+                          return AppListSelectable(
+                            title: interest,
+                            value: isSelected,
+                            onChanged: (value) {
+                              final newSelected = Set<String>.from(selected);
+                              if (value == true) {
+                                newSelected.add(interest);
+                              } else {
+                                newSelected.remove(interest);
+                              }
+                              _selectedInterests.value = newSelected;
+                            },
+                          );
+                        },
+                      );
+                    },
+                  ),
+                ),
+                SizedBox(
+                  width: double.infinity,
+                  child: AppButtonPrimary(
+                    text: 'Next',
+                    onPressed: () async {
+                      for (final interest in _selectedInterests.value) {
+                        debugPrint('Selected interest: $interest');
+                      }
+                      await context.appController.updateUser(
+                        (context.appState.user as AuthorizedUser).copyWith(
+                              selectedInterests: _selectedInterests.value
+                                  .toList(),
+                            )
+                            as AuthorizedUser,
+                      );
+                      if (!context.mounted) return;
+                      context.go(homePath);
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}

@@ -405,7 +405,7 @@ class FirebaseFirestoreRepositoryImpl implements IFirebaseFirestoreRepository {
         'lastUpdated': FieldValue.serverTimestamp(),
       });
     } catch (e) {
-      throw Exception('Failed to update chat last message: $e');
+      throw Exception('Failed to update direct chat last message: $e');
     }
   }
 
@@ -417,7 +417,7 @@ class FirebaseFirestoreRepositoryImpl implements IFirebaseFirestoreRepository {
     try {
       await _directChats.doc(chatId).update({'unreadCount': unreadCount});
     } catch (e) {
-      throw Exception('Failed to update chat unread count: $e');
+      throw Exception('Failed to update direct chat unread count: $e');
     }
   }
 

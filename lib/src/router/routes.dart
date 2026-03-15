@@ -5,6 +5,7 @@ import 'package:test_app/src/features/chat_screen/chat_screen.dart';
 import 'package:test_app/src/features/email_confirmation_screen/email_confirmation_screen.dart';
 import 'package:test_app/src/features/forgot_password_screen/forgot_password_screen.dart';
 import 'package:test_app/src/features/home_screen/home_screen.dart';
+import 'package:test_app/src/features/interests_screen/interests_screen.dart';
 import 'package:test_app/src/features/onboarding_screen/onboarding_screen.dart';
 import 'package:test_app/src/features/login_screen/login_screen.dart';
 import 'package:test_app/src/features/project_feedback_screen/project_feedback_screen.dart';
@@ -15,6 +16,7 @@ const homePath = '/';
 const onboardingPath = '/onboarding';
 const loginPath = '/login';
 const registerPath = '/register';
+const interestsPath = '/interests';
 const emailConfirmationPath = '/email-confirmation';
 const forgotPasswordPath = '/forgot-password';
 const chatPath = '/chats/:chatType/:chatId';
@@ -38,6 +40,10 @@ GoRouter generateRouter(AppController appController) {
       GoRoute(
         path: registerPath,
         builder: (context, state) => const RegisterScreen(),
+      ),
+      GoRoute(
+        path: interestsPath,
+        builder: (context, state) => const InterestsScreen(),
       ),
       GoRoute(
         path: emailConfirmationPath,

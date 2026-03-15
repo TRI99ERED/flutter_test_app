@@ -184,20 +184,22 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             valueListenable: _isFormValid,
                             builder: (context, isValid, _) {
                               return AppButtonPrimary(
+                                text: 'Register',
                                 onPressed: isValid
-                                    ? () {
+                                    ? () async {
                                         final name = _nameController.text;
                                         final email = _emailController.text;
                                         final password =
                                             _passwordController.text;
-                                        context.appController.register(
+                                        await context.appController.register(
                                           email,
                                           password,
                                           name,
                                         );
+                                        if (!context.mounted) return;
+                                        context.go(emailConfirmationPath);
                                       }
                                     : null,
-                                text: 'Register',
                               );
                             },
                           ),

@@ -129,56 +129,61 @@ class FirebaseAuthRepositoryImpl implements IFirebaseAuthRepository {
           ? null
           : '503645418605-m55u2bsiqj2edouhrmdhmf66gbd6jrsp.apps.googleusercontent.com';
 
-      final GoogleSignIn signIn = GoogleSignIn.instance;
-      final completer = Completer<GoogleSignInAccount?>();
-      StreamSubscription? sub;
-      await signIn.initialize(
-        clientId: clientId,
-        serverClientId: serverClientId,
-      );
-      sub = signIn.authenticationEvents.listen(
-        (event) async {
-          final user = switch (event) {
-            GoogleSignInAuthenticationEventSignIn() => event.user,
-            GoogleSignInAuthenticationEventSignOut() => null,
-          };
-          if (!completer.isCompleted) {
-            completer.complete(user);
-          }
-        },
-        onError: (error) {
-          if (!completer.isCompleted) {
-            if (error is GoogleSignInException &&
-                error.code == GoogleSignInExceptionCode.canceled) {
-              completer.completeError(GoogleSignInCanceledException());
-            } else {
-              completer.completeError(
-                Exception('Google Sign-In authentication error: $error'),
-              );
+      if (!kIsWeb) {
+        final GoogleSignIn signIn = GoogleSignIn.instance;
+        final completer = Completer<GoogleSignInAccount?>();
+        StreamSubscription? sub;
+        await signIn.initialize(
+          clientId: clientId,
+          serverClientId: serverClientId,
+        );
+        sub = signIn.authenticationEvents.listen(
+          (event) async {
+            final user = switch (event) {
+              GoogleSignInAuthenticationEventSignIn() => event.user,
+              GoogleSignInAuthenticationEventSignOut() => null,
+            };
+            if (!completer.isCompleted) {
+              completer.complete(user);
             }
-          }
-        },
-      );
-      signIn.authenticate();
-      final GoogleSignInAccount? user;
-      try {
-        user = await completer.future;
-      } on GoogleSignInCanceledException {
+          },
+          onError: (error) {
+            if (!completer.isCompleted) {
+              if (error is GoogleSignInException &&
+                  error.code == GoogleSignInExceptionCode.canceled) {
+                completer.completeError(GoogleSignInCanceledException());
+              } else {
+                completer.completeError(
+                  Exception('Google Sign-In authentication error: $error'),
+                );
+              }
+            }
+          },
+        );
+        signIn.authenticate();
+        final GoogleSignInAccount? user;
+        try {
+          user = await completer.future;
+        } on GoogleSignInCanceledException {
+          await sub.cancel();
+          throw GoogleSignInCanceledException();
+        }
         await sub.cancel();
-        throw GoogleSignInCanceledException();
-      }
-      await sub.cancel();
-      if (user != null) {
-        final googleAuth = user.authentication;
-        final credential = GoogleAuthProvider.credential(
-          idToken: googleAuth.idToken,
-        );
-        final userCredential = await FirebaseAuth.instance.signInWithCredential(
-          credential,
-        );
-        return _mapFirebaseUserToAuthorized(userCredential.user!);
+        if (user != null) {
+          final googleAuth = user.authentication;
+          final credential = GoogleAuthProvider.credential(
+            idToken: googleAuth.idToken,
+          );
+          final userCredential = await FirebaseAuth.instance
+              .signInWithCredential(credential);
+          return _mapFirebaseUserToAuthorized(userCredential.user!);
+        } else {
+          return null;
+        }
       } else {
-        return null;
+        throw UnimplementedError(
+          'On web, use GoogleSignIn().renderButton() in the UI and handle sign-in there.',
+        );
       }
     } catch (e) {
       if (e is GoogleSignInCanceledException) rethrow;
