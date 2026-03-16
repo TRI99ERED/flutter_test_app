@@ -4,8 +4,8 @@ import 'package:test_app/src/features/app/app_scope.dart';
 import 'package:test_app/src/features/app/data/models/user_model.dart';
 import 'package:test_app/src/widgets/common/app_avatar.dart';
 import 'package:test_app/src/widgets/common/app_button.dart';
-import 'package:test_app/src/widgets/common/app_list_title.dart';
 import 'package:test_app/src/widgets/common/app_loader.dart';
+import 'package:test_app/src/widgets/common/app_nav_bar.dart';
 import 'package:test_app/src/widgets/common/app_text_field.dart';
 import 'package:test_app/src/widgets/common/error_state.dart';
 import 'package:test_app/src/widgets/common/styles.dart';
@@ -58,6 +58,66 @@ class _UserProfileState extends State<UserProfile> {
       final isValid = _formKey.currentState!.validate();
       _isFormValid.value = isValid;
     }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppNavBar(
+        title: widget.mode == UserProfileMode.view
+            ? 'User Profile'
+            : 'Edit Profile',
+        leftText: 'Close',
+        onPressedLeft: () => context.pop(),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(spacing16),
+        child: Column(
+          spacing: spacing8,
+          children: [
+            switch (widget.mode) {
+              UserProfileMode.view => _buildProfileView(),
+              UserProfileMode.edit => _buildProfileEdit(),
+            },
+            Spacer(),
+            if (widget.mode == UserProfileMode.edit)
+              ValueListenableBuilder(
+                valueListenable: _isFormValid,
+                builder: (context, value, child) {
+                  return SizedBox(
+                    width: double.infinity,
+                    child: AppButtonPrimary(
+                      text: 'Save',
+                      onPressed: value
+                          ? () async {
+                              await context.appController.updateUser(
+                                widget.user.copyWith(
+                                      name: _nameController.text,
+                                      handle: _handleController.text,
+                                    )
+                                    as AuthorizedUser,
+                              );
+                              if (!context.mounted) return;
+                              context.pop();
+                            }
+                          : null,
+                    ),
+                  );
+                },
+              ),
+            SizedBox(
+              width: double.infinity,
+              child: AppButtonPrimary(
+                text: 'Close',
+                onPressed: () {
+                  context.pop();
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Widget _buildProfileView() {
@@ -204,74 +264,6 @@ class _UserProfileState extends State<UserProfile> {
             },
           ),
         ],
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Container(
-        padding: const EdgeInsets.all(spacing32),
-        width: MediaQuery.sizeOf(context).width * 0.8,
-        height: MediaQuery.sizeOf(context).height * 0.8,
-        decoration: BoxDecoration(
-          color: LightColor.lightest.color,
-          borderRadius: const BorderRadius.all(Radius.circular(16)),
-        ),
-        child: Material(
-          color: Colors.transparent,
-          child: Column(
-            spacing: spacing8,
-            children: [
-              AppListTitle(
-                title: switch (widget.mode) {
-                  UserProfileMode.view => 'User Profile',
-                  UserProfileMode.edit => 'Edit Profile',
-                },
-              ),
-              switch (widget.mode) {
-                UserProfileMode.view => _buildProfileView(),
-                UserProfileMode.edit => _buildProfileEdit(),
-              },
-              Spacer(),
-              if (widget.mode == UserProfileMode.edit)
-                ValueListenableBuilder(
-                  valueListenable: _isFormValid,
-                  builder: (context, value, child) {
-                    return SizedBox(
-                      width: double.infinity,
-                      child: AppButtonPrimary(
-                        text: 'Save',
-                        onPressed: value
-                            ? () async {
-                                await context.appController.updateUser(
-                                  widget.user.copyWith(
-                                        name: _nameController.text,
-                                        handle: _handleController.text,
-                                      )
-                                      as AuthorizedUser,
-                                );
-                                if (!context.mounted) return;
-                                context.pop();
-                              }
-                            : null,
-                      ),
-                    );
-                  },
-                ),
-              SizedBox(
-                width: double.infinity,
-                child: AppButtonPrimary(
-                  text: 'Close',
-                  onPressed: () {
-                    context.pop();
-                  },
-                ),
-              ),
-            ],
-          ),
-        ),
       ),
     );
   }

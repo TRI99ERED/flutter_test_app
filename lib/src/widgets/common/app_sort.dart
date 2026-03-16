@@ -83,6 +83,7 @@ class AppSortMenu extends StatefulWidget {
   }) {
     showDialog(
       context: context,
+      barrierColor: Colors.black.withAlpha(216),
       builder: (context) {
         return AppSortMenu(
           sortOrder: sortOrder,
@@ -114,22 +115,17 @@ class _AppSortMenuState extends State<AppSortMenu> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: PreferredSize(
-        preferredSize: Size.fromHeight(kToolbarHeight),
-        child: SafeArea(
-          child: AppNavBar(
-            title: 'Sort',
-            leftText: 'Cancel',
-            rightText: 'Default',
-            onPressedLeft: () {
-              context.pop();
-            },
-            onPressedRight: () {
-              _internalSortOption.value = widget.defaultSortOption;
-              _internalSortOrder.value = SortOrder.descending;
-            },
-          ),
-        ),
+      appBar: AppNavBar(
+        title: 'Sort',
+        leftText: 'Cancel',
+        rightText: 'Default',
+        onPressedLeft: () {
+          context.pop();
+        },
+        onPressedRight: () {
+          _internalSortOption.value = widget.defaultSortOption;
+          _internalSortOrder.value = SortOrder.descending;
+        },
       ),
       body: Container(
         color: LightColor.lightest.color,

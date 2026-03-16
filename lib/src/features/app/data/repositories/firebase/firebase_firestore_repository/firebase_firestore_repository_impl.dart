@@ -6,6 +6,7 @@ import 'package:test_app/src/features/app/data/models/project_feedback_model.dar
 import 'package:test_app/src/features/app/data/models/project_model.dart';
 import 'package:test_app/src/features/app/data/models/user_model.dart';
 import 'package:test_app/src/features/app/data/repositories/firebase/firebase_firestore_repository/ifirebase_firestore_repository.dart';
+import 'package:test_app/src/features/chat_screen/chat_screen.dart';
 
 class FirebaseFirestoreRepositoryImpl implements IFirebaseFirestoreRepository {
   final _users = FirebaseFirestore.instance.collection('users');
@@ -206,6 +207,24 @@ class FirebaseFirestoreRepositoryImpl implements IFirebaseFirestoreRepository {
   }
 
   @override
+  Future<void> createSavedMessage(String userId, String body) {
+    try {
+      final doc = _users.doc(userId).collection('savedMessages').doc();
+      final message = SavedMessage(
+        id: doc.id,
+        senderId: userId,
+        body: body,
+        timestamp: DateTime.now(),
+        chatId: '',
+        chatType: ChatType.direct,
+      );
+      return doc.set(message.toFirestore());
+    } catch (e) {
+      throw Exception('Failed to create saved message: $e');
+    }
+  }
+
+  @override
   Future<void> createUser({required AuthorizedUser user}) {
     final doc = _users.doc(user.id);
     try {
@@ -309,6 +328,16 @@ class FirebaseFirestoreRepositoryImpl implements IFirebaseFirestoreRepository {
   }
 
   @override
+  Future<void> deleteSavedMessage(String userId, String messageId) async {
+    try {
+      final doc = _users.doc(userId).collection('savedMessages').doc(messageId);
+      await doc.delete();
+    } catch (e) {
+      throw Exception('Failed to delete saved message: $e');
+    }
+  }
+
+  @override
   Future<void> removeFriend({
     required String currentUserId,
     required String friendUserId,
@@ -331,6 +360,16 @@ class FirebaseFirestoreRepositoryImpl implements IFirebaseFirestoreRepository {
       });
     } catch (e) {
       throw Exception('Failed to remove friend: $e');
+    }
+  }
+
+  @override
+  Future<void> saveMessage(String userId, SavedMessage message) async {
+    try {
+      final doc = _users.doc(userId).collection('savedMessages').doc();
+      await doc.set(message.toFirestore());
+    } catch (e) {
+      throw Exception('Failed to save message: $e');
     }
   }
 
@@ -841,5 +880,22 @@ class FirebaseFirestoreRepositoryImpl implements IFirebaseFirestoreRepository {
           return Project.fromFirestore(snapshot);
         })
         .distinct((prev, next) => prev == next);
+  }
+
+  @override
+  Stream<List<SavedMessage>?> watchSavedMessages(String userId) {
+    return _users
+        .doc(userId)
+        .collection('savedMessages')
+        .snapshots()
+        .map(
+          (snapshot) => snapshot.docs.map(SavedMessage.fromFirestore).toList(),
+        )
+        .distinct((prev, next) {
+          if (prev.length != next.length) return false;
+          final prevIds = prev.map((m) => m.id).toSet();
+          final nextIds = next.map((m) => m.id).toSet();
+          return prevIds.containsAll(nextIds) && nextIds.containsAll(prevIds);
+        });
   }
 }

@@ -8,6 +8,7 @@ class AppMessageBubble extends StatelessWidget {
   final String body;
   final bool isLastInSequence;
   final MessageType messageType;
+  final VoidCallback? onTap;
 
   const AppMessageBubble({
     super.key,
@@ -15,6 +16,7 @@ class AppMessageBubble extends StatelessWidget {
     required this.body,
     required this.isLastInSequence,
     required this.messageType,
+    this.onTap,
   });
 
   Widget _buildMessageContent(Color nameColor, Color bodyColor) {
@@ -45,43 +47,49 @@ class AppMessageBubble extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return switch (messageType) {
-      MessageType.received => Container(
-        padding: const EdgeInsets.symmetric(
-          vertical: spacing12,
-          horizontal: spacing16,
-        ),
-        decoration: BoxDecoration(
-          color: LightColor.light.color,
-          borderRadius: BorderRadius.only(
-            topLeft: const Radius.circular(20),
-            topRight: const Radius.circular(20),
-            bottomLeft: isLastInSequence
-                ? Radius.zero
-                : const Radius.circular(20),
-            bottomRight: const Radius.circular(20),
+      MessageType.received => TextButton(
+        style: TextButton.styleFrom(
+          padding: const EdgeInsets.symmetric(
+            vertical: spacing12,
+            horizontal: spacing16,
+          ),
+          backgroundColor: LightColor.light.color,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.only(
+              topLeft: const Radius.circular(20),
+              topRight: const Radius.circular(20),
+              bottomLeft: isLastInSequence
+                  ? Radius.zero
+                  : const Radius.circular(20),
+              bottomRight: const Radius.circular(20),
+            ),
           ),
         ),
+        onPressed: onTap,
         child: _buildMessageContent(
           DarkColor.dark.color,
           DarkColor.darkest.color,
         ),
       ),
-      MessageType.sent => Container(
-        padding: const EdgeInsets.symmetric(
-          vertical: spacing12,
-          horizontal: spacing16,
-        ),
-        decoration: BoxDecoration(
-          color: HighlightColor.darkest.color,
-          borderRadius: BorderRadius.only(
-            topLeft: const Radius.circular(20),
-            topRight: const Radius.circular(20),
-            bottomLeft: const Radius.circular(20),
-            bottomRight: isLastInSequence
-                ? Radius.zero
-                : const Radius.circular(20),
+      MessageType.sent => TextButton(
+        style: TextButton.styleFrom(
+          padding: const EdgeInsets.symmetric(
+            vertical: spacing12,
+            horizontal: spacing16,
+          ),
+          backgroundColor: HighlightColor.darkest.color,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.only(
+              topLeft: const Radius.circular(20),
+              topRight: const Radius.circular(20),
+              bottomLeft: const Radius.circular(20),
+              bottomRight: isLastInSequence
+                  ? Radius.zero
+                  : const Radius.circular(20),
+            ),
           ),
         ),
+        onPressed: onTap,
         child: _buildMessageContent(
           HighlightColor.light.color,
           LightColor.lightest.color,

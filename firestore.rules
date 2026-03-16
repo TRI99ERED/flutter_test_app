@@ -45,6 +45,14 @@ service cloud.firestore {
         request.auth.uid == resource.data.id);
         allow update: if false;
       }
+
+      // Saved messages subcollection
+      match /savedMessages/{messageId} {
+        allow read: if request.auth != null && request.auth.uid == userId;
+        allow create: if request.auth != null && request.auth.uid == userId;
+        allow delete: if request.auth != null && request.auth.uid == userId;
+        allow update: if false;
+      }
     }
 
     // Direct chats - users can only read chats they are part of
@@ -59,7 +67,8 @@ service cloud.firestore {
 
       // Messages subcollection
       match /messages/{messageId} {
-        allow read: if true;
+        allow read: if request.auth != null &&
+        request.auth.uid in get(/databases/$(database)/documents/directChats/$(chatId)).data.participants;
         allow create: if request.auth != null &&
         request.auth.uid in get(/databases/$(database)/documents/directChats/$(chatId)).data.participants;
         allow delete: if request.auth != null &&
@@ -86,7 +95,8 @@ service cloud.firestore {
 
       // Messages subcollection
       match /messages/{messageId} {
-        allow read: if true;
+        allow read: if request.auth != null &&
+        request.auth.uid in get(/databases/$(database)/documents/groupChats/$(chatId)).data.participants;
         allow create: if request.auth != null &&
         request.auth.uid in get(/databases/$(database)/documents/groupChats/$(chatId)).data.participants;
         allow delete: if request.auth != null &&

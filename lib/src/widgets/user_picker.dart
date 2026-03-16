@@ -5,7 +5,7 @@ import 'package:test_app/src/features/app/app_scope.dart';
 import 'package:test_app/src/features/app/data/models/user_model.dart';
 import 'package:test_app/src/widgets/common/app_button.dart';
 import 'package:test_app/src/widgets/common/app_list_item.dart';
-import 'package:test_app/src/widgets/common/app_list_title.dart';
+import 'package:test_app/src/widgets/common/app_nav_bar.dart';
 import 'package:test_app/src/widgets/common/app_search_bar.dart';
 import 'package:test_app/src/widgets/common/styles.dart';
 
@@ -123,70 +123,65 @@ class _UserPickerState extends State<UserPicker> {
         )
         .toList();
 
-    return Center(
-      child: Container(
-        padding: const EdgeInsets.all(spacing32),
-        width: MediaQuery.sizeOf(context).width * 0.8,
-        height: MediaQuery.sizeOf(context).height * 0.8,
-        decoration: BoxDecoration(
-          color: LightColor.lightest.color,
-          borderRadius: const BorderRadius.all(Radius.circular(16)),
-        ),
-        child: Material(
-          color: Colors.transparent,
-          child: Column(
-            spacing: spacing8,
-            children: [
-              AppListTitle(title: _title),
-              AppSearchBar(
-                onChanged: (value) {
-                  _searchQuery.value = value;
-                },
-                onSubmitted: (value) {
-                  _searchQuery.value = value;
-                },
-              ),
-              Expanded(
-                child: ValueListenableBuilder(
-                  valueListenable: _searchQuery,
-                  builder: (context, value, child) {
-                    final filteredUsers = users.where((user) {
-                      final query = _searchQuery.value.toLowerCase();
-                      return user.name.toLowerCase().contains(query) ||
-                          user.handle.toLowerCase().contains(query);
-                    }).toList();
+    return Scaffold(
+      appBar: AppNavBar(
+        title: _title,
+        leftText: 'Cancel',
+        onPressedLeft: () => context.pop(),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(spacing16),
+        child: Column(
+          spacing: spacing8,
+          children: [
+            AppSearchBar(
+              onChanged: (value) {
+                _searchQuery.value = value;
+              },
+              onSubmitted: (value) {
+                _searchQuery.value = value;
+              },
+            ),
+            Expanded(
+              child: ValueListenableBuilder(
+                valueListenable: _searchQuery,
+                builder: (context, value, child) {
+                  final filteredUsers = users.where((user) {
+                    final query = _searchQuery.value.toLowerCase();
+                    return user.name.toLowerCase().contains(query) ||
+                        user.handle.toLowerCase().contains(query);
+                  }).toList();
 
-                    if (filteredUsers.isEmpty) {
-                      return Center(
-                        child: Text('No $_errorLabel match your search'),
-                      );
-                    }
-
-                    return ListView.builder(
-                      itemCount: filteredUsers.length,
-                      itemBuilder: (context, index) {
-                        final user = filteredUsers[index];
-                        return AppListItem(
-                          title: user.name,
-                          description: user.handle.isNotEmpty
-                              ? '@${user.handle}'
-                              : null,
-                          onPressed: () => context.pop(user),
-                        );
-                      },
+                  if (filteredUsers.isEmpty) {
+                    return Center(
+                      child: Text('No $_errorLabel match your search'),
                     );
-                  },
-                ),
+                  }
+
+                  return ListView.builder(
+                    itemCount: filteredUsers.length,
+                    itemBuilder: (context, index) {
+                      final user = filteredUsers[index];
+                      return AppListItem(
+                        title: user.name,
+                        description: user.handle.isNotEmpty
+                            ? '@${user.handle}'
+                            : null,
+                        onPressed: () => context.pop(user),
+                      );
+                    },
+                  );
+                },
               ),
-              SizedBox(
-                width: double.infinity,
-                child: AppButtonPrimary(
-                  onPressed: () => context.pop(),
-                  text: 'Cancel',
-                ),
+            ),
+            SizedBox(
+              width: double.infinity,
+              child: AppButtonPrimary(
+                onPressed: () => context.pop(),
+                text: 'Cancel',
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

@@ -10,6 +10,7 @@ class AlignedMessageBubble extends StatelessWidget {
   final int index;
   final bool isLastInSequence;
   final bool isFirstInSequence;
+  final VoidCallback? onTap;
 
   const AlignedMessageBubble({
     super.key,
@@ -17,6 +18,7 @@ class AlignedMessageBubble extends StatelessWidget {
     required this.index,
     this.isLastInSequence = false,
     this.isFirstInSequence = false,
+    this.onTap,
   });
 
   @override
@@ -44,6 +46,7 @@ class AlignedMessageBubble extends StatelessWidget {
                     (context.appState.user as AuthorizedUser).id
                 ? MessageType.sent
                 : MessageType.received,
+            onTap: onTap,
           ),
         ),
       ),

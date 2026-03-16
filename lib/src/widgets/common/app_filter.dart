@@ -75,6 +75,7 @@ class AppFilterMenu extends StatefulWidget {
   }) {
     showDialog(
       context: context,
+      barrierColor: Colors.black.withAlpha(216),
       builder: (context) {
         return AppFilterMenu(filters: filters, filterOptions: filterOptions);
       },
@@ -100,23 +101,18 @@ class _AppFilterMenuState extends State<AppFilterMenu> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: PreferredSize(
-        preferredSize: Size.fromHeight(kToolbarHeight),
-        child: SafeArea(
-          child: AppNavBar(
-            title: 'Filter',
-            leftText: 'Cancel',
-            rightText: 'Clear All',
-            onPressedLeft: () {
-              context.pop();
-            },
-            onPressedRight: () {
-              _internalFilters.value = widget.filterOptions.map(
-                (k, v) => MapEntry(k.key, <String>{}),
-              );
-            },
-          ),
-        ),
+      appBar: AppNavBar(
+        title: 'Filter',
+        leftText: 'Cancel',
+        rightText: 'Clear All',
+        onPressedLeft: () {
+          context.pop();
+        },
+        onPressedRight: () {
+          _internalFilters.value = widget.filterOptions.map(
+            (k, v) => MapEntry(k.key, <String>{}),
+          );
+        },
       ),
       body: Container(
         color: LightColor.lightest.color,

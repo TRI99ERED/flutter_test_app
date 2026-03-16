@@ -6,10 +6,10 @@ import 'package:test_app/src/features/app/data/models/user_model.dart';
 import 'package:test_app/src/widgets/common/app_avatar.dart';
 import 'package:test_app/src/widgets/common/app_calendar.dart';
 import 'package:test_app/src/widgets/common/app_checkbox.dart';
+import 'package:test_app/src/widgets/common/app_nav_bar.dart';
 import 'package:test_app/src/widgets/user_picker.dart';
 import 'package:test_app/src/widgets/common/app_button.dart';
 import 'package:test_app/src/widgets/common/app_list_item.dart';
-import 'package:test_app/src/widgets/common/app_list_title.dart';
 import 'package:test_app/src/widgets/common/app_text_area.dart';
 import 'package:test_app/src/widgets/common/app_text_field.dart';
 import 'package:test_app/src/widgets/common/styles.dart';
@@ -70,47 +70,38 @@ class _ProjectWizardState extends State<ProjectWizard> {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Container(
-        padding: const EdgeInsets.all(spacing32),
-        width: MediaQuery.sizeOf(context).width * 0.8,
-        height: MediaQuery.sizeOf(context).height * 0.8,
-        decoration: BoxDecoration(
-          color: LightColor.lightest.color,
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: Material(
-          color: Colors.transparent,
-          child: Column(
-            spacing: spacing8,
-            children: [
-              AppListTitle(title: _getTitle()),
-              Expanded(child: _buildForm(context)),
-              SizedBox(
-                width: double.infinity,
-                child: AppButtonPrimary(
-                  text: 'Save',
-                  onPressed: () => _onSavePressed(context),
-                ),
+    return Scaffold(
+      appBar: AppNavBar(
+        title: widget.mode == ProjectWizardMode.create
+            ? 'Create a Project'
+            : 'Edit Project',
+        leftText: 'Cancel',
+        onPressedLeft: () => context.pop(),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(spacing16),
+        child: Column(
+          spacing: spacing8,
+          children: [
+            Expanded(child: _buildForm(context)),
+            SizedBox(
+              width: double.infinity,
+              child: AppButtonPrimary(
+                text: 'Save',
+                onPressed: () => _onSavePressed(context),
               ),
-              SizedBox(
-                width: double.infinity,
-                child: AppButtonPrimary(
-                  onPressed: () => context.pop(),
-                  text: 'Cancel',
-                ),
+            ),
+            SizedBox(
+              width: double.infinity,
+              child: AppButtonPrimary(
+                onPressed: () => context.pop(),
+                text: 'Cancel',
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
-  }
-
-  String _getTitle() {
-    return widget.mode == ProjectWizardMode.create
-        ? 'Create a Project'
-        : 'Edit Project';
   }
 
   Widget _buildForm(BuildContext context) {

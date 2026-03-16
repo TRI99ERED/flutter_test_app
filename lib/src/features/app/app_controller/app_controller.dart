@@ -1692,6 +1692,105 @@ final class AppController extends BaseController<AppState> {
     }
   }
 
+  Future<void> saveMessage(SavedMessage message) async =>
+      await serialExecutor.synchronized(() async {
+        setState(
+          AppState.processing(message: 'Saving message...', user: state.user),
+        );
+        try {
+          await _firestoreRepository.saveMessage(
+            (state.user as AuthorizedUser).id,
+            message,
+          );
+          setState(
+            AppState.idle(
+              message: 'Message saved successfully, id: "${message.id}"',
+              user: state.user,
+            ),
+          );
+        } catch (error, stackTrace) {
+          setState(
+            AppState.failed(
+              message: 'Failed to save message: ${error.toString()}',
+              user: state.user,
+              error: error,
+              stackTrace: stackTrace,
+            ),
+          );
+          rethrow;
+        }
+      });
+
+  Stream<List<SavedMessage>?> watchSavedMessages() {
+    return _firestoreRepository.watchSavedMessages(
+      (state.user as AuthorizedUser).id,
+    );
+  }
+
+  Future<void> createSavedMessage(String body) async =>
+      await serialExecutor.synchronized(() async {
+        setState(
+          AppState.processing(
+            message: 'Creating saved message...',
+            user: state.user,
+          ),
+        );
+        try {
+          await _firestoreRepository.createSavedMessage(
+            (state.user as AuthorizedUser).id,
+            body,
+          );
+          setState(
+            AppState.idle(
+              message: 'Saved message created successfully.',
+              user: state.user,
+            ),
+          );
+        } catch (error, stackTrace) {
+          setState(
+            AppState.failed(
+              message: 'Failed to create saved message: ${error.toString()}',
+              user: state.user,
+              error: error,
+              stackTrace: stackTrace,
+            ),
+          );
+          rethrow;
+        }
+      });
+
+  Future<void> deleteSavedMessage(String messageId) async =>
+      await serialExecutor.synchronized(() async {
+        setState(
+          AppState.processing(
+            message: 'Deleting saved message...',
+            user: state.user,
+          ),
+        );
+        try {
+          await _firestoreRepository.deleteSavedMessage(
+            (state.user as AuthorizedUser).id,
+            messageId,
+          );
+          setState(
+            AppState.idle(
+              message: 'Saved message deleted successfully.',
+              user: state.user,
+            ),
+          );
+        } catch (error, stackTrace) {
+          setState(
+            AppState.failed(
+              message: 'Failed to delete saved message: ${error.toString()}',
+              user: state.user,
+              error: error,
+              stackTrace: stackTrace,
+            ),
+          );
+          rethrow;
+        }
+      });
+
   @override
   void dispose() {
     super.dispose();

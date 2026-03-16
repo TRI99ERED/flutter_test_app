@@ -11,6 +11,7 @@ import 'package:test_app/src/features/login_screen/login_screen.dart';
 import 'package:test_app/src/features/project_feedback_screen/project_feedback_screen.dart';
 import 'package:test_app/src/features/project_screen/project_screen.dart';
 import 'package:test_app/src/features/register_screen/register_screen.dart';
+import 'package:test_app/src/features/saved_messages_screen/saved_messages_screen.dart';
 
 const homePath = '/';
 const onboardingPath = '/onboarding';
@@ -22,6 +23,7 @@ const forgotPasswordPath = '/forgot-password';
 const chatPath = '/chats/:chatType/:chatId';
 const projectPath = '/projects/:projectId';
 const projectFeedbackPath = '/projects/:projectId/feedback';
+const savedMessagesPath = '/saved-messages';
 
 GoRouter generateRouter(AppController appController) {
   return GoRouter(
@@ -76,6 +78,12 @@ GoRouter generateRouter(AppController appController) {
         builder: (context, state) {
           final projectId = state.pathParameters['projectId'] ?? '';
           return ProjectFeedbackScreen(projectId: projectId);
+        },
+      ),
+      GoRoute(
+        path: savedMessagesPath,
+        builder: (context, state) {
+          return const SavedMessagesScreen();
         },
       ),
     ],

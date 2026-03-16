@@ -31,44 +31,47 @@ class AppNavBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Align(
-          alignment: Alignment.centerLeft,
-          child: (leftText != null || leftIcon != null || leftImage != null)
-              ? _AppControl(
-                  text: leftText,
-                  icon: leftIcon,
-                  image: leftImage,
-                  onPressed: onPressedLeft,
-                )
-              : SizedBox.shrink(),
-        ),
-        Expanded(
-          child: Center(
-            child: Text(
-              title,
-              style: TextStyle(
-                fontSize: h4Size,
-                fontWeight: h4Weight,
-                color: DarkColor.darkest.color,
-                overflow: TextOverflow.ellipsis,
+    return SafeArea(
+      child: Row(
+        children: [
+          SizedBox(
+            width: 80,
+            child: (leftText != null || leftIcon != null || leftImage != null)
+                ? _AppControl(
+                    text: leftText,
+                    icon: leftIcon,
+                    image: leftImage,
+                    onPressed: onPressedLeft,
+                  )
+                : const SizedBox.shrink(),
+          ),
+          Expanded(
+            child: Center(
+              child: Text(
+                title,
+                style: TextStyle(
+                  fontSize: h4Size,
+                  fontWeight: h4Weight,
+                  color: DarkColor.darkest.color,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
             ),
           ),
-        ),
-        Align(
-          alignment: Alignment.centerRight,
-          child: (rightText != null || rightIcon != null || rightImage != null)
-              ? _AppControl(
-                  text: rightText,
-                  icon: rightIcon,
-                  image: rightImage,
-                  onPressed: onPressedRight,
-                )
-              : const SizedBox.shrink(),
-        ),
-      ],
+          SizedBox(
+            width: 80,
+            child:
+                (rightText != null || rightIcon != null || rightImage != null)
+                ? _AppControl(
+                    text: rightText,
+                    icon: rightIcon,
+                    image: rightImage,
+                    onPressed: onPressedRight,
+                  )
+                : const SizedBox.shrink(),
+          ),
+        ],
+      ),
     );
   }
 }

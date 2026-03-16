@@ -37,7 +37,7 @@ class ProjectScreen extends StatelessWidget {
       child: Scaffold(
         appBar: PreferredSize(
           preferredSize: const Size.fromHeight(kToolbarHeight),
-          child: SafeArea(child: _buildAppBar(context)),
+          child: _buildAppBar(context),
         ),
         body: SafeArea(
           child: Padding(

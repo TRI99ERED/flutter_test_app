@@ -46,6 +46,8 @@ abstract interface class IFirebaseFirestoreRepository {
     DateTime deadline,
   );
 
+  Future<void> createSavedMessage(String userId, String body);
+
   Future<void> createUser({required AuthorizedUser user});
 
   Future<void> declineFriendRequest({
@@ -59,12 +61,16 @@ abstract interface class IFirebaseFirestoreRepository {
 
   Future<void> deleteProject(String projectId);
 
+  Future<void> deleteSavedMessage(String userId, String messageId);
+
   Future<bool> doesUserExist(String id);
 
   Future<void> removeFriend({
     required String currentUserId,
     required String friendUserId,
   });
+
+  Future<void> saveMessage(String userId, SavedMessage message);
 
   Future<void> sendFriendRequest({
     required String currentUserId,
@@ -165,4 +171,6 @@ abstract interface class IFirebaseFirestoreRepository {
   );
 
   Stream<Project?> watchProjectWithId(String projectId);
+
+  Stream<List<SavedMessage>?> watchSavedMessages(String userId);
 }

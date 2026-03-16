@@ -81,23 +81,9 @@ class Settings extends StatelessWidget {
             child: AppListItem(
               title: 'Saved messages',
               control: AppListItemControl.smallButton,
-              onPressed: () {},
-            ),
-          ),
-          AppDivider(),
-          Center(
-            child: AppListItem(
-              title: 'Recent calls',
-              control: AppListItemControl.smallButton,
-              onPressed: () {},
-            ),
-          ),
-          AppDivider(),
-          Center(
-            child: AppListItem(
-              title: 'Devices',
-              control: AppListItemControl.smallButton,
-              onPressed: () {},
+              onPressed: () {
+                context.push('/saved-messages');
+              },
             ),
           ),
           AppDivider(),
@@ -120,22 +106,6 @@ class Settings extends StatelessWidget {
           Center(
             child: AppListItem(
               title: 'Language',
-              control: AppListItemControl.smallButton,
-              onPressed: () {},
-            ),
-          ),
-          AppDivider(),
-          Center(
-            child: AppListItem(
-              title: 'Privacy & Security',
-              control: AppListItemControl.smallButton,
-              onPressed: () {},
-            ),
-          ),
-          AppDivider(),
-          Center(
-            child: AppListItem(
-              title: 'Storage',
               control: AppListItemControl.smallButton,
               onPressed: () {},
             ),

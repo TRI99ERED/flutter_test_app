@@ -11,6 +11,7 @@ import 'package:test_app/src/features/app/data/models/user_model.dart';
 import 'package:test_app/src/features/chat_screen/widgets/aligned_message_bubble.dart';
 import 'package:test_app/src/widgets/chat_wizard.dart';
 import 'package:test_app/src/widgets/common/app_avatar.dart';
+import 'package:test_app/src/widgets/common/app_list_item.dart';
 import 'package:test_app/src/widgets/common/app_loader.dart';
 import 'package:test_app/src/widgets/common/app_message_input.dart';
 import 'package:test_app/src/widgets/common/app_nav_bar.dart';
@@ -350,6 +351,9 @@ class _ChatScreenState extends State<ChatScreen> {
                 index: index,
                 isFirstInSequence: true,
                 isLastInSequence: true,
+                onTap: () {
+                  _handleMessageTap(context, messages[index]);
+                },
               );
             }
             if (index == 0 ||
@@ -358,6 +362,9 @@ class _ChatScreenState extends State<ChatScreen> {
                 messagesWithSenderNames: messagesWithSenderNames,
                 index: index,
                 isLastInSequence: true,
+                onTap: () {
+                  _handleMessageTap(context, messages[index]);
+                },
               );
             }
             if (index == messages.length - 1 ||
@@ -366,13 +373,59 @@ class _ChatScreenState extends State<ChatScreen> {
                 messagesWithSenderNames: messagesWithSenderNames,
                 index: index,
                 isFirstInSequence: true,
+                onTap: () {
+                  _handleMessageTap(context, messages[index]);
+                },
               );
             }
             return AlignedMessageBubble(
               messagesWithSenderNames: messagesWithSenderNames,
               index: index,
+              onTap: () {
+                _handleMessageTap(context, messages[index]);
+              },
             );
           },
+        );
+      },
+    );
+  }
+
+  void _handleMessageTap(BuildContext context, Message message) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: LightColor.light.color,
+      elevation: 0,
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.sizeOf(context).height * 0.3,
+      ),
+      barrierColor: Colors.black.withAlpha(216),
+      shape: ContinuousRectangleBorder(borderRadius: BorderRadius.zero),
+      showDragHandle: true,
+      builder: (context) {
+        return Column(
+          spacing: spacing8,
+          children: [
+            AppListItem(
+              title: 'Save message',
+              onPressed: () async {
+                await context.appController.saveMessage(
+                  SavedMessage(
+                    id: message.id,
+                    senderId: message.senderId,
+                    body: message.body,
+                    timestamp: message.timestamp,
+                    chatId: widget.chatId,
+                    chatType: widget.chatType,
+                  ),
+                );
+                if (!context.mounted) return;
+                ScaffoldMessenger.of(
+                  context,
+                ).showSnackBar(const SnackBar(content: Text('Message saved')));
+              },
+            ),
+          ],
         );
       },
     );
