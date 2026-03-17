@@ -1,5 +1,6 @@
 ﻿import 'package:flutter/material.dart';
-import 'package:test_app/src/widgets/common/styles.dart';
+import 'package:test_app/src/features/themes/app_theme.dart';
+import 'package:test_app/src/features/themes/styles.dart';
 
 class AppTabs extends StatefulWidget {
   final int tabCount;
@@ -44,7 +45,9 @@ class _AppTabsState extends State<AppTabs> {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: LightColor.lightest.color,
+        color: Theme.of(
+          context,
+        ).extension<AppTheme>()?.backgroundStrongestColor,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Stack(
@@ -60,7 +63,9 @@ class _AppTabsState extends State<AppTabs> {
               width: 24,
               height: 4,
               decoration: BoxDecoration(
-                color: HighlightColor.darkest.color,
+                color: Theme.of(
+                  context,
+                ).extension<AppTheme>()?.highlightDarkestColor,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -100,8 +105,8 @@ class _Tab extends StatelessWidget {
       onPressed: onPressed,
       style: TextButton.styleFrom(
         foregroundColor: selected
-            ? DarkColor.darkest.color
-            : DarkColor.light.color,
+            ? Theme.of(context).extension<AppTheme>()?.foregroundStrongestColor
+            : Theme.of(context).extension<AppTheme>()?.foregroundWeakColor,
         shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
       ),
       child: Column(

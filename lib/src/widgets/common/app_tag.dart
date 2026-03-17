@@ -1,5 +1,6 @@
 ﻿import 'package:flutter/material.dart';
-import 'package:test_app/src/widgets/common/styles.dart';
+import 'package:test_app/src/features/themes/app_theme.dart';
+import 'package:test_app/src/features/themes/styles.dart';
 
 class AppTag extends StatelessWidget {
   final String? text;
@@ -41,17 +42,23 @@ class AppTag extends StatelessWidget {
           Set<WidgetState> states,
         ) {
           if (isSelected) {
-            return HighlightColor.darkest.color;
+            return Theme.of(
+              context,
+            ).extension<AppTheme>()?.highlightDarkestColor;
           }
-          return HighlightColor.lightest.color;
+          return Theme.of(
+            context,
+          ).extension<AppTheme>()?.highlightLightestColor;
         }),
         foregroundColor: WidgetStateProperty.resolveWith<Color?>((
           Set<WidgetState> states,
         ) {
           if (isSelected) {
-            return LightColor.lightest.color;
+            return Theme.of(
+              context,
+            ).extension<AppTheme>()?.backgroundStrongestColor;
           }
-          return HighlightColor.darkest.color;
+          return Theme.of(context).extension<AppTheme>()?.highlightDarkestColor;
         }),
         shadowColor: WidgetStateProperty.all(Colors.transparent),
         shape: WidgetStateProperty.all(const StadiumBorder()),

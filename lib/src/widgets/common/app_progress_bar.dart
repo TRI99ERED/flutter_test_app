@@ -1,5 +1,6 @@
 ﻿import 'package:flutter/material.dart';
-import 'package:test_app/src/widgets/common/styles.dart';
+import 'package:test_app/src/features/themes/app_theme.dart';
+import 'package:test_app/src/features/themes/styles.dart';
 
 class AppProgressBar extends StatelessWidget {
   final double value;
@@ -15,37 +16,49 @@ class AppProgressBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CustomPaint(
-      painter: _AppProgressBarPainter(value: value, steps: steps),
+      painter: _AppProgressBarPainter(
+        context: context,
+        value: value,
+        steps: steps,
+      ),
       child: const SizedBox(height: 8),
     );
   }
 }
 
 class _AppProgressBarPainter extends CustomPainter {
+  final BuildContext context;
   final double _value;
   final int? _steps;
 
-  _AppProgressBarPainter({required double value, int? steps})
-    : _value = value,
-      _steps = steps,
-      assert(value >= 0 && value <= 1, 'Value must be between 0 and 1'),
-      assert(
-        steps == null || steps > 0,
-        'Steps must be greater than 0 if provided',
-      );
+  _AppProgressBarPainter({
+    required this.context,
+    required double value,
+    int? steps,
+  }) : _value = value,
+       _steps = steps,
+       assert(value >= 0 && value <= 1, 'Value must be between 0 and 1'),
+       assert(
+         steps == null || steps > 0,
+         'Steps must be greater than 0 if provided',
+       );
 
   @override
   void paint(Canvas canvas, Size size) {
     final railPaint = Paint()
       ..strokeCap = StrokeCap.round
       ..style = PaintingStyle.stroke
-      ..color = LightColor.medium.color
+      ..color =
+          Theme.of(context).extension<AppTheme>()?.backgroundMediumColor ??
+          Color(0xE8E9F1FF)
       ..strokeWidth = size.height;
 
     final trackPaint = Paint()
       ..strokeCap = StrokeCap.round
       ..style = PaintingStyle.stroke
-      ..color = HighlightColor.darkest.color
+      ..color =
+          Theme.of(context).extension<AppTheme>()?.highlightDarkestColor ??
+          Color(0x006FFDFF)
       ..strokeWidth = size.height;
 
     final centerY = size.height / 2;

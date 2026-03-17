@@ -1,6 +1,7 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:test_app/src/core/resources/app_icons.dart';
-import 'package:test_app/src/widgets/common/styles.dart';
+import 'package:test_app/src/features/themes/app_theme.dart';
+import 'package:test_app/src/features/themes/styles.dart';
 
 class AppNumberInput extends StatefulWidget {
   final int value;
@@ -71,10 +72,18 @@ class _AppNumberInputState extends State<AppNumberInput> {
               icon: Icon(AppIcons.minus),
               iconSize: 8,
               style: IconButton.styleFrom(
-                foregroundColor: HighlightColor.darkest.color,
-                backgroundColor: HighlightColor.lightest.color,
-                disabledBackgroundColor: LightColor.light.color,
-                disabledForegroundColor: LightColor.darkest.color,
+                foregroundColor: Theme.of(
+                  context,
+                ).extension<AppTheme>()?.highlightDarkestColor,
+                backgroundColor: Theme.of(
+                  context,
+                ).extension<AppTheme>()?.highlightLightestColor,
+                disabledBackgroundColor: Theme.of(
+                  context,
+                ).extension<AppTheme>()?.backgroundStrongColor,
+                disabledForegroundColor: Theme.of(
+                  context,
+                ).extension<AppTheme>()?.backgroundWeakestColor,
               ),
             ),
           ),
@@ -88,8 +97,13 @@ class _AppNumberInputState extends State<AppNumberInput> {
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: widget.enabled
-                        ? widget.textColor ?? DarkColor.darkest.color
-                        : DarkColor.light.color,
+                        ? widget.textColor ??
+                              Theme.of(
+                                context,
+                              ).extension<AppTheme>()?.foregroundStrongestColor
+                        : Theme.of(
+                            context,
+                          ).extension<AppTheme>()?.foregroundWeakColor,
                     fontSize: bMSize,
                     fontWeight: bMWeight,
                   ),
@@ -116,10 +130,18 @@ class _AppNumberInputState extends State<AppNumberInput> {
               icon: Icon(AppIcons.add),
               iconSize: 8,
               style: IconButton.styleFrom(
-                foregroundColor: HighlightColor.darkest.color,
-                backgroundColor: HighlightColor.lightest.color,
-                disabledBackgroundColor: LightColor.light.color,
-                disabledForegroundColor: LightColor.darkest.color,
+                foregroundColor: Theme.of(
+                  context,
+                ).extension<AppTheme>()?.highlightDarkestColor,
+                backgroundColor: Theme.of(
+                  context,
+                ).extension<AppTheme>()?.highlightLightestColor,
+                disabledBackgroundColor: Theme.of(
+                  context,
+                ).extension<AppTheme>()?.backgroundStrongColor,
+                disabledForegroundColor: Theme.of(
+                  context,
+                ).extension<AppTheme>()?.backgroundWeakestColor,
               ),
             ),
           ),
@@ -161,8 +183,12 @@ class AppNumberInputTitled extends StatelessWidget {
               title,
               style: TextStyle(
                 color: enabled
-                    ? DarkColor.dark.color
-                    : DarkColor.lightest.color,
+                    ? Theme.of(
+                        context,
+                      ).extension<AppTheme>()?.foregroundStrongColor
+                    : Theme.of(
+                        context,
+                      ).extension<AppTheme>()?.foregroundWeakestColor,
                 fontSize: h5Size,
                 fontWeight: h5Weight,
               ),
@@ -172,8 +198,10 @@ class AppNumberInputTitled extends StatelessWidget {
                 supportText!,
                 style: TextStyle(
                   color: enabled
-                      ? ErrorColor.dark.color
-                      : DarkColor.lightest.color,
+                      ? Theme.of(context).extension<AppTheme>()?.errorDarkColor
+                      : Theme.of(
+                          context,
+                        ).extension<AppTheme>()?.foregroundWeakestColor,
                   fontSize: bSSize,
                   fontWeight: bSWeight,
                 ),
@@ -185,7 +213,9 @@ class AppNumberInputTitled extends StatelessWidget {
           min: min,
           max: max,
           enabled: enabled,
-          textColor: supportText != null ? ErrorColor.dark.color : null,
+          textColor: supportText != null
+              ? Theme.of(context).extension<AppTheme>()?.errorDarkColor
+              : null,
           onChanged: onChanged,
         ),
       ],

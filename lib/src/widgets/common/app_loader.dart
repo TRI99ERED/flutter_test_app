@@ -1,7 +1,7 @@
 ﻿import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:test_app/src/widgets/common/styles.dart';
+import 'package:test_app/src/features/themes/app_theme.dart';
 
 class AppLoader extends StatefulWidget {
   final double? value;
@@ -42,12 +42,15 @@ class _AppLoaderState extends State<AppLoader>
                   },
                   child: CustomPaint(
                     size: const Size(32, 32),
-                    painter: _AppLoaderPainter(end: 1 / 3),
+                    painter: _AppLoaderPainter(context: context, end: 1 / 3),
                   ),
                 )
               : CustomPaint(
                   size: const Size(32, 32),
-                  painter: _AppLoaderPainter(end: widget.value!),
+                  painter: _AppLoaderPainter(
+                    context: context,
+                    end: widget.value!,
+                  ),
                 ),
         ),
       ),
@@ -62,27 +65,35 @@ class _AppLoaderState extends State<AppLoader>
 }
 
 class _AppLoaderPainter extends CustomPainter {
+  final BuildContext context;
   final double _start;
   final double _end;
 
-  _AppLoaderPainter({double start = 0, required double end})
-    : _start = start,
-      _end = end,
-      assert(start >= 0 && start <= 1, 'Start must be between 0 and 1'),
-      assert(end >= 0 && end <= 1, 'End must be between 0 and 1');
+  _AppLoaderPainter({
+    required this.context,
+    double start = 0,
+    required double end,
+  }) : _start = start,
+       _end = end,
+       assert(start >= 0 && start <= 1, 'Start must be between 0 and 1'),
+       assert(end >= 0 && end <= 1, 'End must be between 0 and 1');
 
   @override
   void paint(Canvas canvas, Size size) {
     final railPaint = Paint()
       ..strokeCap = StrokeCap.round
       ..style = PaintingStyle.stroke
-      ..color = LightColor.medium.color
+      ..color =
+          Theme.of(context).extension<AppTheme>()?.backgroundMediumColor ??
+          const Color(0xFFE8E9F1)
       ..strokeWidth = 5;
 
     final trackPaint = Paint()
       ..strokeCap = StrokeCap.round
       ..style = PaintingStyle.stroke
-      ..color = HighlightColor.darkest.color
+      ..color =
+          Theme.of(context).extension<AppTheme>()?.highlightDarkestColor ??
+          const Color(0xFF006FFD)
       ..strokeWidth = 5;
 
     final center = Offset(size.width / 2, size.height / 2);

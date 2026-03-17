@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:test_app/src/features/app/app_scope.dart';
 import 'package:test_app/src/features/app/data/models/project_model.dart';
 import 'package:test_app/src/features/app/data/models/user_model.dart';
+import 'package:test_app/src/features/themes/app_theme.dart';
 import 'package:test_app/src/widgets/common/app_avatar.dart';
 import 'package:test_app/src/widgets/common/app_calendar.dart';
 import 'package:test_app/src/widgets/common/app_checkbox.dart';
@@ -12,7 +13,7 @@ import 'package:test_app/src/widgets/common/app_button.dart';
 import 'package:test_app/src/widgets/common/app_list_item.dart';
 import 'package:test_app/src/widgets/common/app_text_area.dart';
 import 'package:test_app/src/widgets/common/app_text_field.dart';
-import 'package:test_app/src/widgets/common/styles.dart';
+import 'package:test_app/src/features/themes/styles.dart';
 
 enum ProjectWizardMode { create, edit }
 
@@ -137,7 +138,9 @@ class _ProjectWizardState extends State<ProjectWizard> {
                   style: TextStyle(
                     fontSize: h5Size,
                     fontWeight: h5Weight,
-                    color: DarkColor.darkest.color,
+                    color: Theme.of(
+                      context,
+                    ).extension<AppTheme>()?.foregroundStrongestColor,
                   ),
                 ),
                 AppButtonPrimary(
@@ -154,7 +157,9 @@ class _ProjectWizardState extends State<ProjectWizard> {
               style: TextStyle(
                 fontSize: h5Size,
                 fontWeight: h5Weight,
-                color: DarkColor.darkest.color,
+                color: Theme.of(
+                  context,
+                ).extension<AppTheme>()?.foregroundStrongestColor,
               ),
             ),
             AppCalendarMonthly(

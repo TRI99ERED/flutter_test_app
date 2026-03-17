@@ -2,7 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:test_app/src/widgets/common/styles.dart';
+import 'package:test_app/src/features/themes/app_theme.dart';
+import 'package:test_app/src/features/themes/styles.dart';
 
 class AppOtpCodeField extends StatefulWidget {
   final TextEditingController controller;
@@ -175,12 +176,20 @@ class _AppOtpCodeFieldState extends State<AppOtpCodeField> {
       height: widget.boxHeight,
       alignment: Alignment.center,
       decoration: BoxDecoration(
-        color: LightColor.lightest.color,
+        color: Theme.of(
+          context,
+        ).extension<AppTheme>()?.backgroundStrongestColor,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: isActive
-              ? HighlightColor.darkest.color
-              : LightColor.darkest.color,
+              ? Theme.of(
+                      context,
+                    ).extension<AppTheme>()?.highlightDarkestColor ??
+                    const Color(0x006FFDFF)
+              : Theme.of(
+                      context,
+                    ).extension<AppTheme>()?.backgroundWeakestColor ??
+                    const Color(0xC5C6CCFF),
           width: 2,
         ),
       ),
@@ -193,7 +202,9 @@ class _AppOtpCodeFieldState extends State<AppOtpCodeField> {
                 style: TextStyle(
                   fontSize: bMSize,
                   fontWeight: bMWeight,
-                  color: DarkColor.darkest.color,
+                  color: Theme.of(
+                    context,
+                  ).extension<AppTheme>()?.foregroundStrongestColor,
                 ),
               )
             : isActive
@@ -309,7 +320,9 @@ class _BlinkingCaretState extends State<_BlinkingCaret> {
             width: 2,
             height: 24,
             decoration: BoxDecoration(
-              color: HighlightColor.darkest.color,
+              color: Theme.of(
+                context,
+              ).extension<AppTheme>()?.highlightDarkestColor,
               borderRadius: BorderRadius.circular(2),
             ),
           ),

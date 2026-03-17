@@ -1,6 +1,7 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:test_app/src/core/resources/app_icons.dart';
-import 'package:test_app/src/widgets/common/styles.dart';
+import 'package:test_app/src/features/themes/app_theme.dart';
+import 'package:test_app/src/features/themes/styles.dart';
 
 class AppDropdown extends StatefulWidget {
   final List<DropdownMenuEntry<String>> items;
@@ -156,7 +157,9 @@ class _AppDropdownState extends State<AppDropdown> {
                 clipBehavior: Clip.hardEdge,
                 child: Container(
                   decoration: BoxDecoration(
-                    color: LightColor.lightest.color,
+                    color: Theme.of(
+                      context,
+                    ).extension<AppTheme>()?.backgroundStrongestColor,
                     borderRadius: BorderRadius.zero,
                   ),
                   constraints: BoxConstraints(
@@ -179,7 +182,9 @@ class _AppDropdownState extends State<AppDropdown> {
                                   style: TextStyle(
                                     fontSize: bSSize,
                                     fontWeight: bSWeight,
-                                    color: DarkColor.light.color,
+                                    color: Theme.of(context)
+                                        .extension<AppTheme>()
+                                        ?.foregroundWeakColor,
                                   ),
                                 ),
                               ),
@@ -296,8 +301,12 @@ class _AppDropdownState extends State<AppDropdown> {
                           fontSize: h5Size,
                           fontWeight: h5Weight,
                           color: widget.enabled
-                              ? DarkColor.darkest.color
-                              : DarkColor.lightest.color,
+                              ? Theme.of(context)
+                                    .extension<AppTheme>()
+                                    ?.foregroundStrongestColor
+                              : Theme.of(
+                                  context,
+                                ).extension<AppTheme>()?.foregroundWeakestColor,
                         ),
                       ),
                     CompositedTransformTarget(
@@ -323,21 +332,31 @@ class _AppDropdownState extends State<AppDropdown> {
                             validator: (value) => widget.validator?.call(value),
                             autovalidateMode: widget.autovalidateMode,
                             enabled: widget.enabled,
-                            cursorColor: HighlightColor.darkest.color,
-                            cursorErrorColor: ErrorColor.dark.color,
+                            cursorColor: Theme.of(
+                              context,
+                            ).extension<AppTheme>()?.highlightDarkestColor,
+                            cursorErrorColor: Theme.of(
+                              context,
+                            ).extension<AppTheme>()?.errorDarkColor,
                             style: TextStyle(
                               fontSize: bMSize,
                               fontWeight: bMWeight,
                               color: widget.enabled
-                                  ? DarkColor.darkest.color
-                                  : DarkColor.lightest.color,
+                                  ? Theme.of(context)
+                                        .extension<AppTheme>()
+                                        ?.foregroundStrongestColor
+                                  : Theme.of(context)
+                                        .extension<AppTheme>()
+                                        ?.foregroundWeakestColor,
                             ),
                             decoration: InputDecoration(
                               hintText: widget.placeholder,
                               hintStyle: TextStyle(
                                 fontSize: bMSize,
                                 fontWeight: bMWeight,
-                                color: DarkColor.lightest.color,
+                                color: Theme.of(
+                                  context,
+                                ).extension<AppTheme>()?.foregroundWeakestColor,
                               ),
                               errorText: displayErrorText == null ? null : '',
                               errorStyle: TextStyle(fontSize: 0, height: 0),
@@ -346,7 +365,11 @@ class _AppDropdownState extends State<AppDropdown> {
                                   Radius.circular(12),
                                 ),
                                 borderSide: BorderSide(
-                                  color: LightColor.darkest.color,
+                                  color:
+                                      Theme.of(context)
+                                          .extension<AppTheme>()
+                                          ?.backgroundWeakestColor ??
+                                      Color(0xC5C6CCFF),
                                   width: 2,
                                 ),
                               ),
@@ -355,7 +378,11 @@ class _AppDropdownState extends State<AppDropdown> {
                                   Radius.circular(12),
                                 ),
                                 borderSide: BorderSide(
-                                  color: HighlightColor.darkest.color,
+                                  color:
+                                      Theme.of(context)
+                                          .extension<AppTheme>()
+                                          ?.highlightDarkestColor ??
+                                      Color(0x006FFDFF),
                                   width: 2,
                                 ),
                               ),
@@ -364,7 +391,11 @@ class _AppDropdownState extends State<AppDropdown> {
                                   Radius.circular(12),
                                 ),
                                 borderSide: BorderSide(
-                                  color: ErrorColor.medium.color,
+                                  color:
+                                      Theme.of(context)
+                                          .extension<AppTheme>()
+                                          ?.errorMediumColor ??
+                                      Color(0xFF616DFF),
                                   width: 2,
                                 ),
                               ),
@@ -373,18 +404,26 @@ class _AppDropdownState extends State<AppDropdown> {
                                   Radius.circular(12),
                                 ),
                                 borderSide: BorderSide(
-                                  color: ErrorColor.dark.color,
+                                  color:
+                                      Theme.of(
+                                        context,
+                                      ).extension<AppTheme>()?.errorDarkColor ??
+                                      Color(0xED3241FF),
                                   width: 2,
                                 ),
                               ),
-                              fillColor: LightColor.darkest.color,
+                              fillColor: Theme.of(
+                                context,
+                              ).extension<AppTheme>()?.backgroundWeakestColor,
                               filled: !widget.enabled,
                               suffixIcon: Icon(
                                 isSelected
                                     ? AppIcons.arrowUp
                                     : AppIcons.arrowDown,
                                 size: 12,
-                                color: DarkColor.lightest.color,
+                                color: Theme.of(
+                                  context,
+                                ).extension<AppTheme>()?.foregroundWeakestColor,
                               ),
                             ),
                           );
@@ -397,7 +436,9 @@ class _AppDropdownState extends State<AppDropdown> {
                         style: TextStyle(
                           fontSize: bSSize,
                           fontWeight: bSWeight,
-                          color: ErrorColor.dark.color,
+                          color: Theme.of(
+                            context,
+                          ).extension<AppTheme>()?.errorDarkColor,
                         ),
                       ),
                     if (widget.supportText != null &&
@@ -407,7 +448,9 @@ class _AppDropdownState extends State<AppDropdown> {
                         style: TextStyle(
                           fontSize: bSSize,
                           fontWeight: bSWeight,
-                          color: DarkColor.lightest.color,
+                          color: Theme.of(
+                            context,
+                          ).extension<AppTheme>()?.foregroundWeakestColor,
                         ),
                       ),
                   ],
@@ -439,10 +482,12 @@ class _AppDropdownOption extends StatelessWidget {
     return TextButton(
       onPressed: _onPressed,
       style: TextButton.styleFrom(
-        backgroundColor: _selected ? LightColor.light.color : null,
+        backgroundColor: _selected
+            ? Theme.of(context).extension<AppTheme>()?.backgroundStrongColor
+            : null,
         foregroundColor: _selected
-            ? DarkColor.darkest.color
-            : DarkColor.light.color,
+            ? Theme.of(context).extension<AppTheme>()?.foregroundStrongestColor
+            : Theme.of(context).extension<AppTheme>()?.foregroundWeakColor,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
       child: Text(_value),

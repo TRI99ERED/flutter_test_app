@@ -3,7 +3,7 @@ import 'package:test_app/src/features/app/app_scope.dart';
 import 'package:test_app/src/features/app/data/models/message_model.dart';
 import 'package:test_app/src/features/app/data/models/user_model.dart';
 import 'package:test_app/src/widgets/common/app_message_bubble.dart';
-import 'package:test_app/src/widgets/common/styles.dart';
+import 'package:test_app/src/features/themes/styles.dart';
 
 class AlignedMessageBubble extends StatelessWidget {
   final Map<Message, String> messagesWithSenderNames;

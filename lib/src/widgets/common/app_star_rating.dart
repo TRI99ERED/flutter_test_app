@@ -1,6 +1,6 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:test_app/src/core/resources/app_icons.dart';
-import 'package:test_app/src/widgets/common/styles.dart';
+import 'package:test_app/src/features/themes/app_theme.dart';
 
 class AppStarRating extends StatefulWidget {
   final int rating;
@@ -39,8 +39,8 @@ class _AppStarRatingState extends State<AppStarRating> {
           icon: Icon(
             index < _rating ? AppIcons.starFilled : AppIcons.starOutlined,
             color: index < _rating
-                ? HighlightColor.darkest.color
-                : LightColor.dark.color,
+                ? Theme.of(context).extension<AppTheme>()?.highlightDarkestColor
+                : Theme.of(context).extension<AppTheme>()?.backgroundWeakColor,
             size: 24,
           ),
           onPressed: widget.onRatingChanged != null

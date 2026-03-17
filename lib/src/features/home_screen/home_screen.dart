@@ -11,14 +11,23 @@ import 'package:test_app/src/router/routes.dart';
 import 'package:test_app/src/widgets/common/app_tap_bar.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  final int initialTab;
+  final int initialFriendsSection;
+  final int initialProjectsSection;
+
+  const HomeScreen({
+    super.key,
+    this.initialTab = 0,
+    this.initialFriendsSection = 0,
+    this.initialProjectsSection = 0,
+  });
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final _selectedTabIndex = ValueNotifier<int>(0);
+  late final _selectedTabIndex = ValueNotifier<int>(widget.initialTab);
   final _editPressed = ValueNotifier<bool>(false);
 
   @override
@@ -71,8 +80,14 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             body: switch (index) {
               0 => Chats(editPressed: _editPressed),
-              1 => Friends(editPressed: _editPressed),
-              2 => Projects(editPressed: _editPressed),
+              1 => Friends(
+                editPressed: _editPressed,
+                initialSection: widget.initialFriendsSection,
+              ),
+              2 => Projects(
+                editPressed: _editPressed,
+                initialSection: widget.initialProjectsSection,
+              ),
               3 => const Settings(),
               _ => const SizedBox.shrink(),
             },

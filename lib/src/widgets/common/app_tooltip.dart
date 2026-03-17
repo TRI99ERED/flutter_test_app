@@ -1,5 +1,6 @@
 ﻿import 'package:flutter/material.dart';
-import 'package:test_app/src/widgets/common/styles.dart';
+import 'package:test_app/src/features/themes/app_theme.dart';
+import 'package:test_app/src/features/themes/styles.dart';
 
 class AppTooltip extends StatelessWidget {
   final bool isTop;
@@ -34,6 +35,7 @@ class AppTooltip extends StatelessWidget {
         constraints: const BoxConstraints(maxWidth: 200, maxHeight: 112),
         child: CustomPaint(
           painter: _TooltipTipPainter(
+            context: context,
             isTop: isTop,
             horizontalOffset: horizontalOffset,
           ),
@@ -46,7 +48,9 @@ class AppTooltip extends StatelessWidget {
                   padding: EdgeInsets.all(spacing8),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(8),
-                    color: DarkColor.dark.color,
+                    color: Theme.of(
+                      context,
+                    ).extension<AppTheme>()?.foregroundStrongColor,
                   ),
                   child: SingleChildScrollView(
                     child: Column(
@@ -58,7 +62,9 @@ class AppTooltip extends StatelessWidget {
                             style: TextStyle(
                               fontSize: h5Size,
                               fontWeight: h5Weight,
-                              color: LightColor.lightest.color,
+                              color: Theme.of(
+                                context,
+                              ).extension<AppTheme>()?.backgroundStrongestColor,
                             ),
                           ),
                         if (hasTitle && hasDescription)
@@ -69,7 +75,9 @@ class AppTooltip extends StatelessWidget {
                             style: TextStyle(
                               fontSize: bXSSize,
                               fontWeight: bXSWeight,
-                              color: LightColor.lightest.color,
+                              color: Theme.of(
+                                context,
+                              ).extension<AppTheme>()?.backgroundStrongestColor,
                             ),
                           ),
                       ],
@@ -87,14 +95,22 @@ class AppTooltip extends StatelessWidget {
 }
 
 class _TooltipTipPainter extends CustomPainter {
+  final BuildContext context;
   final bool isTop;
   final double horizontalOffset;
 
-  _TooltipTipPainter({required this.isTop, required this.horizontalOffset});
+  _TooltipTipPainter({
+    required this.context,
+    required this.isTop,
+    required this.horizontalOffset,
+  });
 
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint()..color = DarkColor.dark.color;
+    final paint = Paint()
+      ..color =
+          Theme.of(context).extension<AppTheme>()?.foregroundStrongColor ??
+          const Color(0xF8F9FEFF);
     final path = Path();
 
     const triangleWidth = 20.0;

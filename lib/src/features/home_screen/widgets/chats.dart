@@ -12,7 +12,7 @@ import 'package:test_app/src/widgets/common/error_state.dart';
 import 'package:test_app/src/widgets/common/app_list_item.dart';
 import 'package:test_app/src/widgets/common/app_nav_bar.dart';
 import 'package:test_app/src/widgets/common/app_search_bar.dart';
-import 'package:test_app/src/widgets/common/styles.dart';
+import 'package:test_app/src/features/themes/styles.dart';
 
 class Chats extends StatefulWidget {
   final ValueNotifier<bool> editPressed;

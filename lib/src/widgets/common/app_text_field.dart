@@ -1,6 +1,7 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:test_app/src/core/resources/app_icons.dart';
-import 'package:test_app/src/widgets/common/styles.dart';
+import 'package:test_app/src/features/themes/app_theme.dart';
+import 'package:test_app/src/features/themes/styles.dart';
 
 String? _validateEmail(String? value) {
   if (value == null || value.isEmpty) return 'Email is required';
@@ -253,8 +254,12 @@ class _AppTextFieldState extends State<AppTextField> {
                       fontSize: h5Size,
                       fontWeight: h5Weight,
                       color: widget.enabled
-                          ? DarkColor.darkest.color
-                          : DarkColor.lightest.color,
+                          ? Theme.of(
+                              context,
+                            ).extension<AppTheme>()?.foregroundStrongestColor
+                          : Theme.of(
+                              context,
+                            ).extension<AppTheme>()?.foregroundWeakestColor,
                     ),
                   ),
                 TextFormField(
@@ -279,21 +284,31 @@ class _AppTextFieldState extends State<AppTextField> {
                   obscureText: obscureText,
                   textAlign: widget.textAlign ?? TextAlign.start,
                   maxLength: widget.maxLength,
-                  cursorColor: HighlightColor.darkest.color,
-                  cursorErrorColor: ErrorColor.dark.color,
+                  cursorColor: Theme.of(
+                    context,
+                  ).extension<AppTheme>()?.highlightDarkestColor,
+                  cursorErrorColor: Theme.of(
+                    context,
+                  ).extension<AppTheme>()?.errorDarkColor,
                   style: TextStyle(
                     fontSize: bMSize,
                     fontWeight: bMWeight,
                     color: widget.enabled
-                        ? DarkColor.darkest.color
-                        : DarkColor.lightest.color,
+                        ? Theme.of(
+                            context,
+                          ).extension<AppTheme>()?.foregroundStrongestColor
+                        : Theme.of(
+                            context,
+                          ).extension<AppTheme>()?.foregroundWeakestColor,
                   ),
                   decoration: InputDecoration(
                     hintText: widget.placeholder,
                     hintStyle: TextStyle(
                       fontSize: bMSize,
                       fontWeight: bMWeight,
-                      color: DarkColor.lightest.color,
+                      color: Theme.of(
+                        context,
+                      ).extension<AppTheme>()?.foregroundWeakestColor,
                     ),
                     errorText: hasError && widget.showErrorText ? '' : null,
                     errorStyle: const TextStyle(fontSize: 0, height: 0),
@@ -307,8 +322,14 @@ class _AppTextFieldState extends State<AppTextField> {
                       borderRadius: BorderRadius.all(Radius.circular(12)),
                       borderSide: BorderSide(
                         color: !widget.showErrorText && hasError
-                            ? ErrorColor.medium.color
-                            : LightColor.darkest.color,
+                            ? Theme.of(
+                                    context,
+                                  ).extension<AppTheme>()?.errorMediumColor ??
+                                  const Color(0xFF616DFF)
+                            : Theme.of(context)
+                                      .extension<AppTheme>()
+                                      ?.backgroundWeakestColor ??
+                                  const Color(0xC5C6CCFF),
                         width: 2,
                       ),
                     ),
@@ -316,8 +337,14 @@ class _AppTextFieldState extends State<AppTextField> {
                       borderRadius: BorderRadius.all(Radius.circular(12)),
                       borderSide: BorderSide(
                         color: !widget.showErrorText && hasError
-                            ? ErrorColor.medium.color
-                            : LightColor.darkest.color,
+                            ? Theme.of(
+                                    context,
+                                  ).extension<AppTheme>()?.errorMediumColor ??
+                                  const Color(0xFF616DFF)
+                            : Theme.of(context)
+                                      .extension<AppTheme>()
+                                      ?.backgroundWeakestColor ??
+                                  const Color(0xC5C6CCFF),
                         width: 2,
                       ),
                     ),
@@ -325,26 +352,42 @@ class _AppTextFieldState extends State<AppTextField> {
                       borderRadius: BorderRadius.all(Radius.circular(12)),
                       borderSide: BorderSide(
                         color: !widget.showErrorText && hasError
-                            ? ErrorColor.dark.color
-                            : HighlightColor.darkest.color,
+                            ? Theme.of(
+                                    context,
+                                  ).extension<AppTheme>()?.errorDarkColor ??
+                                  const Color(0xED3241FF)
+                            : Theme.of(context)
+                                      .extension<AppTheme>()
+                                      ?.highlightDarkestColor ??
+                                  const Color(0x006FFDFF),
                         width: 2,
                       ),
                     ),
                     errorBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.all(Radius.circular(12)),
                       borderSide: BorderSide(
-                        color: ErrorColor.medium.color,
+                        color:
+                            Theme.of(
+                              context,
+                            ).extension<AppTheme>()?.errorMediumColor ??
+                            const Color(0xFF616DFF),
                         width: 2,
                       ),
                     ),
                     focusedErrorBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.all(Radius.circular(12)),
                       borderSide: BorderSide(
-                        color: ErrorColor.dark.color,
+                        color:
+                            Theme.of(
+                              context,
+                            ).extension<AppTheme>()?.errorDarkColor ??
+                            const Color(0xED3241FF),
                         width: 2,
                       ),
                     ),
-                    fillColor: LightColor.darkest.color,
+                    fillColor: Theme.of(
+                      context,
+                    ).extension<AppTheme>()?.backgroundWeakestColor,
                     filled: !widget.enabled,
                     prefixText: widget.unit != null ? '${widget.unit} ' : null,
                     suffixIcon: widget.showVisibilityIcon
@@ -357,7 +400,9 @@ class _AppTextFieldState extends State<AppTextField> {
                                   ? AppIcons.eyeInvisible
                                   : AppIcons.eyeVisible,
                               size: 16,
-                              color: DarkColor.lightest.color,
+                              color: Theme.of(
+                                context,
+                              ).extension<AppTheme>()?.foregroundWeakestColor,
                             ),
                           )
                         : null,
@@ -371,7 +416,9 @@ class _AppTextFieldState extends State<AppTextField> {
                     style: TextStyle(
                       fontSize: bSSize,
                       fontWeight: bSWeight,
-                      color: ErrorColor.dark.color,
+                      color: Theme.of(
+                        context,
+                      ).extension<AppTheme>()?.errorDarkColor,
                     ),
                   ),
                 if (widget.supportText != null &&
@@ -381,7 +428,9 @@ class _AppTextFieldState extends State<AppTextField> {
                     style: TextStyle(
                       fontSize: bSSize,
                       fontWeight: bSWeight,
-                      color: DarkColor.lightest.color,
+                      color: Theme.of(
+                        context,
+                      ).extension<AppTheme>()?.foregroundWeakestColor,
                     ),
                   ),
               ],

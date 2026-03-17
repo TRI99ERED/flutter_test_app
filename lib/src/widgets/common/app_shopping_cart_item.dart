@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:test_app/src/features/themes/app_theme.dart';
 import 'package:test_app/src/widgets/common/app_number_input.dart';
-import 'package:test_app/src/widgets/common/styles.dart';
+import 'package:test_app/src/features/themes/styles.dart';
 
 class AppShoppingCartItem extends StatelessWidget {
   final Widget image;
@@ -31,7 +32,9 @@ class AppShoppingCartItem extends StatelessWidget {
       child: TextButton(
         onPressed: onPressed,
         style: TextButton.styleFrom(
-          backgroundColor: LightColor.lightest.color,
+          backgroundColor: Theme.of(
+            context,
+          ).extension<AppTheme>()?.backgroundStrongestColor,
           padding: const EdgeInsets.all(0),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
@@ -59,7 +62,9 @@ class AppShoppingCartItem extends StatelessWidget {
                     style: TextStyle(
                       fontSize: h5Size,
                       fontWeight: h5Weight,
-                      color: DarkColor.darkest.color,
+                      color: Theme.of(
+                        context,
+                      ).extension<AppTheme>()?.foregroundStrongestColor,
                     ),
                   ),
                   Text(
@@ -67,7 +72,9 @@ class AppShoppingCartItem extends StatelessWidget {
                     style: TextStyle(
                       fontSize: bSSize,
                       fontWeight: bSWeight,
-                      color: DarkColor.dark.color,
+                      color: Theme.of(
+                        context,
+                      ).extension<AppTheme>()?.foregroundStrongColor,
                     ),
                   ),
                   const Spacer(),
@@ -87,7 +94,9 @@ class AppShoppingCartItem extends StatelessWidget {
                         style: TextStyle(
                           fontSize: h4Size,
                           fontWeight: h4Weight,
-                          color: DarkColor.darkest.color,
+                          color: Theme.of(
+                            context,
+                          ).extension<AppTheme>()?.foregroundStrongestColor,
                         ),
                       ),
                       const SizedBox(width: spacing12),

@@ -1,5 +1,6 @@
 ﻿import 'package:flutter/material.dart';
-import 'package:test_app/src/widgets/common/styles.dart';
+import 'package:test_app/src/features/themes/app_theme.dart';
+import 'package:test_app/src/features/themes/styles.dart';
 
 class AppActionSheet extends StatelessWidget {
   final int actionCount;
@@ -56,7 +57,9 @@ class AppAction extends StatelessWidget {
     return TextButton(
       onPressed: onPressed,
       style: TextButton.styleFrom(
-        foregroundColor: DarkColor.light.color,
+        foregroundColor: Theme.of(
+          context,
+        ).extension<AppTheme>()?.foregroundWeakColor,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.zero),
       ),
       child: Row(

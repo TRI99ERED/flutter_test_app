@@ -1,8 +1,9 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:test_app/src/core/resources/app_icons.dart';
+import 'package:test_app/src/features/themes/app_theme.dart';
 import 'package:test_app/src/widgets/common/app_badge.dart';
 import 'package:test_app/src/widgets/common/app_divider.dart';
-import 'package:test_app/src/widgets/common/styles.dart';
+import 'package:test_app/src/features/themes/styles.dart';
 
 class AppAccordion extends StatefulWidget {
   final String title;
@@ -42,7 +43,9 @@ class _AppAccordionState extends State<AppAccordion> {
             style: TextStyle(
               fontSize: bMSize,
               fontWeight: bMWeight,
-              color: DarkColor.darkest.color,
+              color: Theme.of(
+                context,
+              ).extension<AppTheme>()?.foregroundStrongestColor,
             ),
           ),
           shape: ContinuousRectangleBorder(borderRadius: BorderRadius.zero),
@@ -52,7 +55,9 @@ class _AppAccordionState extends State<AppAccordion> {
               ? Icon(
                   _isExpanded ? AppIcons.arrowUp : AppIcons.arrowDown,
                   size: 12,
-                  color: DarkColor.lightest.color,
+                  color: Theme.of(
+                    context,
+                  ).extension<AppTheme>()?.foregroundWeakestColor,
                 )
               : AppBadgeSymbol(
                   symbol: widget.selectedCount.toString(),
@@ -82,7 +87,7 @@ class AppAccordionText extends StatelessWidget {
       style: TextStyle(
         fontSize: bSSize,
         fontWeight: bSWeight,
-        color: DarkColor.light.color,
+        color: Theme.of(context).extension<AppTheme>()?.foregroundWeakColor,
       ),
     );
   }

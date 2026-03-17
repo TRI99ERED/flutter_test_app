@@ -1,12 +1,13 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:test_app/src/core/resources/app_icons.dart';
+import 'package:test_app/src/features/themes/app_theme.dart';
 import 'package:test_app/src/widgets/common/app_accordion.dart';
 import 'package:test_app/src/widgets/common/app_button.dart';
 import 'package:test_app/src/widgets/common/app_divider.dart';
 import 'package:test_app/src/widgets/common/app_nav_bar.dart';
 import 'package:test_app/src/widgets/common/app_tag.dart';
-import 'package:test_app/src/widgets/common/styles.dart';
+import 'package:test_app/src/features/themes/styles.dart';
 
 enum SortOrder { descending, ascending }
 
@@ -28,7 +29,14 @@ class AppSort extends StatelessWidget {
       style: TextButton.styleFrom(
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
-          side: BorderSide(color: LightColor.darkest.color, width: 0.5),
+          side: BorderSide(
+            color:
+                Theme.of(
+                  context,
+                ).extension<AppTheme>()?.backgroundWeakestColor ??
+                const Color(0xC5C6CCFF),
+            width: 0.5,
+          ),
         ),
       ),
       onPressed: onPressed,
@@ -36,14 +44,22 @@ class AppSort extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           if (showIcon)
-            Icon(AppIcons.sort, size: 12, color: LightColor.darkest.color),
+            Icon(
+              AppIcons.sort,
+              size: 12,
+              color: Theme.of(
+                context,
+              ).extension<AppTheme>()?.backgroundWeakestColor,
+            ),
           if (showIcon) SizedBox(width: spacing8),
           Text(
             'Sort',
             style: TextStyle(
               fontSize: bSSize,
               fontWeight: bSWeight,
-              color: DarkColor.darkest.color,
+              color: Theme.of(
+                context,
+              ).extension<AppTheme>()?.foregroundStrongestColor,
             ),
           ),
           SizedBox(width: spacing12),
@@ -52,7 +68,9 @@ class AppSort extends StatelessWidget {
                 ? AppIcons.arrowUp
                 : AppIcons.arrowDown,
             size: 10,
-            color: LightColor.darkest.color,
+            color: Theme.of(
+              context,
+            ).extension<AppTheme>()?.backgroundWeakestColor,
           ),
         ],
       ),
@@ -128,7 +146,9 @@ class _AppSortMenuState extends State<AppSortMenu> {
         },
       ),
       body: Container(
-        color: LightColor.lightest.color,
+        color: Theme.of(
+          context,
+        ).extension<AppTheme>()?.backgroundStrongestColor,
         padding: const EdgeInsets.symmetric(
           horizontal: spacing16,
           vertical: spacing24,
@@ -143,7 +163,9 @@ class _AppSortMenuState extends State<AppSortMenu> {
                     style: TextStyle(
                       fontSize: bMSize,
                       fontWeight: bMWeight,
-                      color: DarkColor.darkest.color,
+                      color: Theme.of(
+                        context,
+                      ).extension<AppTheme>()?.foregroundStrongestColor,
                     ),
                   ),
                   const SizedBox(height: spacing8),

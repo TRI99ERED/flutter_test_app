@@ -1,5 +1,6 @@
 ﻿import 'package:flutter/material.dart';
-import 'package:test_app/src/widgets/common/styles.dart';
+import 'package:test_app/src/features/themes/app_theme.dart';
+import 'package:test_app/src/features/themes/styles.dart';
 
 class AppTapBar extends StatefulWidget {
   final int tabCount;
@@ -51,7 +52,9 @@ class _AppTapBarState extends State<AppTapBar> {
     return Container(
       height: 88,
       decoration: BoxDecoration(
-        color: LightColor.lightest.color,
+        color: Theme.of(
+          context,
+        ).extension<AppTheme>()?.backgroundStrongestColor,
         borderRadius: BorderRadius.circular(16),
       ),
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
@@ -108,9 +111,17 @@ class _TabItem extends StatelessWidget {
             firstChild: Icon(
               icon,
               size: 20,
-              color: HighlightColor.darkest.color,
+              color: Theme.of(
+                context,
+              ).extension<AppTheme>()?.highlightDarkestColor,
             ),
-            secondChild: Icon(icon, size: 20, color: DarkColor.light.color),
+            secondChild: Icon(
+              icon,
+              size: 20,
+              color: Theme.of(
+                context,
+              ).extension<AppTheme>()?.foregroundWeakColor,
+            ),
           ),
           AnimatedCrossFade(
             crossFadeState: selected
@@ -122,7 +133,9 @@ class _TabItem extends StatelessWidget {
               style: TextStyle(
                 fontSize: bXSSize,
                 fontWeight: bXSWeight,
-                color: DarkColor.darkest.color,
+                color: Theme.of(
+                  context,
+                ).extension<AppTheme>()?.foregroundStrongestColor,
               ),
             ),
             secondChild: Text(
@@ -130,7 +143,9 @@ class _TabItem extends StatelessWidget {
               style: TextStyle(
                 fontSize: bXSSize,
                 fontWeight: bXSWeight,
-                color: DarkColor.light.color,
+                color: Theme.of(
+                  context,
+                ).extension<AppTheme>()?.foregroundWeakColor,
               ),
             ),
           ),

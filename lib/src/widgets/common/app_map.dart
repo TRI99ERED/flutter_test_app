@@ -5,7 +5,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:test_app/src/widgets/common/styles.dart';
+import 'package:test_app/src/features/themes/app_theme.dart';
 
 enum MapMarkerSize {
   small(Size(18, 24)),
@@ -135,8 +135,10 @@ class _AppMapState extends State<AppMap> {
 
     final trianglePaint = Paint()
       ..color = isSelected
-          ? HighlightColor.darkest.color
-          : LightColor.darkest.color
+          ? Theme.of(context).extension<AppTheme>()?.highlightDarkestColor ??
+                const Color(0xFF006FFD)
+          : Theme.of(context).extension<AppTheme>()?.backgroundWeakestColor ??
+                const Color(0xFFC5C6CC)
       ..style = PaintingStyle.fill;
 
     final cx = radius;
@@ -157,12 +159,17 @@ class _AppMapState extends State<AppMap> {
 
     final outerCirclePaint = Paint()
       ..color = isSelected
-          ? HighlightColor.darkest.color
-          : LightColor.darkest.color;
+          ? Theme.of(context).extension<AppTheme>()?.highlightDarkestColor ??
+                const Color(0xFF006FFD)
+          : Theme.of(context).extension<AppTheme>()?.backgroundWeakestColor ??
+                const Color(0xFFC5C6CC);
 
     canvas.drawCircle(Offset(radius, radius), radius, outerCirclePaint);
 
-    final innerCirclePaint = Paint()..color = LightColor.lightest.color;
+    final innerCirclePaint = Paint()
+      ..color =
+          Theme.of(context).extension<AppTheme>()?.backgroundStrongestColor ??
+          const Color(0xFFFFFFFF);
     canvas.drawCircle(Offset(radius, radius), radius / 3, innerCirclePaint);
 
     final picture = recorder.endRecording();
@@ -178,7 +185,9 @@ class _AppMapState extends State<AppMap> {
     final canvas = Canvas(recorder);
 
     final outerCirclePaint = Paint()
-      ..color = HighlightColor.light.color
+      ..color =
+          Theme.of(context).extension<AppTheme>()?.highlightLightColor ??
+          const Color(0xFFB4DBFF)
       ..style = PaintingStyle.fill;
     canvas.drawCircle(
       Offset(radius * 2, radius * 2),
@@ -187,7 +196,9 @@ class _AppMapState extends State<AppMap> {
     );
 
     final middleCirclePaint = Paint()
-      ..color = LightColor.lightest.color
+      ..color =
+          Theme.of(context).extension<AppTheme>()?.backgroundStrongestColor ??
+          const Color(0xFFFFFFFF)
       ..style = PaintingStyle.fill;
     canvas.drawCircle(
       Offset(radius * 2, radius * 2),
@@ -195,7 +206,10 @@ class _AppMapState extends State<AppMap> {
       middleCirclePaint,
     );
 
-    final innerCirclePaint = Paint()..color = HighlightColor.darkest.color;
+    final innerCirclePaint = Paint()
+      ..color =
+          Theme.of(context).extension<AppTheme>()?.highlightDarkestColor ??
+          const Color(0xFF006FFD);
     canvas.drawCircle(
       Offset(radius * 2, radius * 2),
       radius * 0.5,

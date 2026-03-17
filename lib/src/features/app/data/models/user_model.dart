@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:test_app/src/features/app/data/models/notification_settings.dart';
 
 abstract base class UserEntity {
   const UserEntity();
@@ -22,6 +23,7 @@ final class AuthorizedUser extends UserEntity {
   final String currentDirectChatId;
   final String currentGroupChatId;
   final String fcmToken;
+  final NotificationSettings notificationSettings;
   final List<String> selectedInterests;
   final List<String> chatRecentSearches;
   final List<String> friendRecentSearches;
@@ -36,6 +38,12 @@ final class AuthorizedUser extends UserEntity {
     this.currentDirectChatId = '',
     this.currentGroupChatId = '',
     this.fcmToken = '',
+    this.notificationSettings = const NotificationSettings(
+      pushNotificationsEnabled: true,
+      messageNotificationsEnabled: true,
+      friendRequestNotificationsEnabled: true,
+      projectInviteNotificationsEnabled: true,
+    ),
     this.selectedInterests = const [],
     this.chatRecentSearches = const [],
     this.friendRecentSearches = const [],
@@ -55,6 +63,16 @@ final class AuthorizedUser extends UserEntity {
       currentDirectChatId: data['currentDirectChatId'] ?? '',
       currentGroupChatId: data['currentGroupChatId'] ?? '',
       fcmToken: data['fcmToken'] ?? '',
+      notificationSettings: data['notificationSettings'] != null
+          ? NotificationSettings.fromJson(
+              Map<String, dynamic>.from(data['notificationSettings']),
+            )
+          : const NotificationSettings(
+              pushNotificationsEnabled: true,
+              messageNotificationsEnabled: true,
+              friendRequestNotificationsEnabled: true,
+              projectInviteNotificationsEnabled: true,
+            ),
       selectedInterests: List<String>.from(data['selectedInterests'] ?? []),
       chatRecentSearches: List<String>.from(data['chatRecentSearches'] ?? []),
       friendRecentSearches: List<String>.from(
@@ -78,6 +96,7 @@ final class AuthorizedUser extends UserEntity {
     String? currentDirectChatId,
     String? currentGroupChatId,
     String? fcmToken,
+    NotificationSettings? notificationSettings,
     List<String>? selectedInterests,
     List<String>? chatRecentSearches,
     List<String>? friendRecentSearches,
@@ -92,6 +111,7 @@ final class AuthorizedUser extends UserEntity {
       currentDirectChatId: currentDirectChatId ?? this.currentDirectChatId,
       currentGroupChatId: currentGroupChatId ?? this.currentGroupChatId,
       fcmToken: fcmToken ?? this.fcmToken,
+      notificationSettings: notificationSettings ?? this.notificationSettings,
       selectedInterests: selectedInterests ?? this.selectedInterests,
       chatRecentSearches: chatRecentSearches ?? this.chatRecentSearches,
       friendRecentSearches: friendRecentSearches ?? this.friendRecentSearches,
@@ -112,6 +132,7 @@ final class AuthorizedUser extends UserEntity {
             other.currentDirectChatId == currentDirectChatId &&
             other.currentGroupChatId == currentGroupChatId &&
             other.fcmToken == fcmToken &&
+            other.notificationSettings == notificationSettings &&
             other.selectedInterests == selectedInterests &&
             other.chatRecentSearches == chatRecentSearches &&
             other.friendRecentSearches == friendRecentSearches &&
@@ -129,6 +150,7 @@ final class AuthorizedUser extends UserEntity {
     currentDirectChatId,
     currentGroupChatId,
     fcmToken,
+    notificationSettings,
     selectedInterests,
     chatRecentSearches,
     friendRecentSearches,
@@ -149,6 +171,7 @@ final class AuthorizedUser extends UserEntity {
       'currentDirectChatId': currentDirectChatId,
       'currentGroupChatId': currentGroupChatId,
       'fcmToken': fcmToken,
+      'notificationSettings': notificationSettings.toJson(),
       'selectedInterests': selectedInterests,
       'chatRecentSearches': chatRecentSearches,
       'friendRecentSearches': friendRecentSearches,

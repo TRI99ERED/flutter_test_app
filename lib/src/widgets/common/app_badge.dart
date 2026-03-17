@@ -1,5 +1,6 @@
-﻿import 'package:flutter/widgets.dart';
-import 'package:test_app/src/widgets/common/styles.dart';
+﻿import 'package:flutter/material.dart';
+import 'package:test_app/src/features/themes/app_theme.dart';
+import 'package:test_app/src/features/themes/styles.dart';
 
 class AppBadgeSymbol extends StatelessWidget {
   final double size;
@@ -13,7 +14,7 @@ class AppBadgeSymbol extends StatelessWidget {
       width: size,
       height: size,
       decoration: BoxDecoration(
-        color: HighlightColor.darkest.color,
+        color: Theme.of(context).extension<AppTheme>()?.highlightDarkestColor,
         shape: BoxShape.circle,
       ),
       child: Center(
@@ -22,7 +23,9 @@ class AppBadgeSymbol extends StatelessWidget {
           style: TextStyle(
             fontSize: cMSize,
             fontWeight: cMWeight,
-            color: LightColor.lightest.color,
+            color: Theme.of(
+              context,
+            ).extension<AppTheme>()?.backgroundStrongestColor,
           ),
         ),
       ),
@@ -42,11 +45,17 @@ class AppBadgeIcon extends StatelessWidget {
       width: size,
       height: size,
       decoration: BoxDecoration(
-        color: HighlightColor.darkest.color,
+        color: Theme.of(context).extension<AppTheme>()?.highlightDarkestColor,
         shape: BoxShape.circle,
       ),
       child: Center(
-        child: Icon(icon, color: LightColor.lightest.color, size: cMSize),
+        child: Icon(
+          icon,
+          color: Theme.of(
+            context,
+          ).extension<AppTheme>()?.backgroundStrongestColor,
+          size: cMSize,
+        ),
       ),
     );
   }
@@ -63,10 +72,9 @@ class AppBadgeEmpty extends StatelessWidget {
       width: size,
       height: size,
       decoration: BoxDecoration(
-        color: HighlightColor.darkest.color,
+        color: Theme.of(context).extension<AppTheme>()?.highlightDarkestColor,
         shape: BoxShape.circle,
       ),
     );
   }
 }
-

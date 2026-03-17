@@ -7,6 +7,7 @@ import 'package:rxdart/rxdart.dart';
 import 'package:test_app/src/core/controller/base_controller/base_controller.dart';
 import 'package:test_app/src/features/app/data/models/chat_model.dart';
 import 'package:test_app/src/features/app/data/models/message_model.dart';
+import 'package:test_app/src/features/app/data/models/notification_settings.dart';
 import 'package:test_app/src/features/app/data/models/project_feedback_model.dart';
 import 'package:test_app/src/features/app/data/models/project_model.dart';
 import 'package:test_app/src/features/app/data/models/user_model.dart';
@@ -22,6 +23,7 @@ import 'package:test_app/src/features/app/data/repositories/firebase/firebase_st
 import 'package:test_app/src/features/app/data/repositories/firebase/firebase_storage_repository/ifirebase_storage_repository.dart';
 import 'package:test_app/src/features/app/data/repositories/shared_preferences/ishared_preferences_repository.dart';
 import 'package:test_app/src/features/app/data/repositories/shared_preferences/shared_preferences_repository_impl.dart';
+import 'package:test_app/src/services/notification_service.dart';
 
 part 'app_state.dart';
 
@@ -102,6 +104,9 @@ final class AppController extends BaseController<AppState> {
             user: user ?? const UnauthorizedUser(),
           ),
         );
+        if (user is AuthorizedUser) {
+          loadNotificationsSettings();
+        }
         _startUserSync();
       },
       onError: (error, stackTrace) {
@@ -1845,6 +1850,118 @@ final class AppController extends BaseController<AppState> {
           rethrow;
         }
       });
+
+  Future<void> saveNotificationsSettings(NotificationSettings settings) async =>
+      await serialExecutor.synchronized(() async {
+        setState(
+          AppState.processing(
+            message: 'Updating notification settings...',
+            user: state.user,
+          ),
+        );
+        try {
+          late final AuthorizedUser updatedUser;
+          if (!settings.pushNotificationsEnabled) {
+            await _messagingRepository.deleteToken();
+            updatedUser =
+                (state.user as AuthorizedUser).copyWith(
+                      fcmToken: '',
+                      notificationSettings: settings,
+                    )
+                    as AuthorizedUser;
+          } else {
+            final token = await _messagingRepository.getToken();
+            updatedUser =
+                (state.user as AuthorizedUser).copyWith(
+                      fcmToken:
+                          token ?? (state.user as AuthorizedUser).fcmToken,
+                      notificationSettings: settings,
+                    )
+                    as AuthorizedUser;
+          }
+          await _firestoreRepository.updateUser(updatedUser);
+          NotificationService.updateSettings(settings);
+          setState(
+            AppState.idle(
+              message: 'Notification settings updated successfully.',
+              user: updatedUser,
+            ),
+          );
+        } catch (error, stackTrace) {
+          setState(
+            AppState.failed(
+              message:
+                  'Failed to update notification settings: ${error.toString()}',
+              user: state.user,
+              error: error,
+              stackTrace: stackTrace,
+            ),
+          );
+          rethrow;
+        }
+      });
+
+  Future<NotificationSettings> loadNotificationsSettings() async {
+    setState(
+      AppState.processing(
+        message: 'Retrieving notification settings...',
+        user: state.user,
+      ),
+    );
+    try {
+      final settings =
+          await watchUserWithId((state.user as AuthorizedUser).id)
+              .map((user) => user?.notificationSettings)
+              .firstWhere((settings) => settings != null, orElse: () => null) ??
+          const NotificationSettings(
+            pushNotificationsEnabled: true,
+            messageNotificationsEnabled: true,
+            friendRequestNotificationsEnabled: true,
+            projectInviteNotificationsEnabled: true,
+          );
+
+      late final AuthorizedUser updatedUser;
+      if (!settings.pushNotificationsEnabled) {
+        await _messagingRepository.deleteToken();
+        updatedUser =
+            (state.user as AuthorizedUser).copyWith(
+                  fcmToken: '',
+                  notificationSettings: settings,
+                )
+                as AuthorizedUser;
+      } else {
+        final token = await _messagingRepository.getToken();
+        if (token != null) {
+          updatedUser =
+              (state.user as AuthorizedUser).copyWith(
+                    fcmToken: token,
+                    notificationSettings: settings,
+                  )
+                  as AuthorizedUser;
+        }
+      }
+      await _firestoreRepository.updateUser(updatedUser);
+      NotificationService.updateSettings(settings);
+      setState(
+        AppState.idle(
+          message: 'Notification settings retrieved successfully.',
+          user: updatedUser,
+        ),
+      );
+      return settings;
+    } catch (error, stackTrace) {
+      setState(
+        AppState.failed(
+          message:
+              'Failed to retrieve notification settings: ${error.toString()}',
+          user: state.user,
+          error: error,
+          stackTrace: stackTrace,
+        ),
+      );
+      rethrow;
+    }
+  }
 
   @override
   void dispose() {

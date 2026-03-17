@@ -1,5 +1,6 @@
 ﻿import 'package:flutter/material.dart';
-import 'package:test_app/src/widgets/common/styles.dart';
+import 'package:test_app/src/features/themes/app_theme.dart';
+import 'package:test_app/src/features/themes/styles.dart';
 
 Widget _buildButtonContent({
   String? text,
@@ -42,8 +43,12 @@ class AppButtonPrimary extends StatelessWidget {
     return FilledButton(
       onPressed: onPressed,
       style: FilledButton.styleFrom(
-        backgroundColor: HighlightColor.darkest.color,
-        foregroundColor: HighlightColor.lightest.color,
+        backgroundColor: Theme.of(
+          context,
+        ).extension<AppTheme>()?.highlightDarkestColor,
+        foregroundColor: Theme.of(
+          context,
+        ).extension<AppTheme>()?.highlightLightestColor,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
       child: _buildButtonContent(
@@ -74,9 +79,18 @@ class AppButtonSecondary extends StatelessWidget {
     return OutlinedButton(
       onPressed: onPressed,
       style: OutlinedButton.styleFrom(
-        backgroundColor: LightColor.lightest.color,
-        foregroundColor: HighlightColor.darkest.color,
-        side: BorderSide(color: HighlightColor.darkest.color, width: 1.5),
+        backgroundColor: Theme.of(
+          context,
+        ).extension<AppTheme>()?.backgroundStrongestColor,
+        foregroundColor: Theme.of(
+          context,
+        ).extension<AppTheme>()?.highlightDarkestColor,
+        side: BorderSide(
+          color:
+              Theme.of(context).extension<AppTheme>()?.highlightDarkestColor ??
+              Color(0x006FFDFF),
+          width: 1.5,
+        ),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
       child: _buildButtonContent(
@@ -107,7 +121,9 @@ class AppButtonTertiary extends StatelessWidget {
     return TextButton(
       onPressed: onPressed,
       style: TextButton.styleFrom(
-        foregroundColor: HighlightColor.darkest.color,
+        foregroundColor: Theme.of(
+          context,
+        ).extension<AppTheme>()?.highlightDarkestColor,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
       child: _buildButtonContent(

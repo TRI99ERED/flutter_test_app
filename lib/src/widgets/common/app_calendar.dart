@@ -1,6 +1,7 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:test_app/src/core/resources/app_icons.dart';
-import 'package:test_app/src/widgets/common/styles.dart';
+import 'package:test_app/src/features/themes/app_theme.dart';
+import 'package:test_app/src/features/themes/styles.dart';
 
 const List<String> _monthLabels = <String>[
   'Jan',
@@ -89,7 +90,9 @@ class _AppCalendarMonthlyState extends State<AppCalendarMonthly> {
           valueListenable: _selectedDate,
           builder: (context, selectedDate, _) {
             return Container(
-              color: LightColor.lightest.color,
+              color: Theme.of(
+                context,
+              ).extension<AppTheme>()?.backgroundStrongestColor,
               child: Column(
                 children: [
                   Padding(
@@ -101,7 +104,9 @@ class _AppCalendarMonthlyState extends State<AppCalendarMonthly> {
                           style: TextStyle(
                             fontSize: h4Size,
                             fontWeight: h4Weight,
-                            color: DarkColor.darkest.color,
+                            color: Theme.of(
+                              context,
+                            ).extension<AppTheme>()?.foregroundStrongestColor,
                           ),
                         ),
                         const SizedBox(width: spacing4),
@@ -110,7 +115,9 @@ class _AppCalendarMonthlyState extends State<AppCalendarMonthly> {
                           style: TextStyle(
                             fontSize: h4Size,
                             fontWeight: h4Weight,
-                            color: DarkColor.darkest.color,
+                            color: Theme.of(
+                              context,
+                            ).extension<AppTheme>()?.foregroundStrongestColor,
                           ),
                         ),
                         const Spacer(),
@@ -133,7 +140,9 @@ class _AppCalendarMonthlyState extends State<AppCalendarMonthly> {
                           icon: Icon(
                             AppIcons.arrowLeft,
                             size: 12,
-                            color: DarkColor.lightest.color,
+                            color: Theme.of(
+                              context,
+                            ).extension<AppTheme>()?.foregroundWeakestColor,
                           ),
                         ),
                         IconButton(
@@ -149,7 +158,9 @@ class _AppCalendarMonthlyState extends State<AppCalendarMonthly> {
                           icon: Icon(
                             AppIcons.arrowRight,
                             size: 12,
-                            color: DarkColor.lightest.color,
+                            color: Theme.of(
+                              context,
+                            ).extension<AppTheme>()?.foregroundWeakestColor,
                           ),
                         ),
                       ],
@@ -163,7 +174,9 @@ class _AppCalendarMonthlyState extends State<AppCalendarMonthly> {
                         style: TextStyle(
                           fontSize: cMSize,
                           fontWeight: cMWeight,
-                          color: DarkColor.lightest.color,
+                          color: Theme.of(
+                            context,
+                          ).extension<AppTheme>()?.foregroundWeakestColor,
                         ),
                       );
                     }),
@@ -200,7 +213,9 @@ class _AppCalendarMonthlyState extends State<AppCalendarMonthly> {
                         return Container(
                           width: 10,
                           height: 10,
-                          color: LightColor.lightest.color,
+                          color: Theme.of(
+                            context,
+                          ).extension<AppTheme>()?.backgroundStrongestColor,
                         );
                       }
 
@@ -235,22 +250,38 @@ class _AppCalendarMonthlyState extends State<AppCalendarMonthly> {
                           shape: WidgetStateProperty.all(const CircleBorder()),
                           backgroundColor: WidgetStateProperty.fromMap(
                             <WidgetStatesConstraint, Color?>{
-                              WidgetState.hovered: HighlightColor.darkest.color,
-                              WidgetState.pressed: HighlightColor.darkest.color,
+                              WidgetState.hovered: Theme.of(
+                                context,
+                              ).extension<AppTheme>()?.highlightDarkestColor,
+                              WidgetState.pressed: Theme.of(
+                                context,
+                              ).extension<AppTheme>()?.highlightDarkestColor,
                               WidgetState.any: isSelected
-                                  ? HighlightColor.darkest.color
+                                  ? Theme.of(context)
+                                        .extension<AppTheme>()
+                                        ?.highlightDarkestColor
                                   : isToday
-                                  ? LightColor.light.color
+                                  ? Theme.of(context)
+                                        .extension<AppTheme>()
+                                        ?.backgroundStrongColor
                                   : null,
                             },
                           ),
                           foregroundColor: WidgetStateProperty.fromMap(
                             <WidgetStatesConstraint, Color?>{
-                              WidgetState.hovered: LightColor.lightest.color,
-                              WidgetState.pressed: LightColor.lightest.color,
+                              WidgetState.hovered: Theme.of(
+                                context,
+                              ).extension<AppTheme>()?.backgroundStrongestColor,
+                              WidgetState.pressed: Theme.of(
+                                context,
+                              ).extension<AppTheme>()?.backgroundStrongestColor,
                               WidgetState.any: isSelected
-                                  ? LightColor.lightest.color
-                                  : DarkColor.medium.color,
+                                  ? Theme.of(context)
+                                        .extension<AppTheme>()
+                                        ?.backgroundStrongestColor
+                                  : Theme.of(context)
+                                        .extension<AppTheme>()
+                                        ?.foregroundMediumColor,
                             },
                           ),
                         ),
@@ -297,7 +328,7 @@ class AppCalendarWeekly extends StatelessWidget {
     final now = DateTime.now();
 
     return Container(
-      color: LightColor.lightest.color,
+      color: Theme.of(context).extension<AppTheme>()?.backgroundStrongestColor,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: List.generate(7, (index) {
@@ -318,16 +349,30 @@ class AppCalendarWeekly extends StatelessWidget {
                 ),
                 backgroundColor: WidgetStateProperty.fromMap(
                   <WidgetStatesConstraint, Color?>{
-                    WidgetState.hovered: HighlightColor.darkest.color,
-                    WidgetState.pressed: HighlightColor.darkest.color,
-                    WidgetState.any: isToday ? LightColor.light.color : null,
+                    WidgetState.hovered: Theme.of(
+                      context,
+                    ).extension<AppTheme>()?.highlightDarkestColor,
+                    WidgetState.pressed: Theme.of(
+                      context,
+                    ).extension<AppTheme>()?.highlightDarkestColor,
+                    WidgetState.any: isToday
+                        ? Theme.of(
+                            context,
+                          ).extension<AppTheme>()?.backgroundStrongColor
+                        : null,
                   },
                 ),
                 foregroundColor: WidgetStateProperty.fromMap(
                   <WidgetStatesConstraint, Color?>{
-                    WidgetState.hovered: LightColor.lightest.color,
-                    WidgetState.pressed: LightColor.lightest.color,
-                    WidgetState.any: DarkColor.medium.color,
+                    WidgetState.hovered: Theme.of(
+                      context,
+                    ).extension<AppTheme>()?.backgroundStrongestColor,
+                    WidgetState.pressed: Theme.of(
+                      context,
+                    ).extension<AppTheme>()?.backgroundStrongestColor,
+                    WidgetState.any: Theme.of(
+                      context,
+                    ).extension<AppTheme>()?.foregroundMediumColor,
                   },
                 ),
               ),

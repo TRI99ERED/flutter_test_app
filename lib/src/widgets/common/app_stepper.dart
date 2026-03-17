@@ -1,6 +1,7 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:test_app/src/core/resources/app_icons.dart';
-import 'package:test_app/src/widgets/common/styles.dart';
+import 'package:test_app/src/features/themes/app_theme.dart';
+import 'package:test_app/src/features/themes/styles.dart';
 
 class AppStepper extends StatefulWidget {
   final int stepCount;
@@ -78,7 +79,7 @@ class _StepIndicator extends StatelessWidget {
     this.onPressed,
   });
 
-  Widget _buildStepContent() {
+  Widget _buildStepContent(BuildContext context) {
     return Column(
       children: [
         isDone || number == null
@@ -86,13 +87,17 @@ class _StepIndicator extends StatelessWidget {
                 width: 24,
                 height: 24,
                 decoration: BoxDecoration(
-                  color: HighlightColor.light.color,
+                  color: Theme.of(
+                    context,
+                  ).extension<AppTheme>()?.highlightLightColor,
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
                   AppIcons.check,
                   size: 10,
-                  color: HighlightColor.darkest.color,
+                  color: Theme.of(
+                    context,
+                  ).extension<AppTheme>()?.highlightDarkestColor,
                 ),
               )
             : Container(
@@ -100,8 +105,12 @@ class _StepIndicator extends StatelessWidget {
                 height: 24,
                 decoration: BoxDecoration(
                   color: isCurrent
-                      ? HighlightColor.darkest.color
-                      : LightColor.light.color,
+                      ? Theme.of(
+                          context,
+                        ).extension<AppTheme>()?.highlightDarkestColor
+                      : Theme.of(
+                          context,
+                        ).extension<AppTheme>()?.backgroundStrongColor,
                   shape: BoxShape.circle,
                 ),
                 child: Center(
@@ -111,8 +120,12 @@ class _StepIndicator extends StatelessWidget {
                       fontSize: cMSize,
                       fontWeight: cMWeight,
                       color: isCurrent
-                          ? LightColor.lightest.color
-                          : DarkColor.lightest.color,
+                          ? Theme.of(
+                              context,
+                            ).extension<AppTheme>()?.backgroundStrongestColor
+                          : Theme.of(
+                              context,
+                            ).extension<AppTheme>()?.foregroundWeakestColor,
                     ),
                   ),
                 ),
@@ -123,8 +136,12 @@ class _StepIndicator extends StatelessWidget {
             fontSize: h5Size,
             fontWeight: h5Weight,
             color: isCurrent
-                ? DarkColor.darkest.color
-                : DarkColor.lightest.color,
+                ? Theme.of(
+                    context,
+                  ).extension<AppTheme>()?.foregroundStrongestColor
+                : Theme.of(
+                    context,
+                  ).extension<AppTheme>()?.foregroundWeakestColor,
           ),
         ),
       ],
@@ -142,14 +159,14 @@ class _StepIndicator extends StatelessWidget {
                   ContinuousRectangleBorder(borderRadius: BorderRadius.zero),
                 ),
               ),
-              child: _buildStepContent(),
+              child: _buildStepContent(context),
             )
           : Container(
               decoration: BoxDecoration(
                 shape: BoxShape.rectangle,
                 borderRadius: BorderRadius.zero,
               ),
-              child: _buildStepContent(),
+              child: _buildStepContent(context),
             ),
     );
   }

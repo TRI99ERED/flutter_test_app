@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:test_app/src/widgets/common/styles.dart';
+import 'package:test_app/src/features/themes/app_theme.dart';
+import 'package:test_app/src/features/themes/styles.dart';
 
 class ErrorState extends StatelessWidget {
   final String message;
@@ -14,7 +15,7 @@ class ErrorState extends StatelessWidget {
         style: TextStyle(
           fontSize: h4Size,
           fontWeight: h4Weight,
-          color: ErrorColor.dark.color,
+          color: Theme.of(context).extension<AppTheme>()?.errorDarkColor,
         ),
       ),
     );

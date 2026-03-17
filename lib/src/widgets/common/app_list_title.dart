@@ -1,7 +1,8 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:test_app/src/features/themes/app_theme.dart';
 import 'package:test_app/src/widgets/common/app_button.dart';
-import 'package:test_app/src/widgets/common/styles.dart';
+import 'package:test_app/src/features/themes/styles.dart';
 
 class AppListTitle extends StatelessWidget {
   final String title;
@@ -32,7 +33,7 @@ class AppListTitle extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: spacing16, vertical: spacing8),
-      color: LightColor.lightest.color,
+      color: Theme.of(context).extension<AppTheme>()?.backgroundStrongestColor,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -41,7 +42,9 @@ class AppListTitle extends StatelessWidget {
             style: TextStyle(
               fontSize: h4Size,
               fontWeight: h4Weight,
-              color: DarkColor.darkest.color,
+              color: Theme.of(
+                context,
+              ).extension<AppTheme>()?.foregroundStrongestColor,
               fontFamily: GoogleFonts.inter().fontFamily,
               decoration: TextDecoration.none,
             ),
@@ -51,7 +54,13 @@ class AppListTitle extends StatelessWidget {
           if (buttonText == null && onPressed != null && icon != null)
             IconButton(
               onPressed: onPressed,
-              icon: Icon(icon, size: 16, color: DarkColor.lightest.color),
+              icon: Icon(
+                icon,
+                size: 16,
+                color: Theme.of(
+                  context,
+                ).extension<AppTheme>()?.foregroundWeakestColor,
+              ),
             ),
         ],
       ),

@@ -1,10 +1,11 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:test_app/src/core/resources/app_icons.dart';
+import 'package:test_app/src/features/themes/app_theme.dart';
 import 'package:test_app/src/widgets/common/app_badge.dart';
 import 'package:test_app/src/widgets/common/app_button.dart';
 import 'package:test_app/src/widgets/common/app_checkbox.dart';
 import 'package:test_app/src/widgets/common/app_toggle.dart';
-import 'package:test_app/src/widgets/common/styles.dart';
+import 'package:test_app/src/features/themes/styles.dart';
 
 enum AppListItemControl {
   none,
@@ -24,7 +25,7 @@ class AppListItem extends StatelessWidget {
   final String? symbol;
   final String? largeButtonText;
   final VoidCallback? onPressed;
-  final ValueChanged<bool?>? onChanged;
+  final ValueChanged<bool>? onChanged;
   final AppListItemControl control;
 
   const AppListItem({
@@ -86,7 +87,9 @@ class AppListItem extends StatelessWidget {
         AppListItemControl.none => onPressed,
       },
       style: TextButton.styleFrom(
-        backgroundColor: LightColor.lightest.color,
+        backgroundColor: Theme.of(
+          context,
+        ).extension<AppTheme>()?.backgroundStrongestColor,
         padding: const EdgeInsets.symmetric(
           horizontal: spacing16,
           vertical: spacing8,
@@ -98,7 +101,13 @@ class AppListItem extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (icon != null)
-            Icon(icon, size: 20, color: HighlightColor.darkest.color),
+            Icon(
+              icon,
+              size: 20,
+              color: Theme.of(
+                context,
+              ).extension<AppTheme>()?.highlightDarkestColor,
+            ),
           if (avatar != null)
             Padding(
               padding: EdgeInsets.only(right: spacing8),
@@ -115,7 +124,9 @@ class AppListItem extends StatelessWidget {
                     style: TextStyle(
                       fontSize: bMSize,
                       fontWeight: bMWeight,
-                      color: DarkColor.darkest.color,
+                      color: Theme.of(
+                        context,
+                      ).extension<AppTheme>()?.foregroundStrongestColor,
                     ),
                   ),
                 if (description != null)
@@ -124,7 +135,9 @@ class AppListItem extends StatelessWidget {
                     style: TextStyle(
                       fontSize: bSSize,
                       fontWeight: bSWeight,
-                      color: DarkColor.light.color,
+                      color: Theme.of(
+                        context,
+                      ).extension<AppTheme>()?.foregroundWeakColor,
                       overflow: TextOverflow.ellipsis,
                     ),
                     softWrap: true,
@@ -138,7 +151,9 @@ class AppListItem extends StatelessWidget {
               icon: Icon(
                 AppIcons.arrowRight,
                 size: 12,
-                color: DarkColor.lightest.color,
+                color: Theme.of(
+                  context,
+                ).extension<AppTheme>()?.foregroundWeakestColor,
               ),
             ),
             AppListItemControl.largeButton => AppButtonSecondary(
@@ -147,11 +162,17 @@ class AppListItem extends StatelessWidget {
             ),
             AppListItemControl.toggle => AppToggle(
               value: value ?? false,
-              onChanged: onChanged,
+              onChanged: (value) {
+                onPressed?.call();
+                onChanged?.call(value);
+              },
             ),
             AppListItemControl.checkbox => AppCheckbox(
               value: value ?? false,
-              onChanged: onChanged,
+              onChanged: (value) {
+                onPressed?.call();
+                onChanged?.call(value ?? false);
+              },
               size: checkboxMediumSize,
             ),
             AppListItemControl.badge => IconButton(

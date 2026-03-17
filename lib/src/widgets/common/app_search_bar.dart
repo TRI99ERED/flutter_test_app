@@ -2,7 +2,8 @@
 
 import 'package:flutter/material.dart';
 import 'package:test_app/src/core/resources/app_icons.dart';
-import 'package:test_app/src/widgets/common/styles.dart';
+import 'package:test_app/src/features/themes/app_theme.dart';
+import 'package:test_app/src/features/themes/styles.dart';
 import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
 
 class AppSearchBar extends StatefulWidget {
@@ -167,7 +168,9 @@ class _AppSearchBarState extends State<AppSearchBar> {
                 elevation: 0,
                 child: Container(
                   decoration: BoxDecoration(
-                    color: LightColor.lightest.color,
+                    color: Theme.of(
+                      context,
+                    ).extension<AppTheme>()?.backgroundStrongestColor,
                     borderRadius: BorderRadius.zero,
                   ),
                   constraints: BoxConstraints(
@@ -184,7 +187,9 @@ class _AppSearchBarState extends State<AppSearchBar> {
                           style: TextStyle(
                             fontSize: cMSize,
                             fontWeight: cMWeight,
-                            color: DarkColor.light.color,
+                            color: Theme.of(
+                              context,
+                            ).extension<AppTheme>()?.foregroundWeakColor,
                           ),
                         ),
                       ),
@@ -201,7 +206,9 @@ class _AppSearchBarState extends State<AppSearchBar> {
                                   style: TextStyle(
                                     fontSize: bSSize,
                                     fontWeight: bSWeight,
-                                    color: DarkColor.light.color,
+                                    color: Theme.of(context)
+                                        .extension<AppTheme>()
+                                        ?.foregroundWeakColor,
                                   ),
                                 ),
                               ),
@@ -261,9 +268,13 @@ class _AppSearchBarState extends State<AppSearchBar> {
         controller: _effectiveController,
         onChanged: widget.onChanged,
         onSubmitted: widget.onSubmitted,
-        cursorColor: HighlightColor.darkest.color,
+        cursorColor: Theme.of(
+          context,
+        ).extension<AppTheme>()?.highlightDarkestColor,
         style: TextStyle(
-          color: DarkColor.darkest.color,
+          color: Theme.of(
+            context,
+          ).extension<AppTheme>()?.foregroundStrongestColor,
           fontSize: bMSize,
           fontWeight: bMWeight,
         ),
@@ -273,13 +284,17 @@ class _AppSearchBarState extends State<AppSearchBar> {
         decoration: InputDecoration(
           hintText: widget.placeholder,
           hintStyle: TextStyle(
-            color: DarkColor.lightest.color,
+            color: Theme.of(
+              context,
+            ).extension<AppTheme>()?.foregroundWeakestColor,
             fontSize: bMSize,
             fontWeight: bMWeight,
           ),
           prefixIcon: Icon(
             AppIcons.search,
-            color: DarkColor.dark.color,
+            color: Theme.of(
+              context,
+            ).extension<AppTheme>()?.foregroundStrongColor,
             size: 16,
           ),
           border: OutlineInputBorder(
@@ -287,7 +302,9 @@ class _AppSearchBarState extends State<AppSearchBar> {
             borderSide: BorderSide.none,
           ),
           filled: true,
-          fillColor: LightColor.light.color,
+          fillColor: Theme.of(
+            context,
+          ).extension<AppTheme>()?.backgroundStrongColor,
         ),
         onTap: () {
           _showOverlay();
@@ -320,8 +337,12 @@ class _AppRecentSearch extends StatelessWidget {
     return TextButton(
       onPressed: _onPressed,
       style: TextButton.styleFrom(
-        backgroundColor: LightColor.lightest.color,
-        foregroundColor: DarkColor.darkest.color,
+        backgroundColor: Theme.of(
+          context,
+        ).extension<AppTheme>()?.backgroundStrongestColor,
+        foregroundColor: Theme.of(
+          context,
+        ).extension<AppTheme>()?.foregroundStrongestColor,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         padding: EdgeInsets.all(spacing8),
       ),
@@ -339,7 +360,9 @@ class _AppRecentSearch extends StatelessWidget {
                 icon: Icon(
                   AppIcons.delete,
                   size: 12,
-                  color: DarkColor.lightest.color,
+                  color: Theme.of(
+                    context,
+                  ).extension<AppTheme>()?.foregroundWeakestColor,
                 ),
               ),
             ),

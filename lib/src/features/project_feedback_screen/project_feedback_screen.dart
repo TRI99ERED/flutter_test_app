@@ -4,12 +4,13 @@ import 'package:test_app/src/core/resources/app_icons.dart';
 import 'package:test_app/src/core/widgets/controller_listener.dart';
 import 'package:test_app/src/features/app/app_scope.dart';
 import 'package:test_app/src/features/app/data/models/user_model.dart';
+import 'package:test_app/src/features/themes/app_theme.dart';
 import 'package:test_app/src/widgets/common/app_button.dart';
 import 'package:test_app/src/widgets/common/app_nav_bar.dart';
 import 'package:test_app/src/widgets/common/app_star_rating.dart';
 import 'package:test_app/src/widgets/common/app_tag.dart';
 import 'package:test_app/src/widgets/common/app_text_area.dart';
-import 'package:test_app/src/widgets/common/styles.dart';
+import 'package:test_app/src/features/themes/styles.dart';
 
 class ProjectFeedbackScreen extends StatefulWidget {
   final String projectId;
@@ -62,7 +63,9 @@ class _ProjectFeedbackScreenState extends State<ProjectFeedbackScreen> {
                           style: TextStyle(
                             fontSize: h2Size,
                             fontWeight: h2Weight,
-                            color: DarkColor.darkest.color,
+                            color: Theme.of(
+                              context,
+                            ).extension<AppTheme>()?.foregroundStrongestColor,
                           ),
                         ),
                         Text(
@@ -70,7 +73,9 @@ class _ProjectFeedbackScreenState extends State<ProjectFeedbackScreen> {
                           style: TextStyle(
                             fontSize: bMSize,
                             fontWeight: bMWeight,
-                            color: DarkColor.light.color,
+                            color: Theme.of(
+                              context,
+                            ).extension<AppTheme>()?.foregroundWeakColor,
                           ),
                         ),
                         Align(
@@ -99,7 +104,9 @@ class _ProjectFeedbackScreenState extends State<ProjectFeedbackScreen> {
                           style: TextStyle(
                             fontSize: h5Size,
                             fontWeight: h5Weight,
-                            color: DarkColor.darkest.color,
+                            color: Theme.of(
+                              context,
+                            ).extension<AppTheme>()?.foregroundStrongestColor,
                           ),
                         ),
                         Wrap(
@@ -189,7 +196,9 @@ class _ProjectFeedbackScreenState extends State<ProjectFeedbackScreen> {
                           style: TextStyle(
                             fontSize: h5Size,
                             fontWeight: h5Weight,
-                            color: DarkColor.darkest.color,
+                            color: Theme.of(
+                              context,
+                            ).extension<AppTheme>()?.foregroundStrongestColor,
                           ),
                         ),
                         Wrap(
@@ -273,7 +282,9 @@ class _ProjectFeedbackScreenState extends State<ProjectFeedbackScreen> {
                           style: TextStyle(
                             fontSize: h5Size,
                             fontWeight: h5Weight,
-                            color: DarkColor.darkest.color,
+                            color: Theme.of(
+                              context,
+                            ).extension<AppTheme>()?.foregroundStrongestColor,
                           ),
                         ),
                         AppTextArea(

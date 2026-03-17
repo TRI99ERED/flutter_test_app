@@ -14,19 +14,24 @@ import 'package:test_app/src/widgets/common/app_loader.dart';
 import 'package:test_app/src/widgets/common/app_nav_bar.dart';
 import 'package:test_app/src/widgets/common/empty_state.dart';
 import 'package:test_app/src/widgets/common/error_state.dart';
-import 'package:test_app/src/widgets/common/styles.dart';
+import 'package:test_app/src/features/themes/styles.dart';
 
 class Projects extends StatefulWidget {
+  final int initialSection;
   final ValueNotifier<bool> editPressed;
 
-  const Projects({super.key, required this.editPressed});
+  const Projects({
+    super.key,
+    this.initialSection = 0,
+    required this.editPressed,
+  });
 
   @override
   State<Projects> createState() => _ProjectsState();
 }
 
 class _ProjectsState extends State<Projects> {
-  final _sectionIndex = ValueNotifier<int>(0);
+  late final _sectionIndex = ValueNotifier<int>(widget.initialSection);
   final _sortOption = ValueNotifier<String>('lastUpdated');
   final _sortOrder = ValueNotifier<SortOrder>(SortOrder.descending);
   final _filters = ValueNotifier<Map<String, Set<String>>>({});

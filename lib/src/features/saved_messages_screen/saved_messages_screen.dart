@@ -8,13 +8,14 @@ import 'package:test_app/src/features/app/data/models/message_model.dart';
 import 'package:test_app/src/features/app/data/models/user_model.dart';
 import 'package:test_app/src/features/chat_screen/chat_screen.dart';
 import 'package:test_app/src/features/chat_screen/widgets/aligned_message_bubble.dart';
+import 'package:test_app/src/features/themes/app_theme.dart';
 import 'package:test_app/src/widgets/common/app_list_item.dart';
 import 'package:test_app/src/widgets/common/app_loader.dart';
 import 'package:test_app/src/widgets/common/app_message_input.dart';
 import 'package:test_app/src/widgets/common/app_nav_bar.dart';
 import 'package:test_app/src/widgets/common/empty_state.dart';
 import 'package:test_app/src/widgets/common/error_state.dart';
-import 'package:test_app/src/widgets/common/styles.dart';
+import 'package:test_app/src/features/themes/styles.dart';
 
 class SavedMessagesScreen extends StatefulWidget {
   const SavedMessagesScreen({super.key});
@@ -170,7 +171,9 @@ class _SavedMessagesScreenState extends State<SavedMessagesScreen> {
   void _handleMessageTap(BuildContext context, SavedMessage message) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: LightColor.light.color,
+      backgroundColor: Theme.of(
+        context,
+      ).extension<AppTheme>()?.backgroundStrongColor,
       elevation: 0,
       constraints: BoxConstraints(
         maxHeight: MediaQuery.sizeOf(context).height * 0.3,

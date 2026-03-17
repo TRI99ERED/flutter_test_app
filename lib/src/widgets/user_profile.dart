@@ -2,13 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:test_app/src/features/app/app_scope.dart';
 import 'package:test_app/src/features/app/data/models/user_model.dart';
+import 'package:test_app/src/features/themes/app_theme.dart';
 import 'package:test_app/src/widgets/common/app_avatar.dart';
 import 'package:test_app/src/widgets/common/app_button.dart';
 import 'package:test_app/src/widgets/common/app_loader.dart';
 import 'package:test_app/src/widgets/common/app_nav_bar.dart';
 import 'package:test_app/src/widgets/common/app_text_field.dart';
 import 'package:test_app/src/widgets/common/error_state.dart';
-import 'package:test_app/src/widgets/common/styles.dart';
+import 'package:test_app/src/features/themes/styles.dart';
 
 enum UserProfileMode { view, edit }
 
@@ -136,7 +137,9 @@ class _UserProfileState extends State<UserProfile> {
               style: TextStyle(
                 fontSize: h3Size,
                 fontWeight: h3Weight,
-                color: DarkColor.darkest.color,
+                color: Theme.of(
+                  context,
+                ).extension<AppTheme>()?.foregroundStrongestColor,
               ),
             ),
             Text(
@@ -144,7 +147,9 @@ class _UserProfileState extends State<UserProfile> {
               style: TextStyle(
                 fontSize: bMSize,
                 fontWeight: bMWeight,
-                color: DarkColor.darkest.color,
+                color: Theme.of(
+                  context,
+                ).extension<AppTheme>()?.foregroundStrongestColor,
               ),
             ),
           ],
@@ -157,7 +162,9 @@ class _UserProfileState extends State<UserProfile> {
               style: TextStyle(
                 fontSize: h3Size,
                 fontWeight: h3Weight,
-                color: DarkColor.darkest.color,
+                color: Theme.of(
+                  context,
+                ).extension<AppTheme>()?.foregroundStrongestColor,
               ),
             ),
             if (widget.user.handle.isNotEmpty)
@@ -166,7 +173,9 @@ class _UserProfileState extends State<UserProfile> {
                 style: TextStyle(
                   fontSize: bMSize,
                   fontWeight: bMWeight,
-                  color: DarkColor.darkest.color,
+                  color: Theme.of(
+                    context,
+                  ).extension<AppTheme>()?.foregroundStrongestColor,
                 ),
               ),
           ],
@@ -199,7 +208,9 @@ class _UserProfileState extends State<UserProfile> {
             style: TextStyle(
               fontSize: h3Size,
               fontWeight: h3Weight,
-              color: DarkColor.darkest.color,
+              color: Theme.of(
+                context,
+              ).extension<AppTheme>()?.foregroundStrongestColor,
             ),
           ),
           AppTextField(
@@ -218,7 +229,9 @@ class _UserProfileState extends State<UserProfile> {
             style: TextStyle(
               fontSize: h3Size,
               fontWeight: h3Weight,
-              color: DarkColor.darkest.color,
+              color: Theme.of(
+                context,
+              ).extension<AppTheme>()?.foregroundStrongestColor,
             ),
           ),
           StreamBuilder(

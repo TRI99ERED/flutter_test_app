@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:test_app/src/features/themes/app_theme.dart';
 import 'package:test_app/src/widgets/common/app_button.dart';
 import 'package:test_app/src/widgets/common/placeholders.dart';
-import 'package:test_app/src/widgets/common/styles.dart';
+import 'package:test_app/src/features/themes/styles.dart';
 
 class EmptyState extends StatelessWidget {
   final String title;
@@ -43,7 +44,9 @@ class EmptyState extends StatelessWidget {
                 style: TextStyle(
                   fontSize: h2Size,
                   fontWeight: h2Weight,
-                  color: DarkColor.darkest.color,
+                  color: Theme.of(
+                    context,
+                  ).extension<AppTheme>()?.foregroundStrongestColor,
                 ),
               ),
               if (body != null)
@@ -52,7 +55,9 @@ class EmptyState extends StatelessWidget {
                   style: TextStyle(
                     fontSize: bMSize,
                     fontWeight: bMWeight,
-                    color: DarkColor.light.color,
+                    color: Theme.of(
+                      context,
+                    ).extension<AppTheme>()?.foregroundWeakColor,
                   ),
                   textAlign: TextAlign.center,
                 ),

@@ -7,9 +7,9 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:test_app/firebase_options.dart';
 import 'package:test_app/src/features/app/app_controller/app_controller.dart';
 import 'package:test_app/src/features/app/app_scope.dart';
+import 'package:test_app/src/features/themes/app_theme.dart';
 import 'package:test_app/src/router/routes.dart';
 import 'package:test_app/src/services/notification_service.dart';
-import 'package:test_app/src/widgets/common/styles.dart';
 
 final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>();
 
@@ -42,15 +42,32 @@ class App extends StatefulWidget {
 }
 
 class _AppState extends State<App> {
-  late final AppController _controller;
+  late final AppController _appController;
   late final GoRouter _router;
+  final ThemeData _lightTheme = ThemeData(
+    brightness: Brightness.light,
+    extensions: [appThemeLight],
+    scaffoldBackgroundColor: appThemeLight.backgroundStrongestColor,
+    textTheme: GoogleFonts.interTextTheme(),
+    primaryTextTheme: GoogleFonts.interTextTheme(),
+    visualDensity: VisualDensity.adaptivePlatformDensity,
+  );
+  final ThemeData _darkTheme = ThemeData(
+    brightness: Brightness.dark,
+    extensions: [appThemeDark],
+    scaffoldBackgroundColor: appThemeDark.backgroundStrongestColor,
+    textTheme: GoogleFonts.interTextTheme(),
+    primaryTextTheme: GoogleFonts.interTextTheme(),
+    visualDensity: VisualDensity.adaptivePlatformDensity,
+  );
+  final _themeMode = ValueNotifier<ThemeMode>(ThemeMode.system);
 
   @override
   void initState() {
     super.initState();
-    _controller = AppController();
-    _controller.addListener(_rebuild);
-    _router = generateRouter(_controller, rootNavigatorKey);
+    _appController = AppController();
+    _appController.addListener(_rebuild);
+    _router = generateRouter(_appController, rootNavigatorKey);
   }
 
   void _rebuild() {
@@ -61,33 +78,29 @@ class _AppState extends State<App> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp.router(
-      title: 'Test App',
-      theme: ThemeData(
-        buttonTheme: Theme.of(
-          context,
-        ).buttonTheme.copyWith(highlightColor: HighlightColor.darkest.color),
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: HighlightColor.darkest.color,
-        ),
-        textTheme: GoogleFonts.interTextTheme(Theme.of(context).textTheme),
-        primaryTextTheme: GoogleFonts.interTextTheme(
-          Theme.of(context).primaryTextTheme,
-        ),
-        visualDensity: VisualDensity.adaptivePlatformDensity,
-        iconTheme: IconThemeData(color: HighlightColor.darkest.color),
-        scaffoldBackgroundColor: LightColor.lightest.color,
-      ),
-      routerConfig: _router,
-      builder: (context, child) =>
-          AppScope(controller: _controller, child: child!),
+    return ValueListenableBuilder(
+      valueListenable: _themeMode,
+      builder: (context, value, child) {
+        return MaterialApp.router(
+          title: 'Test App',
+          theme: _lightTheme,
+          darkTheme: _darkTheme,
+          themeMode: _themeMode.value,
+          routerConfig: _router,
+          builder: (context, child) => AppScope(
+            controller: _appController,
+            themeMode: _themeMode,
+            child: child!,
+          ),
+        );
+      },
     );
   }
 
   @override
   void dispose() {
-    _controller.removeListener(_rebuild);
-    _controller.dispose();
+    _appController.removeListener(_rebuild);
+    _appController.dispose();
     super.dispose();
   }
 }

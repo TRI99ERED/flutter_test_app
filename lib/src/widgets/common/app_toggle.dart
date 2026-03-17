@@ -1,5 +1,5 @@
 ﻿import 'package:flutter/material.dart';
-import 'package:test_app/src/widgets/common/styles.dart';
+import 'package:test_app/src/features/themes/app_theme.dart';
 
 class AppToggle extends StatelessWidget {
   final bool value;
@@ -14,24 +14,48 @@ class AppToggle extends StatelessWidget {
       onChanged: onChanged,
       trackOutlineColor:
           WidgetStateProperty.fromMap(<WidgetStatesConstraint, Color?>{
-            WidgetState.disabled: LightColor.medium.color,
-            WidgetState.selected: HighlightColor.darkest.color,
-            WidgetState.any: LightColor.dark.color,
+            WidgetState.disabled: Theme.of(
+              context,
+            ).extension<AppTheme>()?.backgroundMediumColor,
+            WidgetState.selected: Theme.of(
+              context,
+            ).extension<AppTheme>()?.highlightDarkestColor,
+            WidgetState.any: Theme.of(
+              context,
+            ).extension<AppTheme>()?.backgroundWeakColor,
           }),
       trackOutlineWidth: const WidgetStatePropertyAll(0),
       trackColor: WidgetStateProperty.fromMap(<WidgetStatesConstraint, Color?>{
-        WidgetState.disabled: LightColor.medium.color,
-        WidgetState.selected: HighlightColor.darkest.color,
-        WidgetState.any: LightColor.dark.color,
+        WidgetState.disabled: Theme.of(
+          context,
+        ).extension<AppTheme>()?.backgroundMediumColor,
+        WidgetState.selected: Theme.of(
+          context,
+        ).extension<AppTheme>()?.highlightDarkestColor,
+        WidgetState.any: Theme.of(
+          context,
+        ).extension<AppTheme>()?.backgroundWeakColor,
       }),
       materialTapTargetSize: MaterialTapTargetSize.padded,
       thumbColor: WidgetStateProperty.fromMap(<WidgetStatesConstraint, Color?>{
-        WidgetState.disabled: LightColor.light.color,
-        WidgetState.selected: LightColor.lightest.color,
-        WidgetState.any: LightColor.lightest.color,
+        WidgetState.disabled: Theme.of(
+          context,
+        ).extension<AppTheme>()?.backgroundStrongColor,
+        WidgetState.selected: Theme.of(
+          context,
+        ).extension<AppTheme>()?.backgroundStrongestColor,
+        WidgetState.any: Theme.of(
+          context,
+        ).extension<AppTheme>()?.backgroundStrongestColor,
       }),
       thumbIcon: WidgetStatePropertyAll(
-        Icon(Icons.circle, size: 20, color: LightColor.lightest.color),
+        Icon(
+          Icons.circle,
+          size: 20,
+          color: Theme.of(
+            context,
+          ).extension<AppTheme>()?.backgroundStrongestColor,
+        ),
       ),
     );
   }

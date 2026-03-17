@@ -1,5 +1,5 @@
 ﻿import 'package:flutter/material.dart';
-import 'package:test_app/src/widgets/common/styles.dart';
+import 'package:test_app/src/features/themes/app_theme.dart';
 
 const double checkboxSmallSize = 0.8;
 const double checkboxMediumSize = 1.2;
@@ -27,12 +27,25 @@ class AppCheckbox extends StatelessWidget {
         materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
         fillColor: WidgetStateProperty.fromMap(<WidgetStatesConstraint, Color?>{
-          WidgetState.disabled: LightColor.medium.color,
-          WidgetState.selected: HighlightColor.darkest.color,
-          WidgetState.any: LightColor.lightest.color,
+          WidgetState.disabled: Theme.of(
+            context,
+          ).extension<AppTheme>()?.backgroundMediumColor,
+          WidgetState.selected: Theme.of(
+            context,
+          ).extension<AppTheme>()?.highlightDarkestColor,
+          WidgetState.any: Theme.of(
+            context,
+          ).extension<AppTheme>()?.backgroundStrongestColor,
         }),
-        checkColor: LightColor.lightest.color,
-        side: BorderSide(color: LightColor.darkest.color, width: 1.5),
+        checkColor: Theme.of(
+          context,
+        ).extension<AppTheme>()?.backgroundStrongestColor,
+        side: BorderSide(
+          color:
+              Theme.of(context).extension<AppTheme>()?.backgroundWeakestColor ??
+              Color(0xC5C6CCFF),
+          width: 1.5,
+        ),
       ),
     );
   }

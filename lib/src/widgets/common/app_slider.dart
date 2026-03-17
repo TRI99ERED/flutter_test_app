@@ -1,5 +1,6 @@
 ﻿import 'package:flutter/material.dart';
-import 'package:test_app/src/widgets/common/styles.dart';
+import 'package:test_app/src/features/themes/app_theme.dart';
+import 'package:test_app/src/features/themes/styles.dart';
 
 class AppSlider extends StatefulWidget {
   final double value;
@@ -40,10 +41,16 @@ class _AppSliderState extends State<AppSlider> {
   Widget build(BuildContext context) {
     final sliderTheme = SliderTheme.of(context).copyWith(
       trackHeight: 8,
-      inactiveTrackColor: LightColor.medium.color,
-      activeTrackColor: HighlightColor.darkest.color,
-      thumbColor: LightColor.lightest.color,
-      thumbShape: const _InnerDotThumbShape(),
+      inactiveTrackColor: Theme.of(
+        context,
+      ).extension<AppTheme>()?.backgroundMediumColor,
+      activeTrackColor: Theme.of(
+        context,
+      ).extension<AppTheme>()?.highlightDarkestColor,
+      thumbColor: Theme.of(
+        context,
+      ).extension<AppTheme>()?.backgroundStrongestColor,
+      thumbShape: _InnerDotThumbShape(context: context),
       overlayShape: const RoundSliderOverlayShape(overlayRadius: 16),
     );
 
@@ -73,12 +80,13 @@ class _AppSliderState extends State<AppSlider> {
 }
 
 class _InnerDotThumbShape extends SliderComponentShape {
+  final BuildContext context;
   final double outerRadius = 9;
   final double innerRadius = 4.5;
   final double elevation = 3;
   final Color shadowColor = const Color(0x33000000);
 
-  const _InnerDotThumbShape();
+  const _InnerDotThumbShape({required this.context});
 
   @override
   Size getPreferredSize(bool isEnabled, bool isDiscrete) {
@@ -87,7 +95,7 @@ class _InnerDotThumbShape extends SliderComponentShape {
 
   @override
   void paint(
-    PaintingContext context,
+    PaintingContext paintingContext,
     Offset center, {
     required Animation<double> activationAnimation,
     required Animation<double> enableAnimation,
@@ -100,8 +108,11 @@ class _InnerDotThumbShape extends SliderComponentShape {
     required double textScaleFactor,
     required Size sizeWithOverflow,
   }) {
-    final canvas = context.canvas;
-    final thumbColor = sliderTheme.thumbColor ?? LightColor.lightest.color;
+    final canvas = paintingContext.canvas;
+    final thumbColor =
+        sliderTheme.thumbColor ??
+        Theme.of(context).extension<AppTheme>()?.backgroundStrongestColor ??
+        const Color(0xFFFFFFFF);
 
     canvas.drawShadow(
       Path()..addOval(Rect.fromCircle(center: center, radius: outerRadius)),
@@ -114,7 +125,10 @@ class _InnerDotThumbShape extends SliderComponentShape {
     canvas.drawCircle(
       center,
       innerRadius,
-      Paint()..color = HighlightColor.darkest.color,
+      Paint()
+        ..color =
+            Theme.of(context).extension<AppTheme>()?.highlightDarkestColor ??
+            const Color(0x006FFDFF),
     );
   }
 }
@@ -176,13 +190,17 @@ class _AppSliderDefaultState extends State<AppSliderDefault> {
             height: 40,
             alignment: Alignment.center,
             decoration: BoxDecoration(
-              color: LightColor.light.color,
+              color: Theme.of(
+                context,
+              ).extension<AppTheme>()?.backgroundStrongColor,
               borderRadius: BorderRadius.circular(12),
             ),
             child: Text(
               '${((_value - widget.min) / (widget.max - widget.min) * 100).toStringAsFixed(0)}%',
               style: TextStyle(
-                color: DarkColor.darkest.color,
+                color: Theme.of(
+                  context,
+                ).extension<AppTheme>()?.foregroundStrongestColor,
                 fontSize: bSSize,
                 fontWeight: bSWeight,
               ),
@@ -245,7 +263,9 @@ class _AppSliderTitledState extends State<AppSliderTitled> {
                 Text(
                   widget.title,
                   style: TextStyle(
-                    color: DarkColor.darkest.color,
+                    color: Theme.of(
+                      context,
+                    ).extension<AppTheme>()?.foregroundStrongestColor,
                     fontSize: h5Size,
                     fontWeight: h5Weight,
                   ),
@@ -253,7 +273,9 @@ class _AppSliderTitledState extends State<AppSliderTitled> {
                 Text(
                   '${((_value - widget.min) / (widget.max - widget.min) * 100).toStringAsFixed(0)}%',
                   style: TextStyle(
-                    color: DarkColor.medium.color,
+                    color: Theme.of(
+                      context,
+                    ).extension<AppTheme>()?.foregroundMediumColor,
                     fontSize: bSSize,
                     fontWeight: bSWeight,
                   ),

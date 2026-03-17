@@ -234,7 +234,6 @@ const sendMessageNotification = async (change, context, chatType) => {
 
 	const chatId = context.params.chatId;
 	const senderId = messageData.senderId;
-	// Fetch sender's name from users collection
 	let senderName = 'Someone';
 	try {
 		const senderDoc = await db.collection('users').doc(senderId).get();
@@ -244,12 +243,12 @@ const sendMessageNotification = async (change, context, chatType) => {
 	} catch (e) {
 		logger.warn('Failed to fetch sender name', { senderId, error: e });
 	}
-	// Use 'body' for notification body if present, fallback to 'text'
 	const notification = {
 		title: `${senderName}`,
 		body: messageData.body || messageData.text || 'You have a new message!',
 	};
 	const data = {
+		type: 'message',
 		route: chatType === 'group' ? `/chats/group/${chatId}` : `/chats/direct/${chatId}`,
 		title: notification.title,
 		body: notification.body,
@@ -265,13 +264,21 @@ const sendMessageNotification = async (change, context, chatType) => {
 		const userDoc = await db.collection('users').doc(recipientId).get();
 		const recipientToken = userDoc.get('fcmToken');
 		if (!recipientToken) return;
+
+		const settings = userDoc.get('notificationSettings') || {};
+		if (!settings.messageNotificationsEnabled) return;
 		const message = {
 			token: recipientToken,
 			notification,
 			data,
+			android: {
+				notification: {
+					channelId: 'direct_chats_channel'
+				}
+			}
 		};
 		const messageId = await admin.messaging().send(message);
-		logger.info('FCM message sent', { messageId, recipientId, chatId, notification, data });
+		logger.info('FCM message sent', { messageId, recipientId, chatId, notification, data, channelId: 'direct_chats_channel' });
 	} else if (chatType === 'group') {
 		const groupDoc = await db.collection('groupChats').doc(chatId).get();
 		if (!groupDoc.exists) return;
@@ -282,13 +289,21 @@ const sendMessageNotification = async (change, context, chatType) => {
 			const userDoc = await db.collection('users').doc(memberId).get();
 			const recipientToken = userDoc.get('fcmToken');
 			if (!recipientToken) continue;
+
+			const settings = userDoc.get('notificationSettings') || {};
+			if (!settings.messageNotificationsEnabled) continue;
 			const message = {
 				token: recipientToken,
 				notification,
 				data,
+				android: {
+					notification: {
+						channelId: 'group_chats_channel'
+					}
+				}
 			};
 			const messageId = await admin.messaging().send(message);
-			logger.info('FCM message sent', { messageId, recipientId: memberId, chatId, notification, data });
+			logger.info('FCM message sent', { messageId, recipientId: memberId, chatId, notification, data, channelId: 'group_chats_channel' });
 		}
 	}
 }
@@ -304,3 +319,90 @@ exports.sendDirectChatMessageNotification = functions.region(REGION).firestore
 	.onCreate(async (snap, context) => {
 		await sendMessageNotification(snap, context, 'direct');
 	});
+
+exports.sendFriendRequestNotification = functions.region(REGION).firestore
+	.document('users/{userId}/friendIncomingRequests/{requestId}')
+	.onCreate(async (snap, context) => {
+		const requestData = snap.data();
+		if (!requestData) return;
+		const recipientId = context.params.userId;
+		const senderId = requestData.senderId;
+		let senderName = 'Someone';
+		try {
+			const senderDoc = await db.collection('users').doc(senderId).get();
+			if (senderDoc.exists) {
+				senderName = senderDoc.get('name') || senderName;
+			}
+		} catch (e) {
+			logger.warn('Failed to fetch sender name', { senderId, error: e });
+		}
+		const userDoc = await db.collection('users').doc(recipientId).get();
+		const recipientToken = userDoc.get('fcmToken');
+		if (!recipientToken) return;
+		const settings = userDoc.get('notificationSettings') || {};
+		if (!settings.friendRequestNotificationsEnabled) return;
+		const notification = {
+			title: 'Friend Request',
+			body: `${senderName} sent you a friend request.`,
+		};
+		const data = {
+			type: 'friend_request',
+			route: `/friends/incoming`,
+			title: notification.title,
+			body: notification.body,
+		};
+		const message = {
+			token: recipientToken,
+			notification,
+			data,
+			android: {
+				notification: {
+					channelId: 'friends_channel'
+				}
+			}
+		};
+		const messageId = await admin.messaging().send(message);
+		logger.info('FCM friend request sent', { messageId, recipientId, notification, data });
+	});
+
+exports.sendProjectInviteNotification = functions.region(REGION).firestore
+	.document('projects/{projectId}')
+	.onUpdate(async (change, context) => {
+		const before = change.before.data();
+		const after = change.after.data();
+		if (!before || !after) return;
+		const beforeParticipants = before.participants || [];
+		const afterParticipants = after.participants || [];
+		const newParticipants = afterParticipants.filter(id => !beforeParticipants.includes(id));
+		const projectName = after.name || 'Project';
+		for (const recipientId of newParticipants) {
+			const userDoc = await db.collection('users').doc(recipientId).get();
+			const recipientToken = userDoc.get('fcmToken');
+			if (!recipientToken) continue;
+			const settings = userDoc.get('notificationSettings') || {};
+			if (!settings.projectInviteNotificationsEnabled) continue;
+			const notification = {
+				title: 'Project Invite',
+				body: `You have been invited to join ${projectName}.`,
+			};
+			const data = {
+				type: 'project_invite',
+				route: `/projects/${context.params.projectId}`,
+				title: notification.title,
+				body: notification.body,
+			};
+			const message = {
+				token: recipientToken,
+				notification,
+				data,
+				android: {
+					notification: {
+						channelId: 'projects_channel'
+					}
+				}
+			};
+			const messageId = await admin.messaging().send(message);
+			logger.info('FCM project invite sent', { messageId, recipientId, notification, data });
+		}
+	});
+

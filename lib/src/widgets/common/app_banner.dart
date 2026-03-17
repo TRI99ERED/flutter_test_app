@@ -1,6 +1,7 @@
 ﻿import 'package:flutter/material.dart';
+import 'package:test_app/src/features/themes/app_theme.dart';
 import 'package:test_app/src/widgets/common/app_button.dart';
-import 'package:test_app/src/widgets/common/styles.dart';
+import 'package:test_app/src/features/themes/styles.dart';
 
 class AppBanner extends StatelessWidget {
   final String? title;
@@ -27,7 +28,9 @@ class AppBanner extends StatelessWidget {
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(16),
-            color: HighlightColor.lightest.color,
+            color: Theme.of(
+              context,
+            ).extension<AppTheme>()?.highlightLightestColor,
           ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -76,5 +79,3 @@ class AppBanner extends StatelessWidget {
     );
   }
 }
-
-

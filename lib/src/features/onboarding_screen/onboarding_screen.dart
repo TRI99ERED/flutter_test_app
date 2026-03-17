@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:test_app/src/features/app/app_scope.dart';
 import 'package:test_app/src/core/widgets/controller_listener.dart';
+import 'package:test_app/src/features/themes/app_theme.dart';
 import 'package:test_app/src/router/routes.dart';
 import 'package:test_app/src/widgets/common/app_button.dart';
 import 'package:test_app/src/widgets/common/app_pagination_dots.dart';
 import 'package:test_app/src/widgets/common/placeholders.dart';
-import 'package:test_app/src/widgets/common/styles.dart';
+import 'package:test_app/src/features/themes/styles.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -54,7 +55,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               Expanded(child: PlaceholderImage()),
               Container(
                 height: 350,
-                color: LightColor.lightest.color,
+                color: Theme.of(
+                  context,
+                ).extension<AppTheme>()?.backgroundStrongestColor,
                 child: Padding(
                   padding: const EdgeInsets.all(spacing24),
                   child: Column(
@@ -83,7 +86,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                             style: TextStyle(
                               fontSize: h1Size,
                               fontWeight: h1Weight,
-                              color: DarkColor.darkest.color,
+                              color: Theme.of(
+                                context,
+                              ).extension<AppTheme>()?.foregroundStrongestColor,
                             ),
                             textAlign: TextAlign.start,
                           );
@@ -106,7 +111,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                             style: TextStyle(
                               fontSize: bSSize,
                               fontWeight: bSWeight,
-                              color: DarkColor.light.color,
+                              color: Theme.of(
+                                context,
+                              ).extension<AppTheme>()?.foregroundWeakColor,
                             ),
                             textAlign: TextAlign.start,
                           );

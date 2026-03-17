@@ -2,11 +2,13 @@ import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 import 'package:test_app/src/features/app/app_controller/app_controller.dart';
 import 'package:test_app/src/features/app/app_scope.dart';
+import 'package:test_app/src/features/appearance_screen/appearance_screen.dart';
 import 'package:test_app/src/features/chat_screen/chat_screen.dart';
 import 'package:test_app/src/features/email_confirmation_screen/email_confirmation_screen.dart';
 import 'package:test_app/src/features/forgot_password_screen/forgot_password_screen.dart';
 import 'package:test_app/src/features/home_screen/home_screen.dart';
 import 'package:test_app/src/features/interests_screen/interests_screen.dart';
+import 'package:test_app/src/features/notifications_screen/notifications_screen.dart';
 import 'package:test_app/src/features/onboarding_screen/onboarding_screen.dart';
 import 'package:test_app/src/features/login_screen/login_screen.dart';
 import 'package:test_app/src/features/project_feedback_screen/project_feedback_screen.dart';
@@ -22,9 +24,12 @@ const interestsPath = '/interests';
 const emailConfirmationPath = '/email-confirmation';
 const forgotPasswordPath = '/forgot-password';
 const chatPath = '/chats/:chatType/:chatId';
+const incomingFriendRequestsPath = '/friends/incoming';
 const projectPath = '/projects/:projectId';
 const projectFeedbackPath = '/projects/:projectId/feedback';
 const savedMessagesPath = '/saved-messages';
+const notificationsPath = '/notifications';
+const appearancePath = '/appearance';
 
 GoRouter generateRouter(
   AppController appController,
@@ -72,6 +77,12 @@ GoRouter generateRouter(
         },
       ),
       GoRoute(
+        path: incomingFriendRequestsPath,
+        builder: (context, state) {
+          return const HomeScreen(initialTab: 1, initialFriendsSection: 1);
+        },
+      ),
+      GoRoute(
         path: projectPath,
         builder: (context, state) {
           final projectId = state.pathParameters['projectId'] ?? '';
@@ -89,6 +100,18 @@ GoRouter generateRouter(
         path: savedMessagesPath,
         builder: (context, state) {
           return const SavedMessagesScreen();
+        },
+      ),
+      GoRoute(
+        path: notificationsPath,
+        builder: (context, state) {
+          return const NotificationsScreen();
+        },
+      ),
+      GoRoute(
+        path: appearancePath,
+        builder: (context, state) {
+          return const AppearanceScreen();
         },
       ),
     ],

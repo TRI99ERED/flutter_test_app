@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:test_app/src/core/resources/app_icons.dart';
-import 'package:test_app/src/widgets/common/styles.dart';
+import 'package:test_app/src/features/themes/app_theme.dart';
+import 'package:test_app/src/features/themes/styles.dart';
 
 class AppMessageInput extends StatefulWidget {
   final String? text;
@@ -63,8 +64,12 @@ class _AppMessageInputState extends State<AppMessageInput> {
           child: IconButton(
             onPressed: widget.onMorePressed,
             style: IconButton.styleFrom(
-              foregroundColor: HighlightColor.darkest.color,
-              backgroundColor: LightColor.lightest.color,
+              foregroundColor: Theme.of(
+                context,
+              ).extension<AppTheme>()?.highlightDarkestColor,
+              backgroundColor: Theme.of(
+                context,
+              ).extension<AppTheme>()?.backgroundStrongestColor,
             ),
             icon: const Icon(AppIcons.add, size: 16),
           ),
@@ -77,9 +82,13 @@ class _AppMessageInputState extends State<AppMessageInput> {
               widget.onSendPressed?.call(value);
               _effectiveController.clear();
             },
-            cursorColor: HighlightColor.darkest.color,
+            cursorColor: Theme.of(
+              context,
+            ).extension<AppTheme>()?.highlightDarkestColor,
             style: TextStyle(
-              color: DarkColor.darkest.color,
+              color: Theme.of(
+                context,
+              ).extension<AppTheme>()?.foregroundStrongestColor,
               fontSize: bMSize,
               fontWeight: bMWeight,
             ),
@@ -96,9 +105,13 @@ class _AppMessageInputState extends State<AppMessageInput> {
                 borderSide: BorderSide.none,
               ),
               filled: true,
-              fillColor: LightColor.light.color,
+              fillColor: Theme.of(
+                context,
+              ).extension<AppTheme>()?.backgroundStrongColor,
               hintStyle: TextStyle(
-                color: DarkColor.lightest.color,
+                color: Theme.of(
+                  context,
+                ).extension<AppTheme>()?.foregroundWeakestColor,
                 fontSize: bMSize,
                 fontWeight: bMWeight,
               ),
@@ -108,8 +121,12 @@ class _AppMessageInputState extends State<AppMessageInput> {
                   _effectiveController.clear();
                 },
                 style: IconButton.styleFrom(
-                  backgroundColor: HighlightColor.darkest.color,
-                  foregroundColor: LightColor.lightest.color,
+                  backgroundColor: Theme.of(
+                    context,
+                  ).extension<AppTheme>()?.highlightDarkestColor,
+                  foregroundColor: Theme.of(
+                    context,
+                  ).extension<AppTheme>()?.backgroundStrongestColor,
                 ),
                 icon: const Icon(AppIcons.send, size: 16),
               ),

@@ -1,5 +1,6 @@
 ﻿import 'package:flutter/material.dart';
-import 'package:test_app/src/widgets/common/styles.dart';
+import 'package:test_app/src/features/themes/app_theme.dart';
+import 'package:test_app/src/features/themes/styles.dart';
 
 class AppPaginationDots extends StatelessWidget {
   final int dotCount;
@@ -38,8 +39,8 @@ class _AppPaginationDot extends StatelessWidget {
       height: 8,
       decoration: BoxDecoration(
         color: _isActive
-            ? HighlightColor.darkest.color
-            : LightColor.medium.color,
+            ? Theme.of(context).extension<AppTheme>()?.highlightDarkestColor
+            : Theme.of(context).extension<AppTheme>()?.backgroundMediumColor,
         shape: BoxShape.circle,
       ),
     );

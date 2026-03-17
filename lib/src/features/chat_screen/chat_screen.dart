@@ -9,6 +9,7 @@ import 'package:test_app/src/features/app/data/models/chat_model.dart';
 import 'package:test_app/src/features/app/data/models/message_model.dart';
 import 'package:test_app/src/features/app/data/models/user_model.dart';
 import 'package:test_app/src/features/chat_screen/widgets/aligned_message_bubble.dart';
+import 'package:test_app/src/features/themes/app_theme.dart';
 import 'package:test_app/src/widgets/chat_wizard.dart';
 import 'package:test_app/src/widgets/common/app_avatar.dart';
 import 'package:test_app/src/widgets/common/app_list_item.dart';
@@ -18,7 +19,7 @@ import 'package:test_app/src/widgets/common/app_nav_bar.dart';
 import 'package:test_app/src/widgets/common/empty_state.dart';
 import 'package:test_app/src/widgets/common/error_state.dart';
 import 'package:test_app/src/widgets/common/placeholders.dart';
-import 'package:test_app/src/widgets/common/styles.dart';
+import 'package:test_app/src/features/themes/styles.dart';
 import 'package:test_app/src/widgets/user_profile.dart';
 
 enum ChatType { direct, group }
@@ -393,7 +394,9 @@ class _ChatScreenState extends State<ChatScreen> {
   void _handleMessageTap(BuildContext context, Message message) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: LightColor.light.color,
+      backgroundColor: Theme.of(
+        context,
+      ).extension<AppTheme>()?.backgroundStrongestColor,
       elevation: 0,
       constraints: BoxConstraints(
         maxHeight: MediaQuery.sizeOf(context).height * 0.3,

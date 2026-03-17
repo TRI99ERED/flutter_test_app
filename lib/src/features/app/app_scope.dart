@@ -5,11 +5,13 @@ import 'package:test_app/src/features/app/data/models/user_model.dart';
 class AppScope extends StatefulWidget {
   final Widget child;
   final AppController controller;
+  final ValueNotifier<ThemeMode> themeMode;
 
   const AppScope({
     super.key,
     required this.child,
     required this.controller,
+    required this.themeMode,
   });
 
   @override
@@ -47,6 +49,7 @@ class _AppScopeState extends State<AppScope> {
       }),
       controller: _controller,
       state: _state,
+      themeMode: widget.themeMode,
       child: widget.child,
     );
   }
@@ -61,11 +64,13 @@ class _AppScopeState extends State<AppScope> {
 class InheritedScopeWidget extends InheritedWidget {
   final AppController controller;
   final AppState state;
+  final ValueNotifier<ThemeMode> themeMode;
 
   const InheritedScopeWidget({
     super.key,
     required this.controller,
     required this.state,
+    required this.themeMode,
     required super.child,
   });
 
@@ -84,7 +89,7 @@ class InheritedScopeWidget extends InheritedWidget {
 
   @override
   bool updateShouldNotify(InheritedScopeWidget oldWidget) {
-    return state != oldWidget.state;
+    return state != oldWidget.state || themeMode != oldWidget.themeMode;
   }
 }
 
@@ -93,4 +98,6 @@ extension AppScopeExtension on BuildContext {
       dependOnInheritedWidgetOfExactType<InheritedScopeWidget>()!.state;
   AppController get appController =>
       dependOnInheritedWidgetOfExactType<InheritedScopeWidget>()!.controller;
+  ValueNotifier<ThemeMode> get themeMode =>
+      dependOnInheritedWidgetOfExactType<InheritedScopeWidget>()!.themeMode;
 }

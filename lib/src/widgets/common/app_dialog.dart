@@ -1,7 +1,8 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:test_app/src/features/themes/app_theme.dart';
 import 'package:test_app/src/widgets/common/app_button.dart';
-import 'package:test_app/src/widgets/common/styles.dart';
+import 'package:test_app/src/features/themes/styles.dart';
 
 class AppDialog2 extends StatelessWidget {
   final String? title;
@@ -69,7 +70,9 @@ class AppDialog2 extends StatelessWidget {
     return Container(
       padding: EdgeInsets.all(spacing16),
       decoration: BoxDecoration(
-        color: LightColor.lightest.color,
+        color: Theme.of(
+          context,
+        ).extension<AppTheme>()?.backgroundStrongestColor,
         borderRadius: BorderRadius.circular(16),
       ),
       alignment: Alignment.topCenter,
@@ -83,7 +86,9 @@ class AppDialog2 extends StatelessWidget {
               style: GoogleFonts.inter(
                 fontSize: h3Size,
                 fontWeight: h3Weight,
-                color: DarkColor.darkest.color,
+                color: Theme.of(
+                  context,
+                ).extension<AppTheme>()?.foregroundStrongestColor,
                 decoration: TextDecoration.none,
               ),
             ),
@@ -95,7 +100,9 @@ class AppDialog2 extends StatelessWidget {
               style: GoogleFonts.inter(
                 fontSize: bSSize,
                 fontWeight: bSWeight,
-                color: DarkColor.light.color,
+                color: Theme.of(
+                  context,
+                ).extension<AppTheme>()?.foregroundWeakColor,
                 decoration: TextDecoration.none,
               ),
             ),
@@ -203,7 +210,9 @@ class AppDialog3 extends StatelessWidget {
     return Container(
       padding: EdgeInsets.all(spacing16),
       decoration: BoxDecoration(
-        color: LightColor.lightest.color,
+        color: Theme.of(
+          context,
+        ).extension<AppTheme>()?.backgroundStrongestColor,
         borderRadius: BorderRadius.circular(16),
       ),
       alignment: Alignment.topCenter,
@@ -217,7 +226,9 @@ class AppDialog3 extends StatelessWidget {
               style: GoogleFonts.inter(
                 fontSize: h3Size,
                 fontWeight: h3Weight,
-                color: DarkColor.darkest.color,
+                color: Theme.of(
+                  context,
+                ).extension<AppTheme>()?.foregroundStrongestColor,
                 decoration: TextDecoration.none,
               ),
             ),
@@ -229,7 +240,9 @@ class AppDialog3 extends StatelessWidget {
               style: GoogleFonts.inter(
                 fontSize: bSSize,
                 fontWeight: bSWeight,
-                color: DarkColor.light.color,
+                color: Theme.of(
+                  context,
+                ).extension<AppTheme>()?.foregroundWeakColor,
                 decoration: TextDecoration.none,
               ),
             ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:test_app/src/widgets/common/styles.dart';
+import 'package:test_app/src/features/themes/app_theme.dart';
+import 'package:test_app/src/features/themes/styles.dart';
 
 enum MessageType { received, sent }
 
@@ -19,7 +20,7 @@ class AppMessageBubble extends StatelessWidget {
     this.onTap,
   });
 
-  Widget _buildMessageContent(Color nameColor, Color bodyColor) {
+  Widget _buildMessageContent(Color? nameColor, Color? bodyColor) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -53,7 +54,9 @@ class AppMessageBubble extends StatelessWidget {
             vertical: spacing12,
             horizontal: spacing16,
           ),
-          backgroundColor: LightColor.light.color,
+          backgroundColor: Theme.of(
+            context,
+          ).extension<AppTheme>()?.backgroundStrongColor,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.only(
               topLeft: const Radius.circular(20),
@@ -67,8 +70,8 @@ class AppMessageBubble extends StatelessWidget {
         ),
         onPressed: onTap,
         child: _buildMessageContent(
-          DarkColor.dark.color,
-          DarkColor.darkest.color,
+          Theme.of(context).extension<AppTheme>()?.foregroundStrongColor,
+          Theme.of(context).extension<AppTheme>()?.foregroundStrongestColor,
         ),
       ),
       MessageType.sent => TextButton(
@@ -77,7 +80,9 @@ class AppMessageBubble extends StatelessWidget {
             vertical: spacing12,
             horizontal: spacing16,
           ),
-          backgroundColor: HighlightColor.darkest.color,
+          backgroundColor: Theme.of(
+            context,
+          ).extension<AppTheme>()?.highlightDarkestColor,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.only(
               topLeft: const Radius.circular(20),
@@ -91,8 +96,8 @@ class AppMessageBubble extends StatelessWidget {
         ),
         onPressed: onTap,
         child: _buildMessageContent(
-          HighlightColor.light.color,
-          LightColor.lightest.color,
+          Theme.of(context).extension<AppTheme>()?.highlightLightColor,
+          Theme.of(context).extension<AppTheme>()?.backgroundStrongestColor,
         ),
       ),
     };

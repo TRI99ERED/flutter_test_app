@@ -1,5 +1,6 @@
 ﻿import 'package:flutter/material.dart';
-import 'package:test_app/src/widgets/common/styles.dart';
+import 'package:test_app/src/features/themes/app_theme.dart';
+import 'package:test_app/src/features/themes/styles.dart';
 
 class AppTextArea extends StatefulWidget {
   final String? title;
@@ -125,8 +126,12 @@ class _AppTextAreaState extends State<AppTextArea> {
                   fontSize: h5Size,
                   fontWeight: h5Weight,
                   color: widget.enabled
-                      ? DarkColor.darkest.color
-                      : DarkColor.lightest.color,
+                      ? Theme.of(
+                          context,
+                        ).extension<AppTheme>()?.foregroundStrongestColor
+                      : Theme.of(
+                          context,
+                        ).extension<AppTheme>()?.foregroundWeakestColor,
                 ),
               ),
             TextFormField(
@@ -147,54 +152,82 @@ class _AppTextAreaState extends State<AppTextArea> {
               autovalidateMode: widget.autovalidateMode,
               maxLines: widget.maxLines,
               enabled: widget.enabled,
-              cursorColor: HighlightColor.darkest.color,
-              cursorErrorColor: ErrorColor.dark.color,
+              cursorColor: Theme.of(
+                context,
+              ).extension<AppTheme>()?.highlightDarkestColor,
+              cursorErrorColor: Theme.of(
+                context,
+              ).extension<AppTheme>()?.errorDarkColor,
               textInputAction: TextInputAction.newline,
               style: TextStyle(
                 fontSize: bMSize,
                 fontWeight: bMWeight,
                 color: widget.enabled
-                    ? DarkColor.darkest.color
-                    : DarkColor.lightest.color,
+                    ? Theme.of(
+                        context,
+                      ).extension<AppTheme>()?.foregroundStrongestColor
+                    : Theme.of(
+                        context,
+                      ).extension<AppTheme>()?.foregroundWeakestColor,
               ),
               decoration: InputDecoration(
                 hintText: widget.placeholder,
                 hintStyle: TextStyle(
                   fontSize: bMSize,
                   fontWeight: bMWeight,
-                  color: DarkColor.lightest.color,
+                  color: Theme.of(
+                    context,
+                  ).extension<AppTheme>()?.foregroundWeakestColor,
                 ),
                 errorText: displayErrorText == null ? null : '',
                 errorStyle: TextStyle(fontSize: 0, height: 0),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.all(Radius.circular(12)),
                   borderSide: BorderSide(
-                    color: LightColor.darkest.color,
+                    color:
+                        Theme.of(
+                          context,
+                        ).extension<AppTheme>()?.backgroundWeakestColor ??
+                        Color(0xC5C6CCFF),
                     width: 2,
                   ),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.all(Radius.circular(12)),
                   borderSide: BorderSide(
-                    color: HighlightColor.darkest.color,
+                    color:
+                        Theme.of(
+                          context,
+                        ).extension<AppTheme>()?.highlightDarkestColor ??
+                        const Color(0x006FFDFF),
                     width: 2,
                   ),
                 ),
                 errorBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.all(Radius.circular(12)),
                   borderSide: BorderSide(
-                    color: ErrorColor.medium.color,
+                    color:
+                        Theme.of(
+                          context,
+                        ).extension<AppTheme>()?.errorMediumColor ??
+                        const Color(0xFF616DFF),
                     width: 2,
                   ),
                 ),
                 focusedErrorBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.all(Radius.circular(12)),
                   borderSide: BorderSide(
-                    color: ErrorColor.dark.color,
+                    color:
+                        Theme.of(
+                          context,
+                        ).extension<AppTheme>()?.errorDarkColor ??
+                        const Color(0xED3241FF),
                     width: 2,
                   ),
                 ),
-                fillColor: LightColor.darkest.color,
+                fillColor: Theme.of(
+                  context,
+                ).extension<AppTheme>()?.backgroundWeakestColor,
                 filled: !widget.enabled,
                 prefixText: widget.unit != null ? '${widget.unit} ' : null,
               ),
@@ -205,7 +238,9 @@ class _AppTextAreaState extends State<AppTextArea> {
                 style: TextStyle(
                   fontSize: bSSize,
                   fontWeight: bSWeight,
-                  color: ErrorColor.dark.color,
+                  color: Theme.of(
+                    context,
+                  ).extension<AppTheme>()?.errorDarkColor,
                 ),
               ),
             if (widget.supportText != null &&
@@ -215,7 +250,9 @@ class _AppTextAreaState extends State<AppTextArea> {
                 style: TextStyle(
                   fontSize: bSSize,
                   fontWeight: bSWeight,
-                  color: DarkColor.lightest.color,
+                  color: Theme.of(
+                    context,
+                  ).extension<AppTheme>()?.foregroundWeakestColor,
                 ),
               ),
           ],

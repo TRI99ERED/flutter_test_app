@@ -1,6 +1,7 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:test_app/src/core/resources/app_icons.dart';
-import 'package:test_app/src/widgets/common/styles.dart';
+import 'package:test_app/src/features/themes/app_theme.dart';
+import 'package:test_app/src/features/themes/styles.dart';
 
 class AppNavBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
@@ -52,7 +53,9 @@ class AppNavBar extends StatelessWidget implements PreferredSizeWidget {
                 style: TextStyle(
                   fontSize: h4Size,
                   fontWeight: h4Weight,
-                  color: DarkColor.darkest.color,
+                  color: Theme.of(
+                    context,
+                  ).extension<AppTheme>()?.foregroundStrongestColor,
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
@@ -101,13 +104,17 @@ class _AppControl extends StatelessWidget {
     return IconButton(
       onPressed: _onPressed,
       style: IconButton.styleFrom(
-        foregroundColor: HighlightColor.darkest.color,
+        foregroundColor: Theme.of(
+          context,
+        ).extension<AppTheme>()?.highlightDarkestColor,
       ),
       icon: _text != null
           ? Text(
               _text,
               style: TextStyle(
-                color: HighlightColor.darkest.color,
+                color: Theme.of(
+                  context,
+                ).extension<AppTheme>()?.highlightDarkestColor,
                 fontSize: aMSize,
                 fontWeight: aMWeight,
               ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:test_app/src/core/resources/app_icons.dart';
-import 'package:test_app/src/widgets/common/styles.dart';
+import 'package:test_app/src/features/themes/app_theme.dart';
+import 'package:test_app/src/features/themes/styles.dart';
 
 class AppListSelectable extends StatelessWidget {
   final String title;
@@ -27,8 +28,10 @@ class AppListSelectable extends StatelessWidget {
         },
         style: TextButton.styleFrom(
           backgroundColor: (value ?? false)
-              ? HighlightColor.lightest.color
-              : LightColor.lightest.color,
+              ? Theme.of(context).extension<AppTheme>()?.highlightLightestColor
+              : Theme.of(
+                  context,
+                ).extension<AppTheme>()?.backgroundStrongestColor,
           padding: const EdgeInsets.symmetric(
             horizontal: spacing16,
             vertical: spacing8,
@@ -47,7 +50,9 @@ class AppListSelectable extends StatelessWidget {
                 style: TextStyle(
                   fontSize: bMSize,
                   fontWeight: bMWeight,
-                  color: DarkColor.darkest.color,
+                  color: Theme.of(
+                    context,
+                  ).extension<AppTheme>()?.foregroundStrongestColor,
                 ),
               ),
             ),
@@ -55,7 +60,9 @@ class AppListSelectable extends StatelessWidget {
               Icon(
                 AppIcons.check,
                 size: 12,
-                color: HighlightColor.darkest.color,
+                color: Theme.of(
+                  context,
+                ).extension<AppTheme>()?.highlightDarkestColor,
               ),
           ],
         ),

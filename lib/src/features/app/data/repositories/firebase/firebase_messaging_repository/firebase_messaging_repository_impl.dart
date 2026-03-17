@@ -4,6 +4,11 @@ import 'package:test_app/src/features/app/data/repositories/firebase/firebase_me
 
 class FirebaseMessagingRepositoryImpl implements IFirebaseMessagingRepository {
   @override
+  Future<void> deleteToken() {
+    return FirebaseMessaging.instance.deleteToken();
+  }
+
+  @override
   Future<String?> getToken() async {
     if (kIsWeb) {
       return FirebaseMessaging.instance.getToken(

@@ -3,13 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:test_app/src/core/resources/app_icons.dart';
 import 'package:test_app/src/features/app/app_scope.dart';
+import 'package:test_app/src/features/themes/app_theme.dart';
 import 'package:test_app/src/router/routes.dart';
 import 'package:test_app/src/widgets/common/app_button.dart';
 import 'package:test_app/src/widgets/common/app_divider.dart';
 import 'package:test_app/src/widgets/common/app_text_field.dart';
 import 'package:test_app/src/widgets/common/placeholders.dart';
 import 'package:test_app/src/core/widgets/controller_listener.dart';
-import 'package:test_app/src/widgets/common/styles.dart';
+import 'package:test_app/src/features/themes/styles.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -82,7 +83,9 @@ class _LoginScreenState extends State<LoginScreen> {
                         style: TextStyle(
                           fontSize: h1Size,
                           fontWeight: h1Weight,
-                          color: DarkColor.darkest.color,
+                          color: Theme.of(
+                            context,
+                          ).extension<AppTheme>()?.foregroundStrongestColor,
                         ),
                       ),
                       AppTextField(
@@ -163,13 +166,17 @@ class _LoginScreenState extends State<LoginScreen> {
                               context.go(interestsPath);
                             },
                             style: IconButton.styleFrom(
-                              backgroundColor: ErrorColor.dark.color,
+                              backgroundColor: Theme.of(
+                                context,
+                              ).extension<AppTheme>()?.errorDarkColor,
                               fixedSize: Size(40, 40),
                             ),
                             icon: Icon(
                               AppIcons.google,
                               size: 12,
-                              color: LightColor.lightest.color,
+                              color: Theme.of(
+                                context,
+                              ).extension<AppTheme>()?.backgroundStrongestColor,
                             ),
                           ),
                           IconButton(
@@ -183,13 +190,17 @@ class _LoginScreenState extends State<LoginScreen> {
                               );
                             },
                             style: IconButton.styleFrom(
-                              backgroundColor: DarkColor.darkest.color,
+                              backgroundColor: Theme.of(
+                                context,
+                              ).extension<AppTheme>()?.foregroundStrongestColor,
                               fixedSize: Size(40, 40),
                             ),
                             icon: Icon(
                               AppIcons.apple,
                               size: 12,
-                              color: LightColor.lightest.color,
+                              color: Theme.of(
+                                context,
+                              ).extension<AppTheme>()?.backgroundStrongestColor,
                             ),
                           ),
                           IconButton(
@@ -203,13 +214,17 @@ class _LoginScreenState extends State<LoginScreen> {
                               );
                             },
                             style: IconButton.styleFrom(
-                              backgroundColor: HighlightColor.darkest.color,
+                              backgroundColor: Theme.of(
+                                context,
+                              ).extension<AppTheme>()?.highlightDarkestColor,
                               fixedSize: Size(40, 40),
                             ),
                             icon: Icon(
                               AppIcons.facebook,
                               size: 12,
-                              color: LightColor.lightest.color,
+                              color: Theme.of(
+                                context,
+                              ).extension<AppTheme>()?.backgroundStrongestColor,
                             ),
                           ),
                         ],

@@ -1,11 +1,13 @@
 import 'dart:async';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:firebase_messaging/firebase_messaging.dart'
+    hide NotificationSettings;
 import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 import 'package:test_app/main.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:test_app/src/features/app/data/models/notification_settings.dart';
 
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp();
@@ -61,17 +63,50 @@ class NotificationService {
           });
         }
 
-        const AndroidNotificationChannel channel = AndroidNotificationChannel(
-          'default_channel',
-          'Default',
-          description: 'Default channel for foreground notifications',
-          importance: Importance.max,
-        );
-        await _flutterLocalNotificationsPlugin
+        final androidPlugin = _flutterLocalNotificationsPlugin
             .resolvePlatformSpecificImplementation<
               AndroidFlutterLocalNotificationsPlugin
-            >()
-            ?.createNotificationChannel(channel);
+            >();
+        const AndroidNotificationChannel directChatsChannel =
+            AndroidNotificationChannel(
+              'direct_chats_channel',
+              'Direct Chats',
+              description: 'Notifications for direct chat messages',
+              importance: Importance.max,
+              playSound: true,
+              enableVibration: true,
+            );
+        const AndroidNotificationChannel groupChatsChannel =
+            AndroidNotificationChannel(
+              'group_chats_channel',
+              'Group Chats',
+              description: 'Notifications for group chat messages',
+              importance: Importance.max,
+              playSound: true,
+              enableVibration: true,
+            );
+        const AndroidNotificationChannel friendsChannel =
+            AndroidNotificationChannel(
+              'friends_channel',
+              'Friends',
+              description: 'Notifications for friend requests and updates',
+              importance: Importance.max,
+              playSound: true,
+              enableVibration: true,
+            );
+        const AndroidNotificationChannel projectsChannel =
+            AndroidNotificationChannel(
+              'projects_channel',
+              'Projects',
+              description: 'Notifications for project updates',
+              importance: Importance.max,
+              playSound: true,
+              enableVibration: true,
+            );
+        await androidPlugin?.createNotificationChannel(directChatsChannel);
+        await androidPlugin?.createNotificationChannel(groupChatsChannel);
+        await androidPlugin?.createNotificationChannel(friendsChannel);
+        await androidPlugin?.createNotificationChannel(projectsChannel);
       }
 
       FirebaseMessaging.onBackgroundMessage(
@@ -90,27 +125,62 @@ class NotificationService {
     }
   }
 
+  static NotificationSettings? _settings;
+
+  static void updateSettings(NotificationSettings settings) {
+    _settings = settings;
+  }
+
   static Future<void> _onMessageHandler(RemoteMessage message) async {
+    final settings = _settings;
+    if (settings == null || !settings.pushNotificationsEnabled) return;
+
+    final type = message.data['type'];
+    if (type == 'message' && !settings.messageNotificationsEnabled) return;
+    if (type == 'friend_request' &&
+        !settings.friendRequestNotificationsEnabled) {
+      return;
+    }
+    if (type == 'project_invite' &&
+        !settings.projectInviteNotificationsEnabled) {
+      return;
+    }
+
     _inAppNotificationController.add(message);
 
     if (!kIsWeb && message.notification != null) {
-      const AndroidNotificationDetails androidPlatformChannelSpecifics =
-          AndroidNotificationDetails(
-            'default_channel',
-            'Default',
-            channelDescription: 'Default channel for foreground notifications',
-            importance: Importance.max,
-            priority: Priority.high,
-            showWhen: true,
-          );
-      const NotificationDetails platformChannelSpecifics = NotificationDetails(
-        android: androidPlatformChannelSpecifics,
+      String channelId = 'direct_chats_channel';
+      String channelName = 'Direct Chats';
+      String channelDescription = 'Notifications for direct chat messages';
+      if (type == 'group') {
+        channelId = 'group_chats_channel';
+        channelName = 'Group Chats';
+        channelDescription = 'Notifications for group chat messages';
+      } else if (type == 'friend_request') {
+        channelId = 'friends_channel';
+        channelName = 'Friends';
+        channelDescription = 'Notifications for friend requests and updates';
+      } else if (type == 'project_invite') {
+        channelId = 'projects_channel';
+        channelName = 'Projects';
+        channelDescription = 'Notifications for project updates';
+      }
+      final androidDetails = AndroidNotificationDetails(
+        channelId,
+        channelName,
+        channelDescription: channelDescription,
+        importance: Importance.max,
+        priority: Priority.high,
+        showWhen: true,
+        playSound: true,
+        enableVibration: true,
       );
+      final platformDetails = NotificationDetails(android: androidDetails);
       await _flutterLocalNotificationsPlugin.show(
         id: message.hashCode,
         title: message.notification?.title ?? 'Notification',
         body: message.notification?.body ?? '',
-        notificationDetails: platformChannelSpecifics,
+        notificationDetails: platformDetails,
         payload: message.data['route'],
       );
     }
@@ -121,7 +191,7 @@ class NotificationService {
     if (data['route'] != null) {
       final context = rootNavigatorKey.currentContext;
       if (context != null) {
-        GoRouter.of(context).go(data['route']);
+        context.push(data['route']);
       }
     }
   }

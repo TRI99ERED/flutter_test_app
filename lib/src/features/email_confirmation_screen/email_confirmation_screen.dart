@@ -3,10 +3,11 @@ import 'package:go_router/go_router.dart';
 import 'package:test_app/src/features/app/app_scope.dart';
 import 'package:test_app/src/features/app/data/models/user_model.dart';
 import 'package:test_app/src/core/widgets/controller_listener.dart';
+import 'package:test_app/src/features/themes/app_theme.dart';
 import 'package:test_app/src/router/routes.dart';
 import 'package:test_app/src/widgets/common/app_button.dart';
 import 'package:test_app/src/widgets/common/app_otp_code_field.dart';
-import 'package:test_app/src/widgets/common/styles.dart';
+import 'package:test_app/src/features/themes/styles.dart';
 
 class EmailConfirmationScreen extends StatefulWidget {
   const EmailConfirmationScreen({super.key});
@@ -79,7 +80,9 @@ class _EmailConfirmationScreenState extends State<EmailConfirmationScreen> {
                         style: TextStyle(
                           fontSize: h3Size,
                           fontWeight: h3Weight,
-                          color: DarkColor.darkest.color,
+                          color: Theme.of(
+                            context,
+                          ).extension<AppTheme>()?.foregroundStrongestColor,
                         ),
                       ),
                       Builder(
@@ -93,7 +96,9 @@ class _EmailConfirmationScreenState extends State<EmailConfirmationScreen> {
                             style: TextStyle(
                               fontSize: bSSize,
                               fontWeight: bSWeight,
-                              color: DarkColor.light.color,
+                              color: Theme.of(
+                                context,
+                              ).extension<AppTheme>()?.foregroundStrongColor,
                             ),
                           );
                         },

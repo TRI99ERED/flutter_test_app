@@ -12,22 +12,27 @@ import 'package:test_app/src/widgets/common/app_nav_bar.dart';
 import 'package:test_app/src/widgets/common/app_search_bar.dart';
 import 'package:test_app/src/widgets/common/empty_state.dart';
 import 'package:test_app/src/widgets/common/error_state.dart';
-import 'package:test_app/src/widgets/common/styles.dart';
+import 'package:test_app/src/features/themes/styles.dart';
 import 'package:test_app/src/widgets/user_profile.dart';
 
 enum FriendsSectionType { friends, incomingRequests, outgoingRequests }
 
 class Friends extends StatefulWidget {
+  final int initialSection;
   final ValueNotifier<bool> editPressed;
 
-  const Friends({super.key, required this.editPressed});
+  const Friends({
+    super.key,
+    this.initialSection = 0,
+    required this.editPressed,
+  });
 
   @override
   State<Friends> createState() => _FriendsState();
 }
 
 class _FriendsState extends State<Friends> {
-  final _sectionIndex = ValueNotifier<int>(0);
+  late final _sectionIndex = ValueNotifier<int>(widget.initialSection);
   final _searchQuery = ValueNotifier<String>('');
 
   @override

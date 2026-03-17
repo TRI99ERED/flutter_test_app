@@ -1,6 +1,7 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:test_app/src/core/resources/app_icons.dart';
-import 'package:test_app/src/widgets/common/styles.dart';
+import 'package:test_app/src/features/themes/app_theme.dart';
+import 'package:test_app/src/features/themes/styles.dart';
 
 class AppToastInformative extends StatelessWidget {
   final String? title;
@@ -20,9 +21,13 @@ class AppToastInformative extends StatelessWidget {
       title: title,
       description: description,
       onClose: onClose,
-      backgroundColor: HighlightColor.lightest.color,
+      backgroundColor:
+          Theme.of(context).extension<AppTheme>()?.highlightLightestColor ??
+          const Color(0xFFEAF2FF),
       leadingIcon: AppIcons.info,
-      leadingIconColor: HighlightColor.darkest.color,
+      leadingIconColor:
+          Theme.of(context).extension<AppTheme>()?.highlightDarkestColor ??
+          const Color(0xFF006FFD),
     );
   }
 }
@@ -45,9 +50,13 @@ class AppToastSuccess extends StatelessWidget {
       title: title,
       description: description,
       onClose: onClose,
-      backgroundColor: SuccessColor.light.color,
+      backgroundColor:
+          Theme.of(context).extension<AppTheme>()?.successLightColor ??
+          const Color(0xFFE7F4E8),
       leadingIcon: AppIcons.success,
-      leadingIconColor: SuccessColor.medium.color,
+      leadingIconColor:
+          Theme.of(context).extension<AppTheme>()?.successMediumColor ??
+          const Color(0xFF3AC0A0),
     );
   }
 }
@@ -70,9 +79,13 @@ class AppToastWarning extends StatelessWidget {
       title: title,
       description: description,
       onClose: onClose,
-      backgroundColor: WarningColor.light.color,
+      backgroundColor:
+          Theme.of(context).extension<AppTheme>()?.warningLightColor ??
+          const Color(0xFFFFF4E4),
       leadingIcon: AppIcons.warning,
-      leadingIconColor: WarningColor.medium.color,
+      leadingIconColor:
+          Theme.of(context).extension<AppTheme>()?.warningMediumColor ??
+          const Color(0xFFFFB37C),
     );
   }
 }
@@ -90,9 +103,13 @@ class AppToastError extends StatelessWidget {
       title: title,
       description: description,
       onClose: onClose,
-      backgroundColor: ErrorColor.light.color,
+      backgroundColor:
+          Theme.of(context).extension<AppTheme>()?.errorLightColor ??
+          const Color(0xFFFFE2E5),
       leadingIcon: AppIcons.delete,
-      leadingIconColor: ErrorColor.medium.color,
+      leadingIconColor:
+          Theme.of(context).extension<AppTheme>()?.errorMediumColor ??
+          const Color(0xFFFF616D),
     );
   }
 }
@@ -170,7 +187,9 @@ class _AppToastBase extends StatelessWidget {
                 icon: Icon(
                   AppIcons.close,
                   size: 12,
-                  color: DarkColor.light.color,
+                  color: Theme.of(
+                    context,
+                  ).extension<AppTheme>()?.foregroundWeakColor,
                 ),
               ),
             ],

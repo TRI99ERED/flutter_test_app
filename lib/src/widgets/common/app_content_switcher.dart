@@ -1,5 +1,6 @@
 ﻿import 'package:flutter/material.dart';
-import 'package:test_app/src/widgets/common/styles.dart';
+import 'package:test_app/src/features/themes/app_theme.dart';
+import 'package:test_app/src/features/themes/styles.dart';
 
 class AppContentSwitcher extends StatefulWidget {
   final int sectionCount;
@@ -58,7 +59,9 @@ class _AppContentSwitcherState extends State<AppContentSwitcher>
       builder: (context, selectedIndex, _) {
         return Container(
           decoration: BoxDecoration(
-            color: LightColor.light.color,
+            color: Theme.of(
+              context,
+            ).extension<AppTheme>()?.backgroundStrongColor,
             borderRadius: BorderRadius.circular(16),
           ),
           child: LayoutBuilder(
@@ -84,7 +87,9 @@ class _AppContentSwitcherState extends State<AppContentSwitcher>
                           ),
                           child: Container(
                             decoration: BoxDecoration(
-                              color: LightColor.lightest.color,
+                              color: Theme.of(
+                                context,
+                              ).extension<AppTheme>()?.backgroundStrongestColor,
                               borderRadius: BorderRadius.circular(12),
                             ),
                           ),
@@ -99,7 +104,9 @@ class _AppContentSwitcherState extends State<AppContentSwitcher>
                         ) {
                           if (index.isOdd) {
                             return VerticalDivider(
-                              color: LightColor.darkest.color,
+                              color: Theme.of(
+                                context,
+                              ).extension<AppTheme>()?.backgroundWeakestColor,
                               indent: 9.5,
                               endIndent: 9.5,
                               thickness: 1,
@@ -154,8 +161,8 @@ class _AppSection extends StatelessWidget {
         padding: EdgeInsets.symmetric(vertical: spacing8, horizontal: 0),
         backgroundColor: Colors.transparent,
         foregroundColor: selected
-            ? DarkColor.darkest.color
-            : DarkColor.light.color,
+            ? Theme.of(context).extension<AppTheme>()?.foregroundStrongestColor
+            : Theme.of(context).extension<AppTheme>()?.foregroundWeakColor,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
       child: Text(

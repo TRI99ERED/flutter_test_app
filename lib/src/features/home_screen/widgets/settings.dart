@@ -3,12 +3,14 @@ import 'package:go_router/go_router.dart';
 import 'package:test_app/src/core/resources/app_icons.dart';
 import 'package:test_app/src/features/app/app_scope.dart';
 import 'package:test_app/src/features/app/data/models/user_model.dart';
+import 'package:test_app/src/features/themes/app_theme.dart';
+import 'package:test_app/src/router/routes.dart';
 import 'package:test_app/src/widgets/common/app_avatar.dart';
 import 'package:test_app/src/widgets/common/app_dialog.dart';
 import 'package:test_app/src/widgets/common/app_divider.dart';
 import 'package:test_app/src/widgets/common/app_list_item.dart';
 import 'package:test_app/src/widgets/common/app_nav_bar.dart';
-import 'package:test_app/src/widgets/common/styles.dart';
+import 'package:test_app/src/features/themes/styles.dart';
 import 'package:test_app/src/widgets/user_profile.dart';
 
 class Settings extends StatelessWidget {
@@ -33,7 +35,9 @@ class Settings extends StatelessWidget {
                     child: IconButton(
                       padding: EdgeInsets.zero,
                       style: IconButton.styleFrom(
-                        backgroundColor: HighlightColor.darkest.color,
+                        backgroundColor: Theme.of(
+                          context,
+                        ).extension<AppTheme>()?.highlightDarkestColor,
                       ),
                       onPressed: () {
                         UserProfile.show(
@@ -45,7 +49,9 @@ class Settings extends StatelessWidget {
                       icon: Icon(
                         AppIcons.edit,
                         size: 10,
-                        color: LightColor.lightest.color,
+                        color: Theme.of(
+                          context,
+                        ).extension<AppTheme>()?.backgroundStrongestColor,
                       ),
                     ),
                   ),
@@ -60,7 +66,9 @@ class Settings extends StatelessWidget {
                     style: TextStyle(
                       fontSize: h3Size,
                       fontWeight: h3Weight,
-                      color: DarkColor.darkest.color,
+                      color: Theme.of(
+                        context,
+                      ).extension<AppTheme>()?.foregroundStrongestColor,
                     ),
                   )
                 : const SizedBox.shrink(),
@@ -72,7 +80,9 @@ class Settings extends StatelessWidget {
                     style: TextStyle(
                       fontSize: bSSize,
                       fontWeight: bSWeight,
-                      color: DarkColor.light.color,
+                      color: Theme.of(
+                        context,
+                      ).extension<AppTheme>()?.foregroundStrongColor,
                     ),
                   )
                 : const SizedBox.shrink(),
@@ -82,7 +92,7 @@ class Settings extends StatelessWidget {
               title: 'Saved messages',
               control: AppListItemControl.smallButton,
               onPressed: () {
-                context.push('/saved-messages');
+                context.push(savedMessagesPath);
               },
             ),
           ),
@@ -91,7 +101,9 @@ class Settings extends StatelessWidget {
             child: AppListItem(
               title: 'Notifications',
               control: AppListItemControl.smallButton,
-              onPressed: () {},
+              onPressed: () {
+                context.push(notificationsPath);
+              },
             ),
           ),
           AppDivider(),
@@ -99,7 +111,9 @@ class Settings extends StatelessWidget {
             child: AppListItem(
               title: 'Appearance',
               control: AppListItemControl.smallButton,
-              onPressed: () {},
+              onPressed: () {
+                context.push(appearancePath);
+              },
             ),
           ),
           AppDivider(),

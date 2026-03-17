@@ -3,11 +3,12 @@ import 'package:go_router/go_router.dart';
 import 'package:test_app/src/core/widgets/controller_listener.dart';
 import 'package:test_app/src/features/app/app_scope.dart';
 import 'package:test_app/src/features/app/data/models/user_model.dart';
+import 'package:test_app/src/features/themes/app_theme.dart';
 import 'package:test_app/src/router/routes.dart';
 import 'package:test_app/src/widgets/common/app_button.dart';
 import 'package:test_app/src/widgets/common/app_list_selectable.dart';
 import 'package:test_app/src/widgets/common/app_progress_bar.dart';
-import 'package:test_app/src/widgets/common/styles.dart';
+import 'package:test_app/src/features/themes/styles.dart';
 
 class InterestsScreen extends StatefulWidget {
   const InterestsScreen({super.key});
@@ -82,7 +83,9 @@ class _InterestsScreenState extends State<InterestsScreen> {
                       style: TextStyle(
                         fontSize: h1Size,
                         fontWeight: h1Weight,
-                        color: DarkColor.darkest.color,
+                        color: Theme.of(
+                          context,
+                        ).extension<AppTheme>()?.foregroundStrongestColor,
                       ),
                     ),
                     Text(
@@ -90,7 +93,9 @@ class _InterestsScreenState extends State<InterestsScreen> {
                       style: TextStyle(
                         fontSize: bSSize,
                         fontWeight: bSWeight,
-                        color: DarkColor.light.color,
+                        color: Theme.of(
+                          context,
+                        ).extension<AppTheme>()?.foregroundStrongColor,
                       ),
                     ),
                   ],

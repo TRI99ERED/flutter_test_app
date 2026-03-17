@@ -6,6 +6,7 @@ import 'package:test_app/src/features/app/app_scope.dart';
 import 'package:test_app/src/features/app/data/models/chat_model.dart';
 import 'package:test_app/src/features/app/data/models/project_model.dart';
 import 'package:test_app/src/features/app/data/models/user_model.dart';
+import 'package:test_app/src/features/themes/app_theme.dart';
 import 'package:test_app/src/widgets/common/app_avatar.dart';
 import 'package:test_app/src/widgets/common/app_button.dart';
 import 'package:test_app/src/widgets/common/app_calendar.dart';
@@ -14,7 +15,7 @@ import 'package:test_app/src/widgets/common/app_list_item.dart';
 import 'package:test_app/src/widgets/common/app_loader.dart';
 import 'package:test_app/src/widgets/common/app_nav_bar.dart';
 import 'package:test_app/src/widgets/common/error_state.dart';
-import 'package:test_app/src/widgets/common/styles.dart';
+import 'package:test_app/src/features/themes/styles.dart';
 import 'package:test_app/src/widgets/project_wizard.dart';
 
 class ProjectScreen extends StatelessWidget {
@@ -94,7 +95,9 @@ class ProjectScreen extends StatelessWidget {
               style: TextStyle(
                 fontSize: h1Size,
                 fontWeight: h1Weight,
-                color: DarkColor.darkest.color,
+                color: Theme.of(
+                  context,
+                ).extension<AppTheme>()?.foregroundStrongestColor,
               ),
             ),
             _buildOwnerRow(context, project),
@@ -104,7 +107,9 @@ class ProjectScreen extends StatelessWidget {
               style: TextStyle(
                 fontSize: bMSize,
                 fontWeight: bMWeight,
-                color: DarkColor.dark.color,
+                color: Theme.of(
+                  context,
+                ).extension<AppTheme>()?.foregroundStrongColor,
               ),
             ),
             const SizedBox(height: spacing24),
@@ -113,7 +118,9 @@ class ProjectScreen extends StatelessWidget {
               style: TextStyle(
                 fontSize: h3Size,
                 fontWeight: h3Weight,
-                color: DarkColor.darkest.color,
+                color: Theme.of(
+                  context,
+                ).extension<AppTheme>()?.foregroundStrongestColor,
               ),
             ),
             Text(
@@ -123,7 +130,9 @@ class ProjectScreen extends StatelessWidget {
               style: TextStyle(
                 fontSize: bMSize,
                 fontWeight: bMWeight,
-                color: DarkColor.light.color,
+                color: Theme.of(
+                  context,
+                ).extension<AppTheme>()?.foregroundWeakColor,
               ),
             ),
             const SizedBox(height: spacing24),
@@ -136,7 +145,9 @@ class ProjectScreen extends StatelessWidget {
               style: TextStyle(
                 fontSize: h3Size,
                 fontWeight: h3Weight,
-                color: DarkColor.darkest.color,
+                color: Theme.of(
+                  context,
+                ).extension<AppTheme>()?.foregroundStrongestColor,
               ),
             ),
             const SizedBox(height: spacing8),
@@ -150,7 +161,9 @@ class ProjectScreen extends StatelessWidget {
                 style: TextStyle(
                   fontSize: h2Size,
                   fontWeight: h2Weight,
-                  color: DarkColor.darkest.color,
+                  color: Theme.of(
+                    context,
+                  ).extension<AppTheme>()?.foregroundStrongestColor,
                 ),
               ),
               const SizedBox(height: spacing16),
@@ -178,7 +191,9 @@ class ProjectScreen extends StatelessWidget {
             style: TextStyle(
               fontSize: bMSize,
               fontWeight: bMWeight,
-              color: DarkColor.light.color,
+              color: Theme.of(
+                context,
+              ).extension<AppTheme>()?.foregroundWeakColor,
             ),
           );
         }
@@ -193,7 +208,9 @@ class ProjectScreen extends StatelessWidget {
               style: TextStyle(
                 fontSize: bMSize,
                 fontWeight: bMWeight,
-                color: DarkColor.light.color,
+                color: Theme.of(
+                  context,
+                ).extension<AppTheme>()?.foregroundWeakColor,
               ),
             ),
             AppButtonPrimary(
@@ -226,7 +243,9 @@ class ProjectScreen extends StatelessWidget {
           style: TextStyle(
             fontSize: h3Size,
             fontWeight: h3Weight,
-            color: DarkColor.darkest.color,
+            color: Theme.of(
+              context,
+            ).extension<AppTheme>()?.foregroundStrongestColor,
           ),
         ),
         _buildChatButton(context, project),

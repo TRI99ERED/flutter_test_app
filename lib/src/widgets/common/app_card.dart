@@ -1,8 +1,9 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:test_app/src/core/resources/app_icons.dart';
+import 'package:test_app/src/features/themes/app_theme.dart';
 import 'package:test_app/src/widgets/common/app_button.dart';
 import 'package:test_app/src/widgets/common/app_tag.dart';
-import 'package:test_app/src/widgets/common/styles.dart';
+import 'package:test_app/src/features/themes/styles.dart';
 
 class AppCardLarge extends StatelessWidget {
   final Widget? image;
@@ -52,7 +53,7 @@ class AppCardLarge extends StatelessWidget {
          'buttonText and onPressed must both be provided or both be null',
        );
 
-  Widget _buildTopActionsRow() {
+  Widget _buildTopActionsRow(BuildContext context) {
     return Row(
       children: [
         if (icon != null)
@@ -60,8 +61,12 @@ class AppCardLarge extends StatelessWidget {
             onPressed: onIconButtonPressed,
             icon: Icon(icon),
             style: IconButton.styleFrom(
-              backgroundColor: LightColor.medium.color,
-              foregroundColor: HighlightColor.darkest.color,
+              backgroundColor: Theme.of(
+                context,
+              ).extension<AppTheme>()?.backgroundMediumColor,
+              foregroundColor: Theme.of(
+                context,
+              ).extension<AppTheme>()?.highlightDarkestColor,
             ),
           ),
         if (avatar != null)
@@ -83,7 +88,7 @@ class AppCardLarge extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: LightColor.light.color,
+        color: Theme.of(context).extension<AppTheme>()?.backgroundStrongColor,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
@@ -108,7 +113,7 @@ class AppCardLarge extends StatelessWidget {
                       top: 8,
                       left: 8,
                       right: 8,
-                      child: _buildTopActionsRow(),
+                      child: _buildTopActionsRow(context),
                     ),
                 ],
               ),
@@ -116,7 +121,7 @@ class AppCardLarge extends StatelessWidget {
           else if (hasTopActions)
             Padding(
               padding: EdgeInsets.all(spacing8),
-              child: _buildTopActionsRow(),
+              child: _buildTopActionsRow(context),
             ),
           if (title != null)
             Padding(
@@ -126,7 +131,9 @@ class AppCardLarge extends StatelessWidget {
                 style: TextStyle(
                   fontSize: h4Size,
                   fontWeight: h4Weight,
-                  color: DarkColor.darkest.color,
+                  color: Theme.of(
+                    context,
+                  ).extension<AppTheme>()?.foregroundStrongestColor,
                 ),
               ),
             ),
@@ -138,7 +145,9 @@ class AppCardLarge extends StatelessWidget {
                 style: TextStyle(
                   fontSize: bSSize,
                   fontWeight: bSWeight,
-                  color: DarkColor.light.color,
+                  color: Theme.of(
+                    context,
+                  ).extension<AppTheme>()?.foregroundWeakColor,
                 ),
               ),
             ),
@@ -151,7 +160,9 @@ class AppCardLarge extends StatelessWidget {
                 style: TextStyle(
                   fontSize: bSSize,
                   fontWeight: bSWeight,
-                  color: DarkColor.medium.color,
+                  color: Theme.of(
+                    context,
+                  ).extension<AppTheme>()?.foregroundMediumColor,
                 ),
               ),
             ),
@@ -230,7 +241,7 @@ class AppCardSmall extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: LightColor.light.color,
+        color: Theme.of(context).extension<AppTheme>()?.backgroundStrongColor,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Row(
@@ -260,8 +271,12 @@ class AppCardSmall extends StatelessWidget {
                 icon: Icon(icon),
                 onPressed: onIconButtonPressed,
                 style: IconButton.styleFrom(
-                  backgroundColor: LightColor.medium.color,
-                  foregroundColor: HighlightColor.darkest.color,
+                  backgroundColor: Theme.of(
+                    context,
+                  ).extension<AppTheme>()?.backgroundMediumColor,
+                  foregroundColor: Theme.of(
+                    context,
+                  ).extension<AppTheme>()?.highlightDarkestColor,
                 ),
               ),
             ),
@@ -278,7 +293,9 @@ class AppCardSmall extends StatelessWidget {
                       style: TextStyle(
                         fontSize: h4Size,
                         fontWeight: h4Weight,
-                        color: DarkColor.darkest.color,
+                        color: Theme.of(
+                          context,
+                        ).extension<AppTheme>()?.foregroundStrongestColor,
                       ),
                     ),
                   if (subtitle != null)
@@ -287,7 +304,9 @@ class AppCardSmall extends StatelessWidget {
                       style: TextStyle(
                         fontSize: bSSize,
                         fontWeight: bSWeight,
-                        color: DarkColor.light.color,
+                        color: Theme.of(
+                          context,
+                        ).extension<AppTheme>()?.foregroundWeakColor,
                       ),
                     ),
                 ],
@@ -321,7 +340,9 @@ class AppCardSmall extends StatelessWidget {
                 icon: Icon(
                   AppIcons.arrowRight,
                   size: 12,
-                  color: DarkColor.lightest.color,
+                  color: Theme.of(
+                    context,
+                  ).extension<AppTheme>()?.foregroundWeakestColor,
                 ),
               ),
             ),
