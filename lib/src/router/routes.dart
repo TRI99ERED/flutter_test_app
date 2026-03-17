@@ -1,3 +1,4 @@
+import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 import 'package:test_app/src/features/app/app_controller/app_controller.dart';
 import 'package:test_app/src/features/app/app_scope.dart';
@@ -25,10 +26,14 @@ const projectPath = '/projects/:projectId';
 const projectFeedbackPath = '/projects/:projectId/feedback';
 const savedMessagesPath = '/saved-messages';
 
-GoRouter generateRouter(AppController appController) {
+GoRouter generateRouter(
+  AppController appController,
+  GlobalKey<NavigatorState> rootNavigatorKey,
+) {
   return GoRouter(
     initialLocation: onboardingPath,
     refreshListenable: appController,
+    navigatorKey: rootNavigatorKey,
     routes: [
       GoRoute(path: homePath, builder: (context, state) => const HomeScreen()),
       GoRoute(

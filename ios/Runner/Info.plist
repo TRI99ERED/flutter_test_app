@@ -73,4 +73,11 @@
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
 	<string>This app needs your location to show it on the map.</string>
 </dict>
+	<!-- Notification permissions and background modes for iOS local notifications -->
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>remote-notification</string>
+	</array>
+	<key>NSUserNotificationAlertStyle</key>
+	<string>alert</string>
 </plist>

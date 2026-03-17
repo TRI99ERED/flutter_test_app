@@ -2,6 +2,7 @@ const { Storage } = require('@google-cloud/storage');
 const storage = new Storage();
 const crypto = require("node:crypto");
 const admin = require("firebase-admin");
+const functions = require("firebase-functions");
 const { onCall, HttpsError } = require("firebase-functions/v2/https");
 const logger = require("firebase-functions/logger");
 
@@ -226,3 +227,80 @@ exports.deleteGroupAvatar = onCall({ region: REGION }, async (request) => {
 	logger.info("Delete complete", { chatId, filename });
 	return { success: true };
 });
+
+const sendMessageNotification = async (change, context, chatType) => {
+	const messageData = change.data();
+	if (!messageData) return;
+
+	const chatId = context.params.chatId;
+	const senderId = messageData.senderId;
+	// Fetch sender's name from users collection
+	let senderName = 'Someone';
+	try {
+		const senderDoc = await db.collection('users').doc(senderId).get();
+		if (senderDoc.exists) {
+			senderName = senderDoc.get('name') || senderName;
+		}
+	} catch (e) {
+		logger.warn('Failed to fetch sender name', { senderId, error: e });
+	}
+	// Use 'body' for notification body if present, fallback to 'text'
+	const notification = {
+		title: `${senderName}`,
+		body: messageData.body || messageData.text || 'You have a new message!',
+	};
+	const data = {
+		route: chatType === 'group' ? `/chats/group/${chatId}` : `/chats/direct/${chatId}`,
+		title: notification.title,
+		body: notification.body,
+	};
+
+	if (chatType === 'direct') {
+		const chatDoc = await db.collection('directChats').doc(chatId).get();
+		if (!chatDoc.exists) return;
+		const chat = chatDoc.data();
+		const participants = chat.participants || [];
+		const recipientId = participants.find(uid => uid !== senderId);
+		if (!recipientId) return;
+		const userDoc = await db.collection('users').doc(recipientId).get();
+		const recipientToken = userDoc.get('fcmToken');
+		if (!recipientToken) return;
+		const message = {
+			token: recipientToken,
+			notification,
+			data,
+		};
+		const messageId = await admin.messaging().send(message);
+		logger.info('FCM message sent', { messageId, recipientId, chatId, notification, data });
+	} else if (chatType === 'group') {
+		const groupDoc = await db.collection('groupChats').doc(chatId).get();
+		if (!groupDoc.exists) return;
+		const group = groupDoc.data();
+		const participants = group.participants || [];
+		for (const memberId of participants) {
+			if (memberId === senderId) continue;
+			const userDoc = await db.collection('users').doc(memberId).get();
+			const recipientToken = userDoc.get('fcmToken');
+			if (!recipientToken) continue;
+			const message = {
+				token: recipientToken,
+				notification,
+				data,
+			};
+			const messageId = await admin.messaging().send(message);
+			logger.info('FCM message sent', { messageId, recipientId: memberId, chatId, notification, data });
+		}
+	}
+}
+
+exports.sendGroupChatMessageNotification = functions.region(REGION).firestore
+	.document('groupChats/{chatId}/messages/{messageId}')
+	.onCreate(async (snap, context) => {
+		await sendMessageNotification(snap, context, 'group');
+	});
+
+exports.sendDirectChatMessageNotification = functions.region(REGION).firestore
+	.document('directChats/{chatId}/messages/{messageId}')
+	.onCreate(async (snap, context) => {
+		await sendMessageNotification(snap, context, 'direct');
+	});

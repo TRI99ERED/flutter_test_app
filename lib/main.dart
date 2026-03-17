@@ -8,15 +8,22 @@ import 'package:test_app/firebase_options.dart';
 import 'package:test_app/src/features/app/app_controller/app_controller.dart';
 import 'package:test_app/src/features/app/app_scope.dart';
 import 'package:test_app/src/router/routes.dart';
+import 'package:test_app/src/services/notification_service.dart';
 import 'package:test_app/src/widgets/common/styles.dart';
+
+final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>();
 
 void main() {
   runZonedGuarded(
     () async {
       WidgetsFlutterBinding.ensureInitialized();
+
       await Firebase.initializeApp(
         options: DefaultFirebaseOptions.currentPlatform,
       );
+
+      await NotificationService.initialize();
+
       GoogleFonts.inter();
       runApp(const App());
     },
@@ -43,7 +50,7 @@ class _AppState extends State<App> {
     super.initState();
     _controller = AppController();
     _controller.addListener(_rebuild);
-    _router = generateRouter(_controller);
+    _router = generateRouter(_controller, rootNavigatorKey);
   }
 
   void _rebuild() {

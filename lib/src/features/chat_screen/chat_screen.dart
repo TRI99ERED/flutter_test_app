@@ -181,7 +181,7 @@ class _ChatScreenState extends State<ChatScreen> {
         builder: (context, asyncSnapshot) {
           if (asyncSnapshot.hasError) {
             return ErrorState(
-              message: 'Failed to load unread count: [${asyncSnapshot.error}]',
+              message: 'Failed to load unread count: ${asyncSnapshot.error}',
             );
           }
           final unreadCount = asyncSnapshot.data ?? 0;
@@ -239,8 +239,7 @@ class _ChatScreenState extends State<ChatScreen> {
         builder: (context, asyncSnapshot) {
           if (asyncSnapshot.hasError) {
             return ErrorState(
-              message:
-                  'Failed to load unread counts: [${asyncSnapshot.error}]',
+              message: 'Failed to load unread counts: ${asyncSnapshot.error}',
             );
           }
           final unreadCounts = asyncSnapshot.data ?? {};

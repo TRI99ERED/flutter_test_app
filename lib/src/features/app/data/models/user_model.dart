@@ -21,6 +21,7 @@ final class AuthorizedUser extends UserEntity {
   final String avatarUrl;
   final String currentDirectChatId;
   final String currentGroupChatId;
+  final String fcmToken;
   final List<String> selectedInterests;
   final List<String> chatRecentSearches;
   final List<String> friendRecentSearches;
@@ -34,6 +35,7 @@ final class AuthorizedUser extends UserEntity {
     this.avatarUrl = '',
     this.currentDirectChatId = '',
     this.currentGroupChatId = '',
+    this.fcmToken = '',
     this.selectedInterests = const [],
     this.chatRecentSearches = const [],
     this.friendRecentSearches = const [],
@@ -52,6 +54,7 @@ final class AuthorizedUser extends UserEntity {
       avatarUrl: data['avatarUrl'] ?? '',
       currentDirectChatId: data['currentDirectChatId'] ?? '',
       currentGroupChatId: data['currentGroupChatId'] ?? '',
+      fcmToken: data['fcmToken'] ?? '',
       selectedInterests: List<String>.from(data['selectedInterests'] ?? []),
       chatRecentSearches: List<String>.from(data['chatRecentSearches'] ?? []),
       friendRecentSearches: List<String>.from(
@@ -74,6 +77,7 @@ final class AuthorizedUser extends UserEntity {
     String? avatarUrl,
     String? currentDirectChatId,
     String? currentGroupChatId,
+    String? fcmToken,
     List<String>? selectedInterests,
     List<String>? chatRecentSearches,
     List<String>? friendRecentSearches,
@@ -87,6 +91,7 @@ final class AuthorizedUser extends UserEntity {
       avatarUrl: avatarUrl ?? this.avatarUrl,
       currentDirectChatId: currentDirectChatId ?? this.currentDirectChatId,
       currentGroupChatId: currentGroupChatId ?? this.currentGroupChatId,
+      fcmToken: fcmToken ?? this.fcmToken,
       selectedInterests: selectedInterests ?? this.selectedInterests,
       chatRecentSearches: chatRecentSearches ?? this.chatRecentSearches,
       friendRecentSearches: friendRecentSearches ?? this.friendRecentSearches,
@@ -106,6 +111,7 @@ final class AuthorizedUser extends UserEntity {
             other.avatarUrl == avatarUrl &&
             other.currentDirectChatId == currentDirectChatId &&
             other.currentGroupChatId == currentGroupChatId &&
+            other.fcmToken == fcmToken &&
             other.selectedInterests == selectedInterests &&
             other.chatRecentSearches == chatRecentSearches &&
             other.friendRecentSearches == friendRecentSearches &&
@@ -122,6 +128,7 @@ final class AuthorizedUser extends UserEntity {
     avatarUrl,
     currentDirectChatId,
     currentGroupChatId,
+    fcmToken,
     selectedInterests,
     chatRecentSearches,
     friendRecentSearches,
@@ -130,7 +137,7 @@ final class AuthorizedUser extends UserEntity {
 
   @override
   String toString() {
-    return 'AuthorizedUser{id: $id, name: $name,handle: $handle}';
+    return 'AuthorizedUser{id: $id, name: $name, handle: $handle}';
   }
 
   Map<String, dynamic> toFirestore() {
@@ -141,6 +148,7 @@ final class AuthorizedUser extends UserEntity {
       'avatarUrl': avatarUrl,
       'currentDirectChatId': currentDirectChatId,
       'currentGroupChatId': currentGroupChatId,
+      'fcmToken': fcmToken,
       'selectedInterests': selectedInterests,
       'chatRecentSearches': chatRecentSearches,
       'friendRecentSearches': friendRecentSearches,

@@ -20,10 +20,6 @@
             "package_name": "com.example.test_app",
             "certificate_hash": "2086bbc928628cc00bd6af0d379cb9d639486d95"
           }
-        },
-        {
-          "client_id": "503645418605-jtkr36eh4rld926ac7o1usbjbo9hg3bn.apps.googleusercontent.com",
-          "client_type": 3
         }
       ],
       "api_key": [
@@ -35,7 +31,7 @@
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "503645418605-8ccvu6r4bd86puhonme3cp0logpdaddt.apps.googleusercontent.com",
+              "client_id": "503645418605-m55u2bsiqj2edouhrmdhmf66gbd6jrsp.apps.googleusercontent.com",
               "client_type": 3
             },
             {

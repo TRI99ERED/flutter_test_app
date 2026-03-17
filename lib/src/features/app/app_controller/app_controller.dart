@@ -16,6 +16,8 @@ import 'package:test_app/src/features/app/data/repositories/firebase/firebase_fi
 import 'package:test_app/src/features/app/data/repositories/firebase/firebase_firestore_repository/ifirebase_firestore_repository.dart';
 import 'package:test_app/src/features/app/data/repositories/firebase/firebase_functions_repository/firebase_functions_repository_impl.dart';
 import 'package:test_app/src/features/app/data/repositories/firebase/firebase_functions_repository/ifirebase_functions_repository.dart';
+import 'package:test_app/src/features/app/data/repositories/firebase/firebase_messaging_repository/firebase_messaging_repository_impl.dart';
+import 'package:test_app/src/features/app/data/repositories/firebase/firebase_messaging_repository/ifirebase_messaging_repository.dart';
 import 'package:test_app/src/features/app/data/repositories/firebase/firebase_storage_repository/firebase_storage_repository_impl.dart';
 import 'package:test_app/src/features/app/data/repositories/firebase/firebase_storage_repository/ifirebase_storage_repository.dart';
 import 'package:test_app/src/features/app/data/repositories/shared_preferences/ishared_preferences_repository.dart';
@@ -29,8 +31,10 @@ final class AppController extends BaseController<AppState> {
   final IFirebaseStorageRepository _storageRepository;
   final IFirebaseFunctionsRepository _functionsRepository;
   final ISharedPreferencesRepository _sharedPreferencesRepository;
+  final IFirebaseMessagingRepository _messagingRepository;
   Stream<AuthorizedUser?>? _userStream;
   StreamSubscription<AuthorizedUser?>? _userStreamSubscription;
+  StreamSubscription<String>? _fcmTokenRefreshSubscription;
 
   AppController()
     : _authRepository = FirebaseAuthRepositoryImpl(),
@@ -38,6 +42,7 @@ final class AppController extends BaseController<AppState> {
       _storageRepository = FirebaseStorageRepositoryImpl(),
       _functionsRepository = FirebaseFunctionsRepositoryImpl(),
       _sharedPreferencesRepository = SharedPreferencesRepositoryImpl(),
+      _messagingRepository = FirebaseMessagingRepositoryImpl(),
       super(
         state: const AppState.idle(
           message: 'initialized',
@@ -46,6 +51,35 @@ final class AppController extends BaseController<AppState> {
         name: 'AppController',
       ) {
     _listenToAuthState();
+    _listentoFcmTokenRefresh();
+  }
+
+  void _listentoFcmTokenRefresh() {
+    _fcmTokenRefreshSubscription?.cancel();
+    _fcmTokenRefreshSubscription = _messagingRepository.onTokenRefresh().listen(
+      (newToken) {
+        if (state.user is AuthorizedUser) {
+          final user = state.user as AuthorizedUser;
+          final updatedUser =
+              user.copyWith(fcmToken: newToken) as AuthorizedUser;
+          _firestoreRepository.updateUser(updatedUser);
+          setState(
+            AppState.idle(message: 'FCM token refreshed', user: updatedUser),
+          );
+        }
+      },
+      onError: (error, stackTrace) {
+        setState(
+          AppState.failed(
+            message:
+                'Failed to listen to FCM token refresh: ${error.toString()}',
+            user: state.user,
+            error: error,
+            stackTrace: stackTrace,
+          ),
+        );
+      },
+    );
   }
 
   void _listenToAuthState() {
@@ -117,11 +151,13 @@ final class AppController extends BaseController<AppState> {
   ) async => await serialExecutor.synchronized(() async {
     setState(AppState.processing(message: 'Registering...', user: state.user));
     try {
-      final user = await _authRepository.signUpWithEmailAndPassword(
+      var user = await _authRepository.signUpWithEmailAndPassword(
         email: email,
         password: password,
         name: name,
       );
+      final fcmToken = await _messagingRepository.getToken();
+      user = user.copyWith(fcmToken: fcmToken) as AuthorizedUser;
       await _firestoreRepository.createUser(user: user);
       setState(AppState.idle(message: 'Registration successful', user: user));
     } catch (error, stackTrace) {
@@ -161,33 +197,45 @@ final class AppController extends BaseController<AppState> {
         }
       });
 
-  Future<void> login(String email, String password) async =>
-      await serialExecutor.synchronized(() async {
-        setState(
-          AppState.processing(message: 'Signing in...', user: state.user),
-        );
-        try {
-          final user = await _authRepository.signInWithEmailAndPassword(
-            email: email,
-            password: password,
-          );
-          setState(AppState.idle(message: 'Sign in successful', user: user));
-          _startUserSync();
-        } catch (error, stackTrace) {
-          setState(
-            AppState.failed(
-              message: 'Sign in failed: ${error.toString()}',
-              user: state.user,
-              error: error,
-              stackTrace: stackTrace,
-            ),
-          );
-        }
-      });
+  Future<void> login(
+    String email,
+    String password,
+  ) async => await serialExecutor.synchronized(() async {
+    setState(AppState.processing(message: 'Signing in...', user: state.user));
+    try {
+      final user = await _authRepository.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+      debugPrint('User signed in: $user');
+      final fcmToken = await _messagingRepository.getToken();
+      debugPrint('FCM token: $fcmToken');
+      final updatedUser = user.copyWith(fcmToken: fcmToken) as AuthorizedUser;
+      debugPrint('Updating user with FCM token: $updatedUser');
+      await _firestoreRepository.updateUser(updatedUser);
+      debugPrint('User updated with FCM token');
+      setState(AppState.idle(message: 'Sign in successful', user: updatedUser));
+      _startUserSync();
+    } catch (error, stackTrace) {
+      setState(
+        AppState.failed(
+          message: 'Sign in failed: ${error.toString()}',
+          user: state.user,
+          error: error,
+          stackTrace: stackTrace,
+        ),
+      );
+    }
+  });
 
   Future<void> logout() async => await serialExecutor.synchronized(() async {
     setState(AppState.processing(message: 'Signing out...', user: state.user));
     try {
+      if (state.user is AuthorizedUser) {
+        final user = state.user as AuthorizedUser;
+        final updatedUser = user.copyWith(fcmToken: '') as AuthorizedUser;
+        await _firestoreRepository.updateUser(updatedUser);
+      }
       await _authRepository.signOut();
       setState(
         AppState.idle(
@@ -1423,44 +1471,46 @@ final class AppController extends BaseController<AppState> {
         .map((chat) => chat?.avatarUrl ?? '');
   }
 
-  Future<void> updateUser(AuthorizedUser user) async =>
-      await serialExecutor.synchronized(() async {
-        try {
-          if (state.user is! AuthorizedUser) {
-            setState(
-              AppState.failed(
-                message: 'Cannot update user: No authorized user in state.',
-                user: state.user,
-              ),
-            );
-            return;
-          }
-          setState(
-            AppState.processing(
-              message: 'Updating user "${user.id}"...',
-              user: state.user,
-            ),
-          );
-          await _firestoreRepository.updateUser(user);
-          setState(
-            AppState.idle(
-              message: 'User "${user.id}" updated successfully.',
-              user: user,
-            ),
-          );
-        } catch (error, stackTrace) {
-          setState(
-            AppState.failed(
-              message:
-                  'Failed to update user "${user.id}": ${error.toString()}',
-              user: state.user,
-              error: error,
-              stackTrace: stackTrace,
-            ),
-          );
-          rethrow;
-        }
-      });
+  Future<void> updateUser(
+    AuthorizedUser user,
+  ) async => await serialExecutor.synchronized(() async {
+    try {
+      if (state.user is! AuthorizedUser) {
+        setState(
+          AppState.failed(
+            message: 'Cannot update user: No authorized user in state.',
+            user: state.user,
+          ),
+        );
+        return;
+      }
+      setState(
+        AppState.processing(
+          message: 'Updating user "${user.id}"...',
+          user: state.user,
+        ),
+      );
+      final fcmToken = await _messagingRepository.getToken();
+      final updatedUser = user.copyWith(fcmToken: fcmToken) as AuthorizedUser;
+      await _firestoreRepository.updateUser(updatedUser);
+      setState(
+        AppState.idle(
+          message: 'User "${user.id}" updated successfully.',
+          user: updatedUser,
+        ),
+      );
+    } catch (error, stackTrace) {
+      setState(
+        AppState.failed(
+          message: 'Failed to update user "${user.id}": ${error.toString()}',
+          user: state.user,
+          error: error,
+          stackTrace: stackTrace,
+        ),
+      );
+      rethrow;
+    }
+  });
 
   Future<void> sendPasswordResetEmail(
     String email,
@@ -1547,7 +1597,9 @@ final class AppController extends BaseController<AppState> {
     );
     try {
       final user = await _authRepository.signInWithGoogle();
-      if (user == null) {
+      final fcmToken = await _messagingRepository.getToken();
+      final updatedUser = user?.copyWith(fcmToken: fcmToken) as AuthorizedUser?;
+      if (updatedUser == null) {
         setState(
           AppState.idle(
             message: 'Google sign-in was cancelled.',
@@ -1556,28 +1608,31 @@ final class AppController extends BaseController<AppState> {
         );
         return null;
       }
-      final userExists = await _firestoreRepository.doesUserExist(user.id);
+      final userExists = await _firestoreRepository.doesUserExist(
+        updatedUser.id,
+      );
       if (userExists) {
         final existingUser = await _firestoreRepository
             .watchAllUsers()
-            .map((users) => users?.firstWhere((u) => u.id == user.id))
+            .map((users) => users?.firstWhere((u) => u.id == updatedUser.id))
             .firstWhere((u) => u != null, orElse: () => null);
+
         setState(
           AppState.idle(
             message: 'Signed in with Google successfully.',
-            user: existingUser ?? user,
+            user: existingUser ?? const UnauthorizedUser(),
           ),
         );
         return existingUser;
       }
-      await _firestoreRepository.createUser(user: user);
+      await _firestoreRepository.createUser(user: updatedUser);
       setState(
         AppState.idle(
           message: 'Signed in with Google successfully.',
-          user: user,
+          user: updatedUser,
         ),
       );
-      return user;
+      return updatedUser;
     } on GoogleSignInCanceledException catch (_) {
       setState(
         AppState.idle(
@@ -1795,5 +1850,6 @@ final class AppController extends BaseController<AppState> {
   void dispose() {
     super.dispose();
     _userStreamSubscription?.cancel();
+    _fcmTokenRefreshSubscription?.cancel();
   }
 }
