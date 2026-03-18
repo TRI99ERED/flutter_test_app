@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:test_app/l10n/locales/l10n.dart';
 import 'package:test_app/src/features/app/app_scope.dart';
 import 'package:test_app/src/features/app/data/models/project_model.dart';
 import 'package:test_app/src/features/app/data/models/user_model.dart';
@@ -74,9 +75,9 @@ class _ProjectWizardState extends State<ProjectWizard> {
     return Scaffold(
       appBar: AppNavBar(
         title: widget.mode == ProjectWizardMode.create
-            ? 'Create a Project'
-            : 'Edit Project',
-        leftText: 'Cancel',
+            ? context.l10n.createAProjectTitle
+            : context.l10n.editProjectTitle,
+        leftText: context.l10n.cancelLabel,
         onPressedLeft: () => context.pop(),
       ),
       body: Padding(
@@ -88,7 +89,7 @@ class _ProjectWizardState extends State<ProjectWizard> {
             SizedBox(
               width: double.infinity,
               child: AppButtonPrimary(
-                text: 'Save',
+                text: context.l10n.saveLabel,
                 onPressed: () => _onSavePressed(context),
               ),
             ),
@@ -96,7 +97,7 @@ class _ProjectWizardState extends State<ProjectWizard> {
               width: double.infinity,
               child: AppButtonPrimary(
                 onPressed: () => context.pop(),
-                text: 'Cancel',
+                text: context.l10n.cancelLabel,
               ),
             ),
           ],
@@ -113,10 +114,13 @@ class _ProjectWizardState extends State<ProjectWizard> {
         child: ListView(
           children: [
             AppTextField(
-              title: 'Project name',
-              placeholder: 'Enter project name',
+              title: context.l10n.projectNameLabel,
+              placeholder: context.l10n.enterProjectNameLabel,
               controller: _nameController,
-              validator: getValidatorForKeyboardType(TextInputType.text),
+              validator: getValidatorForKeyboardType(
+                context,
+                TextInputType.text,
+              ),
             ),
             if (widget.mode == ProjectWizardMode.edit)
               const SizedBox(height: spacing16),
@@ -125,8 +129,8 @@ class _ProjectWizardState extends State<ProjectWizard> {
               _buildStatusCheckbox(context),
             const SizedBox(height: spacing16),
             AppTextArea(
-              title: 'Description',
-              placeholder: 'Enter project description',
+              title: context.l10n.descriptionLabel,
+              placeholder: context.l10n.enterProjectDescriptionLabel,
               controller: _descriptionController,
             ),
             const SizedBox(height: spacing16),
@@ -134,7 +138,7 @@ class _ProjectWizardState extends State<ProjectWizard> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Participants',
+                  context.l10n.participantsLabel,
                   style: TextStyle(
                     fontSize: h5Size,
                     fontWeight: h5Weight,
@@ -144,7 +148,7 @@ class _ProjectWizardState extends State<ProjectWizard> {
                   ),
                 ),
                 AppButtonPrimary(
-                  text: 'Add a participant',
+                  text: context.l10n.addAParticipantLabel,
                   onPressed: () => _onAddMemberPressed(context),
                 ),
               ],
@@ -153,7 +157,7 @@ class _ProjectWizardState extends State<ProjectWizard> {
             _buildParticipantsList(context),
             const SizedBox(height: spacing16),
             Text(
-              'Set Deadline',
+              context.l10n.setDeadlineLabel,
               style: TextStyle(
                 fontSize: h5Size,
                 fontWeight: h5Weight,
@@ -203,10 +207,10 @@ class _ProjectWizardState extends State<ProjectWizard> {
   String _getStatusLabel(ProjectStatus status) {
     switch (status) {
       case ProjectStatus.todo:
-        return 'In Progress';
+        return context.l10n.inProgressLabel;
       case ProjectStatus.inProgress:
       case ProjectStatus.finished:
-        return 'Finished';
+        return context.l10n.finishedLabel;
     }
   }
 
@@ -293,7 +297,9 @@ class _ProjectWizardState extends State<ProjectWizard> {
                       control: isCurrentUser
                           ? AppListItemControl.none
                           : AppListItemControl.largeButton,
-                      largeButtonText: isCurrentUser ? null : 'Remove',
+                      largeButtonText: isCurrentUser
+                          ? null
+                          : context.l10n.removeLabel,
                       onPressed: isCurrentUser
                           ? null
                           : () {

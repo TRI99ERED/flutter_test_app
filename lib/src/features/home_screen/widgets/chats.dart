@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:test_app/l10n/locales/l10n.dart';
 import 'package:test_app/src/core/resources/app_icons.dart';
 import 'package:test_app/src/features/app/app_scope.dart';
 import 'package:test_app/src/features/app/data/models/chat_model.dart';
@@ -30,7 +31,7 @@ class _ChatsState extends State<Chats> {
   Widget build(BuildContext context) {
     final user = context.appState.user;
     if (user is! AuthorizedUser) {
-      return const ErrorState(message: 'User not authorized');
+      return ErrorState(message: context.l10n.userNotAuthorizedMessage);
     }
 
     return Padding(
@@ -45,6 +46,7 @@ class _ChatsState extends State<Chats> {
             builder: (context, asyncSnapshot) {
               final syncedUser = asyncSnapshot.data;
               return AppSearchBar(
+                placeholder: context.l10n.searchLabel,
                 recentSearches: syncedUser?.chatRecentSearches ?? [],
                 onChanged: (value) => _searchQuery.value = value,
                 onSubmitted: (value) async {
@@ -85,15 +87,16 @@ class _ChatsState extends State<Chats> {
                   );
                 } else if (snapshot.hasError) {
                   return ErrorState(
-                    message: 'Error loading chats: ${snapshot.error}',
+                    message:
+                        '${context.l10n.errorLoadingChatsMessage}: ${snapshot.error}',
                   );
                 }
                 final chats = snapshot.data ?? const [];
                 if (chats.isEmpty) {
                   return EmptyState(
-                    title: 'Nothing here. For now.',
-                    body: 'This is where your chats go.',
-                    buttonText: 'Start a chat',
+                    title: context.l10n.nothingHereForNowLabel,
+                    body: context.l10n.thisIsWhereYourChatsGoLabel,
+                    buttonText: context.l10n.startAChatLabel,
                     onButtonPressed: () async {
                       final chat = await ChatWizard.manageChat(context);
                       if (!context.mounted || chat == null) return;
@@ -174,9 +177,9 @@ class _FilteredChatsList extends StatelessWidget {
           }
         }
         if (filteredChats.isEmpty) {
-          return const EmptyState(
-            title: 'No chats found.',
-            body: 'Try adjusting your search query.',
+          return EmptyState(
+            title: context.l10n.noChatsFoundLabel,
+            body: context.l10n.tryAdjustingYourSearchQueryLabel,
           );
         }
         return ListView.builder(
@@ -258,9 +261,12 @@ class _ChatListItem extends StatelessWidget {
           );
           final resolvedChatNameStream =
               participants.length == 2 && otherParticipantId.isNotEmpty
-              ? context.appController
-                    .watchUserWithId(otherParticipantId)
-                    .map((user) => user?.name ?? 'Unknown')
+              ? context.appController.watchUserWithId(otherParticipantId).map((
+                  user,
+                ) {
+                  if (!context.mounted) return '';
+                  return user?.name ?? context.l10n.unknownChatterLabel;
+                })
               : Stream.value(directChat.name);
           return StreamBuilder(
             stream: resolvedChatNameStream,
@@ -277,7 +283,7 @@ class _ChatListItem extends StatelessWidget {
                       : null;
                   final unreadCount = directChat.unreadCount;
                   final description = messages == null || messages.isEmpty
-                      ? 'No messages yet'
+                      ? context.l10n.noMessagesYetLabel
                       : directChat.lastMessage;
                   final control = canEdit
                       ? AppListItemControl.largeButton
@@ -293,7 +299,9 @@ class _ChatListItem extends StatelessWidget {
                             unreadCount > 0)
                       ? unreadCount.toString()
                       : null;
-                  final largeButtonText = canEdit ? 'Delete' : null;
+                  final largeButtonText = canEdit
+                      ? context.l10n.deleteLabel
+                      : null;
                   final onPressed = canEdit
                       ? () => context.appController.deleteDirectChat(
                           directChat.id,
@@ -371,9 +379,9 @@ class _ChatListItem extends StatelessWidget {
             builder: (context, msgSnapshot) {
               final messages = msgSnapshot.data;
               final description = messages == null || messages.isEmpty
-                  ? 'No messages yet'
+                  ? context.l10n.noMessagesYetLabel
                   : groupChat.lastMessage;
-              final largeButtonText = canEdit ? 'Delete' : null;
+              final largeButtonText = canEdit ? context.l10n.deleteLabel : null;
               final onPressed = canEdit
                   ? () => context.appController.deleteGroupChat(groupChat.id)
                   : () {
@@ -429,8 +437,10 @@ class _ChatsAppBarState extends State<ChatsAppBar> {
         valueListenable: widget.editPressed,
         builder: (context, value, child) {
           return AppNavBar(
-            title: 'Chats',
-            leftText: widget.editPressed.value ? 'Done' : 'Edit',
+            title: context.l10n.chatsTitle,
+            leftText: widget.editPressed.value
+                ? context.l10n.doneLabel
+                : context.l10n.editLabel,
             rightIcon: AppIcons.create,
             onPressedLeft: () {
               widget.editPressed.value = !widget.editPressed.value;

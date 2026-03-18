@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:test_app/l10n/locales/l10n.dart';
 import 'package:test_app/src/core/widgets/controller_listener.dart';
 import 'package:test_app/src/features/app/app_scope.dart';
 import 'package:test_app/src/features/app/data/models/user_model.dart';
@@ -20,22 +21,22 @@ class InterestsScreen extends StatefulWidget {
 class _InterestsScreenState extends State<InterestsScreen> {
   final _selectedInterests = ValueNotifier<Set<String>>({});
 
-  static const _interestOptions = [
-    'User Interface',
-    'User Experience',
-    'User Research',
-    'UX Writing',
-    'User Testing',
-    'Service Design',
-    'Strategy',
-    'Design Systems',
-    'Prototyping',
-    'Accessibility',
-    'Collaboration',
-    'Project Management',
-    'Innovation',
-    'Entrepreneurship',
-    'Marketing',
+  late final _interestOptions = [
+    context.l10n.userInterfaceLabel,
+    context.l10n.userExperienceLabel,
+    context.l10n.userResearchLabel,
+    context.l10n.uxWritingLabel,
+    context.l10n.userTestingLabel,
+    context.l10n.serviceDesignLabel,
+    context.l10n.strategyLabel,
+    context.l10n.designSystemsLabel,
+    context.l10n.prototypingLabel,
+    context.l10n.accessibilityLabel,
+    context.l10n.collaborationLabel,
+    context.l10n.projectManagementLabel,
+    context.l10n.innovationLabel,
+    context.l10n.entrepreneurshipLabel,
+    context.l10n.marketingLabel,
   ];
 
   @override
@@ -51,9 +52,11 @@ class _InterestsScreenState extends State<InterestsScreen> {
           return false;
         },
         listener: (context, previous, current) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text('Error: ${current.message}')));
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('${context.l10n.errorLabel}: ${current.message}'),
+            ),
+          );
         },
         child: Scaffold(
           body: SafeArea(
@@ -79,7 +82,7 @@ class _InterestsScreenState extends State<InterestsScreen> {
                   spacing: spacing16,
                   children: [
                     Text(
-                      'Personalise your experience',
+                      context.l10n.personalizeYourExperienceLabel,
                       style: TextStyle(
                         fontSize: h1Size,
                         fontWeight: h1Weight,
@@ -89,7 +92,7 @@ class _InterestsScreenState extends State<InterestsScreen> {
                       ),
                     ),
                     Text(
-                      'Choose your interests.',
+                      context.l10n.chooseYourInterestsLabel,
                       style: TextStyle(
                         fontSize: bSSize,
                         fontWeight: bSWeight,
@@ -133,11 +136,8 @@ class _InterestsScreenState extends State<InterestsScreen> {
                 SizedBox(
                   width: double.infinity,
                   child: AppButtonPrimary(
-                    text: 'Next',
+                    text: context.l10n.nextLabel,
                     onPressed: () async {
-                      for (final interest in _selectedInterests.value) {
-                        debugPrint('Selected interest: $interest');
-                      }
                       await context.appController.updateUser(
                         (context.appState.user as AuthorizedUser).copyWith(
                               selectedInterests: _selectedInterests.value

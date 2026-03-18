@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:test_app/l10n/locales/l10n.dart';
 import 'package:test_app/src/core/resources/app_icons.dart';
 import 'package:test_app/src/core/widgets/controller_listener.dart';
 import 'package:test_app/src/features/app/app_scope.dart';
@@ -30,9 +31,11 @@ class ProjectScreen extends StatelessWidget {
       listenWhen: (previous, current) => !previous.isFailed && current.isFailed,
       listener: (context, previous, current) {
         if (current.isFailed) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text('Error: ${current.message}')));
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('${context.l10n.errorLabel}: ${current.message}'),
+            ),
+          );
         }
       },
       child: Scaffold(
@@ -57,7 +60,7 @@ class ProjectScreen extends StatelessWidget {
         final project = snapshot.data;
         if (project == null) {
           return AppNavBar(
-            title: 'Project not found',
+            title: context.l10n.projectNotFoundLabel,
             leftIcon: AppIcons.arrowLeft,
             onPressedLeft: () => context.pop(),
           );
@@ -80,13 +83,16 @@ class ProjectScreen extends StatelessWidget {
         } else if (snapshot.hasError) {
           return Center(
             child: ErrorState(
-              message: 'Error loading project: ${snapshot.error}',
+              message:
+                  '${context.l10n.errorLoadingProjectMessage}: ${snapshot.error}',
             ),
           );
         }
         final project = snapshot.data;
         if (project == null) {
-          return ErrorState(message: 'Project with id $projectId not found');
+          return ErrorState(
+            message: context.l10n.projectWithIdNotFoundMessage(projectId),
+          );
         }
         return ListView(
           children: [
@@ -103,7 +109,7 @@ class ProjectScreen extends StatelessWidget {
             _buildOwnerRow(context, project),
             const SizedBox(height: spacing16),
             Text(
-              'Status: ${project.status.displayName}',
+              '${context.l10n.statusLabel}: ${project.status.displayName}',
               style: TextStyle(
                 fontSize: bMSize,
                 fontWeight: bMWeight,
@@ -114,7 +120,7 @@ class ProjectScreen extends StatelessWidget {
             ),
             const SizedBox(height: spacing24),
             Text(
-              'Description:',
+              context.l10n.descriptionLabel,
               style: TextStyle(
                 fontSize: h3Size,
                 fontWeight: h3Weight,
@@ -125,7 +131,7 @@ class ProjectScreen extends StatelessWidget {
             ),
             Text(
               project.description.isEmpty
-                  ? 'No description provided.'
+                  ? context.l10n.noDescriptionProvidedLabel
                   : project.description,
               style: TextStyle(
                 fontSize: bMSize,
@@ -141,7 +147,7 @@ class ProjectScreen extends StatelessWidget {
             _buildParticipantsList(context, project),
             const SizedBox(height: spacing24),
             Text(
-              'Deadline:',
+              context.l10n.deadlineLabel,
               style: TextStyle(
                 fontSize: h3Size,
                 fontWeight: h3Weight,
@@ -157,7 +163,7 @@ class ProjectScreen extends StatelessWidget {
               const AppDivider(),
               const SizedBox(height: spacing24),
               Text(
-                'Project completed! Please provide your feedback.',
+                context.l10n.projectCompletedLabel,
                 style: TextStyle(
                   fontSize: h2Size,
                   fontWeight: h2Weight,
@@ -168,7 +174,7 @@ class ProjectScreen extends StatelessWidget {
               ),
               const SizedBox(height: spacing16),
               AppButtonPrimary(
-                text: 'Provide Feedback',
+                text: context.l10n.provideFeedbackLabel,
                 onPressed: () {
                   context.push('/projects/$projectId/feedback');
                 },
@@ -187,7 +193,7 @@ class ProjectScreen extends StatelessWidget {
         final owner = asyncSnapshot.data;
         if (owner == null) {
           return Text(
-            'Created by unknown',
+            context.l10n.createdByUnknownLabel,
             style: TextStyle(
               fontSize: bMSize,
               fontWeight: bMWeight,
@@ -202,9 +208,9 @@ class ProjectScreen extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              'Created by @${owner.handle}\n'
-              'at ${project.createdAt.toLocal().toString().split('.').first}\n'
-              'Last updated at ${project.lastUpdated.toLocal().toString().split('.').first}',
+              '${context.l10n.createdByLabel('@${owner.handle}')}\n'
+              '${context.l10n.atLabel(project.createdAt.toLocal().toString().split('.').first)}\n'
+              '${context.l10n.lastUpdatedAtLabel(project.lastUpdated.toLocal().toString().split('.').first)}',
               style: TextStyle(
                 fontSize: bMSize,
                 fontWeight: bMWeight,
@@ -239,7 +245,7 @@ class ProjectScreen extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(
-          'Participants:',
+          '${context.l10n.participantsLabel}:',
           style: TextStyle(
             fontSize: h3Size,
             fontWeight: h3Weight,
@@ -263,7 +269,8 @@ class ProjectScreen extends StatelessWidget {
           return const AppLoader();
         } else if (asyncSnapshot.hasError) {
           return ErrorState(
-            message: 'Error loading chats: ${asyncSnapshot.error}',
+            message:
+                '${context.l10n.errorLoadingChatsMessage}: ${asyncSnapshot.error}',
           );
         }
         final chats = asyncSnapshot.data ?? [];
@@ -272,8 +279,8 @@ class ProjectScreen extends StatelessWidget {
         );
         return AppButtonPrimary(
           text: doesGroupChatExistForProject || project.participants.length == 2
-              ? 'Chat'
-              : 'Create Chat',
+              ? context.l10n.chatLabel
+              : context.l10n.createChatLabel,
           onPressed: _getChatButtonOnPressed(
             context,
             project,
@@ -305,8 +312,8 @@ class ProjectScreen extends StatelessWidget {
               if (users == null || users.isEmpty) {
                 if (!context.mounted) return;
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('No other participants found for chat.'),
+                  SnackBar(
+                    content: Text(context.l10n.noOtherParticipantsMessage),
                   ),
                 );
                 return;
@@ -365,11 +372,7 @@ class ProjectScreen extends StatelessWidget {
           }
           if (!context.mounted) return;
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text(
-                'No group chat found for this project. Please ask the project owner to create one.',
-              ),
-            ),
+            SnackBar(content: Text(context.l10n.noGroupChatFoundMessage)),
           );
         });
       };
@@ -387,8 +390,9 @@ class ProjectScreen extends StatelessWidget {
             context.push('/chats/group/${matchingChat.id}');
             return;
           }
+          if (!context.mounted) return;
           final chat = await appController.createGroupChat(
-            chatName: 'Project "${project.name}"',
+            chatName: '${context.l10n.projectTitle} "${project.name}"',
             participants: project.participants,
           );
           await appController.updateProject(
@@ -412,14 +416,15 @@ class ProjectScreen extends StatelessWidget {
         if (asyncSnapshot.hasError) {
           return Center(
             child: ErrorState(
-              message: 'Error loading participants: ${asyncSnapshot.error}',
+              message:
+                  '${context.l10n.errorLoadingParticipantsMessage}: ${asyncSnapshot.error}',
             ),
           );
         }
         final users = asyncSnapshot.data ?? [];
         if (users.isEmpty) {
-          return const Center(
-            child: ErrorState(message: 'No participants found.'),
+          return Center(
+            child: ErrorState(message: context.l10n.noParticipantsFoundMessage),
           );
         }
         return Column(

@@ -1,5 +1,6 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:test_app/l10n/locales/l10n.dart';
 import 'package:test_app/src/core/resources/app_icons.dart';
 import 'package:test_app/src/features/themes/app_theme.dart';
 import 'package:test_app/src/widgets/common/app_accordion.dart';
@@ -35,7 +36,7 @@ class AppFilter extends StatelessWidget {
                 Theme.of(
                   context,
                 ).extension<AppTheme>()?.backgroundWeakestColor ??
-                Color(0xC5C6CCFF),
+                Color(0xFFC5C6CC),
             width: 0.5,
           ),
         ),
@@ -54,7 +55,7 @@ class AppFilter extends StatelessWidget {
             ),
           if (showIcon) SizedBox(width: spacing8),
           Text(
-            'Filter',
+            context.l10n.filterTitle,
             style: TextStyle(
               fontSize: bSSize,
               fontWeight: bSWeight,
@@ -124,9 +125,9 @@ class _AppFilterMenuState extends State<AppFilterMenu> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppNavBar(
-        title: 'Filter',
-        leftText: 'Cancel',
-        rightText: 'Clear All',
+        title: context.l10n.filterTitle,
+        leftText: context.l10n.cancelLabel,
+        rightText: context.l10n.clearAllLabel,
         onPressedLeft: () {
           context.pop();
         },
@@ -211,7 +212,7 @@ class _AppFilterMenuState extends State<AppFilterMenu> {
               child: SizedBox(
                 width: double.infinity,
                 child: AppButtonPrimary(
-                  text: 'Apply Filters',
+                  text: context.l10n.applyFiltersLabel,
                   onPressed: () {
                     // Deep copy to avoid mutating original sets
                     widget.filters.value = _internalFilters.value.map(

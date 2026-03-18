@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:test_app/l10n/locales/l10n.dart';
 import 'package:test_app/src/core/resources/app_icons.dart';
 import 'package:test_app/src/core/widgets/controller_listener.dart';
 import 'package:test_app/src/features/app/app_scope.dart';
@@ -34,7 +35,7 @@ class _AppearanceScreenState extends State<AppearanceScreen> {
       },
       child: Scaffold(
         appBar: AppNavBar(
-          title: 'Appearance',
+          title: context.l10n.appearanceTitle,
           leftIcon: AppIcons.arrowLeft,
           onPressedLeft: () {
             context.pop();
@@ -45,7 +46,7 @@ class _AppearanceScreenState extends State<AppearanceScreen> {
             Padding(
               padding: const EdgeInsets.all(spacing16),
               child: Text(
-                'Theme',
+                context.l10n.themeLabel,
                 style: TextStyle(
                   fontSize: h3Size,
                   fontWeight: h3Weight,
@@ -68,21 +69,21 @@ class _AppearanceScreenState extends State<AppearanceScreen> {
                 children: [
                   AppRadioTile(
                     value: ThemeMode.system,
-                    title: 'System',
+                    title: context.l10n.themeModeSystem,
                     onChanged: (value) {
                       context.themeMode.value = value;
                     },
                   ),
                   AppRadioTile(
                     value: ThemeMode.light,
-                    title: 'Light',
+                    title: context.l10n.themeModeLight,
                     onChanged: (value) {
                       context.themeMode.value = value;
                     },
                   ),
                   AppRadioTile(
                     value: ThemeMode.dark,
-                    title: 'Dark',
+                    title: context.l10n.themeModeDark,
                     onChanged: (value) {
                       context.themeMode.value = value;
                     },

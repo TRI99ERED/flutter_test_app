@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:test_app/l10n/locales/l10n.dart';
 import 'package:test_app/src/core/resources/app_icons.dart';
 import 'package:test_app/src/core/widgets/controller_listener.dart';
 import 'package:test_app/src/features/app/app_scope.dart';
@@ -34,14 +35,16 @@ class _ProjectFeedbackScreenState extends State<ProjectFeedbackScreen> {
       listenWhen: (previous, current) => !previous.isFailed && current.isFailed,
       listener: (context, previous, current) {
         if (current.isFailed) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text('Error: ${current.message}')));
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('${context.l10n.errorLabel}: ${current.message}'),
+            ),
+          );
         }
       },
       child: Scaffold(
         appBar: AppNavBar(
-          title: 'Feedback',
+          title: context.l10n.feedbackTitle,
           leftIcon: AppIcons.arrowLeft,
           onPressedLeft: () {
             context.pop();
@@ -59,7 +62,7 @@ class _ProjectFeedbackScreenState extends State<ProjectFeedbackScreen> {
                       spacing: spacing20,
                       children: [
                         Text(
-                          'Your project is finished.',
+                          context.l10n.yourProjectIsFinishedLabel,
                           style: TextStyle(
                             fontSize: h2Size,
                             fontWeight: h2Weight,
@@ -69,7 +72,7 @@ class _ProjectFeedbackScreenState extends State<ProjectFeedbackScreen> {
                           ),
                         ),
                         Text(
-                          'How would you rate the prototyping kit?',
+                          context.l10n.howWouldYouRateThePrototypingKitLabel,
                           style: TextStyle(
                             fontSize: bMSize,
                             fontWeight: bMWeight,
@@ -100,7 +103,7 @@ class _ProjectFeedbackScreenState extends State<ProjectFeedbackScreen> {
                       spacing: spacing16,
                       children: [
                         Text(
-                          'What did you like about it?',
+                          context.l10n.whatDidYouLikeAboutItLabel,
                           style: TextStyle(
                             fontSize: h5Size,
                             fontWeight: h5Weight,
@@ -114,7 +117,7 @@ class _ProjectFeedbackScreenState extends State<ProjectFeedbackScreen> {
                           runSpacing: spacing8,
                           children: [
                             AppTag(
-                              text: 'EASY TO USE',
+                              text: context.l10n.easyToUseLabel,
                               onChanged: (value) {
                                 if (value) {
                                   _likes.value = {
@@ -129,7 +132,7 @@ class _ProjectFeedbackScreenState extends State<ProjectFeedbackScreen> {
                               },
                             ),
                             AppTag(
-                              text: 'COMPLETE',
+                              text: context.l10n.completeLabel,
                               onChanged: (value) {
                                 if (value) {
                                   _likes.value = {..._likes.value, 'COMPLETE'};
@@ -141,7 +144,7 @@ class _ProjectFeedbackScreenState extends State<ProjectFeedbackScreen> {
                               },
                             ),
                             AppTag(
-                              text: 'HELPFUL',
+                              text: context.l10n.helpfulLabel,
                               onChanged: (value) {
                                 if (value) {
                                   _likes.value = {..._likes.value, 'HELPFUL'};
@@ -153,7 +156,7 @@ class _ProjectFeedbackScreenState extends State<ProjectFeedbackScreen> {
                               },
                             ),
                             AppTag(
-                              text: 'CONVENIENT',
+                              text: context.l10n.convenientLabel,
                               onChanged: (value) {
                                 if (value) {
                                   _likes.value = {
@@ -168,7 +171,7 @@ class _ProjectFeedbackScreenState extends State<ProjectFeedbackScreen> {
                               },
                             ),
                             AppTag(
-                              text: 'LOOKS GOOD',
+                              text: context.l10n.looksGoodLabel,
                               onChanged: (value) {
                                 if (value) {
                                   _likes.value = {
@@ -192,7 +195,7 @@ class _ProjectFeedbackScreenState extends State<ProjectFeedbackScreen> {
                       spacing: spacing16,
                       children: [
                         Text(
-                          'What could be improved?',
+                          context.l10n.whatCouldBeImprovedLabel,
                           style: TextStyle(
                             fontSize: h5Size,
                             fontWeight: h5Weight,
@@ -206,7 +209,7 @@ class _ProjectFeedbackScreenState extends State<ProjectFeedbackScreen> {
                           runSpacing: spacing8,
                           children: [
                             AppTag(
-                              text: 'COULD HAVE MORE COMPONENTS',
+                              text: context.l10n.couldHaveMoreComponentsLabel,
                               onChanged: (value) {
                                 if (value) {
                                   _dislikes.value = {
@@ -224,7 +227,7 @@ class _ProjectFeedbackScreenState extends State<ProjectFeedbackScreen> {
                               },
                             ),
                             AppTag(
-                              text: 'COMPLEX',
+                              text: context.l10n.complexLabel,
                               onChanged: (value) {
                                 if (value) {
                                   _dislikes.value = {
@@ -239,7 +242,7 @@ class _ProjectFeedbackScreenState extends State<ProjectFeedbackScreen> {
                               },
                             ),
                             AppTag(
-                              text: 'NOT INTERACTIVE',
+                              text: context.l10n.notInteractiveLabel,
                               onChanged: (value) {
                                 if (value) {
                                   _dislikes.value = {
@@ -254,7 +257,7 @@ class _ProjectFeedbackScreenState extends State<ProjectFeedbackScreen> {
                               },
                             ),
                             AppTag(
-                              text: 'ONLY ENGLISH',
+                              text: context.l10n.onlyEnglishLabel,
                               onChanged: (value) {
                                 if (value) {
                                   _dislikes.value = {
@@ -278,7 +281,7 @@ class _ProjectFeedbackScreenState extends State<ProjectFeedbackScreen> {
                       spacing: spacing16,
                       children: [
                         Text(
-                          'Anything else?',
+                          context.l10n.anythingElseLabel,
                           style: TextStyle(
                             fontSize: h5Size,
                             fontWeight: h5Weight,
@@ -288,7 +291,7 @@ class _ProjectFeedbackScreenState extends State<ProjectFeedbackScreen> {
                           ),
                         ),
                         AppTextArea(
-                          placeholder: 'Tell us everything.',
+                          placeholder: context.l10n.tellUsEverythingLabel,
                           controller: _feedbackController,
                         ),
                       ],
@@ -301,7 +304,7 @@ class _ProjectFeedbackScreenState extends State<ProjectFeedbackScreen> {
                 child: SizedBox(
                   width: double.infinity,
                   child: AppButtonPrimary(
-                    text: 'Submit',
+                    text: context.l10n.submitLabel,
                     onPressed: () async {
                       await context.appController.submitProjectFeedback(
                         projectId: widget.projectId,
@@ -313,7 +316,9 @@ class _ProjectFeedbackScreenState extends State<ProjectFeedbackScreen> {
                       );
                       if (!context.mounted) return;
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Feedback submitted!')),
+                        SnackBar(
+                          content: Text(context.l10n.feedbackSubmittedLabel),
+                        ),
                       );
                     },
                   ),

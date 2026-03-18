@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:test_app/l10n/locales/l10n.dart';
 import 'package:test_app/src/core/widgets/controller_listener.dart';
 import 'package:test_app/src/features/app/app_scope.dart';
 import 'package:test_app/src/features/themes/app_theme.dart';
@@ -49,9 +50,11 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       },
       listener: (context, previous, current) {
         if (current.isFailed) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text('Error: ${current.message}')));
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('${context.l10n.errorLabel}: ${current.message}'),
+            ),
+          );
         } else if (current.isAuthorized && !previous.isAuthorized) {
           context.go(loginPath);
         }
@@ -73,7 +76,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                     spacing: spacing24,
                     children: [
                       Text(
-                        'Reset password',
+                        context.l10n.resetPasswordLabel,
                         style: TextStyle(
                           fontSize: h1Size,
                           fontWeight: h1Weight,
@@ -83,10 +86,11 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                         ),
                       ),
                       AppTextField(
-                        placeholder: 'Email Address',
+                        placeholder: context.l10n.emailAddressLabel,
                         controller: _emailController,
                         keyboardType: TextInputType.emailAddress,
                         validator: getValidatorForKeyboardType(
+                          context,
                           TextInputType.emailAddress,
                         ),
                         onChanged: (_) => _validateForm(),
@@ -104,7 +108,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                                           .sendPasswordResetEmail(email);
                                     }
                                   : null,
-                              text: 'Send Password Reset Email',
+                              text: context.l10n.sendPasswordResetEmailLabel,
                             );
                           },
                         ),
@@ -113,7 +117,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                       Center(
                         child: AppButtonTertiary(
                           onPressed: () => context.go(loginPath),
-                          text: 'Back to Login',
+                          text: context.l10n.backToLoginLabel,
                         ),
                       ),
                     ],

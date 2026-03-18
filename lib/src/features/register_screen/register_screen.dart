@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:test_app/l10n/locales/l10n.dart';
 import 'package:test_app/src/features/app/app_scope.dart';
 import 'package:test_app/src/core/widgets/controller_listener.dart';
 import 'package:test_app/src/features/themes/app_theme.dart';
@@ -62,9 +63,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
           return !previous.isFailed && current.isFailed;
         },
         listener: (context, previous, current) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text('Error: ${current.message}')));
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('${context.l10n.errorLabel}: ${current.message}'),
+            ),
+          );
         },
         child: Scaffold(
           body: SafeArea(
@@ -84,7 +87,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           spacing: spacing8,
                           children: [
                             Text(
-                              'Sign up!',
+                              context.l10n.signUpLabel,
                               style: TextStyle(
                                 fontSize: h3Size,
                                 fontWeight: h3Weight,
@@ -94,7 +97,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               ),
                             ),
                             Text(
-                              'Create an account to get started',
+                              context.l10n.createAnAccountLabel,
                               style: TextStyle(
                                 fontSize: bSSize,
                                 fontWeight: bSWeight,
@@ -106,28 +109,31 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           ],
                         ),
                         AppTextField(
-                          title: 'Name',
+                          title: context.l10n.nameLabel,
                           controller: _nameController,
                           keyboardType: TextInputType.name,
                           validator: getValidatorForKeyboardType(
+                            context,
                             TextInputType.name,
                           ),
                           onChanged: (_) => _validateForm(),
                         ),
                         AppTextField(
-                          title: 'Email Address',
+                          title: context.l10n.emailAddressLabel,
                           controller: _emailController,
                           keyboardType: TextInputType.emailAddress,
                           validator: getValidatorForKeyboardType(
+                            context,
                             TextInputType.emailAddress,
                           ),
                           onChanged: (_) => _validateForm(),
                         ),
                         AppTextField(
-                          title: 'Password',
+                          title: context.l10n.passwordLabel,
                           controller: _passwordController,
                           keyboardType: TextInputType.visiblePassword,
                           validator: getValidatorForKeyboardType(
+                            context,
                             TextInputType.visiblePassword,
                           ),
                           obscureText: true,
@@ -135,27 +141,37 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           onChanged: (_) => _validateForm(),
                         ),
                         AppTextField(
-                          title: 'Confirm Password',
+                          title: context.l10n.confirmPasswordLabel,
                           controller: _confirmPasswordController,
                           keyboardType: TextInputType.visiblePassword,
                           validator: (value) {
                             if (value == null || value.isEmpty) {
-                              return 'Please confirm your password';
+                              return context
+                                  .l10n
+                                  .pleaseConfirmYourPasswordMessage;
                             }
                             if (value != _passwordController.text) {
-                              return 'Passwords do not match';
+                              return context.l10n.passwordsDoNotMatchMessage;
                             }
                             if (value.length < 8) {
-                              return 'Password must be at least 8 characters';
+                              return context
+                                  .l10n
+                                  .passwordMustBeAtLeast8CharactersMessage;
                             }
                             if (!RegExp(r'[A-Z]').hasMatch(value)) {
-                              return 'Password must contain at least one uppercase letter';
+                              return context
+                                  .l10n
+                                  .passwordMustContainAtLeastOneUppercaseLetterMessage;
                             }
                             if (!RegExp(r'[a-z]').hasMatch(value)) {
-                              return 'Password must contain at least one lowercase letter';
+                              return context
+                                  .l10n
+                                  .passwordMustContainAtLeastOneLowercaseLetterMessage;
                             }
                             if (!RegExp(r'[0-9]').hasMatch(value)) {
-                              return 'Password must contain at least one number';
+                              return context
+                                  .l10n
+                                  .passwordMustContainAtLeastOneNumberMessage;
                             }
                             return null;
                           },
@@ -175,8 +191,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                   },
                                 ),
                                 Expanded(
-                                  child: const Text(
-                                    'I\'ve read and agree with the Terms and Conditions and the Privacy Policy.',
+                                  child: Text(
+                                    context
+                                        .l10n
+                                        .iveReadAndAgreeWithTermsAndConditionsLabel,
                                   ),
                                 ),
                               ],
@@ -189,7 +207,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             valueListenable: _isFormValid,
                             builder: (context, isValid, _) {
                               return AppButtonPrimary(
-                                text: 'Register',
+                                text: context.l10n.registerLabel,
                                 onPressed: isValid
                                     ? () async {
                                         final name = _nameController.text;
@@ -215,7 +233,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           spacing: spacing8,
                           children: [
                             Text(
-                              'Already have an account?',
+                              context.l10n.alreadyHaveAnAccountLabel,
                               style: TextStyle(
                                 fontSize: bMSize,
                                 fontWeight: bMWeight,
@@ -228,7 +246,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               onPressed: () {
                                 context.go(loginPath);
                               },
-                              text: 'Log in',
+                              text: context.l10n.loginLabel,
                             ),
                           ],
                         ),

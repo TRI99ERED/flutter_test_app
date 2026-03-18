@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:test_app/l10n/locales/l10n.dart';
 import 'package:test_app/src/features/app/app_scope.dart';
 import 'package:test_app/src/features/app/data/models/user_model.dart';
 import 'package:test_app/src/features/themes/app_theme.dart';
@@ -66,9 +67,9 @@ class _UserProfileState extends State<UserProfile> {
     return Scaffold(
       appBar: AppNavBar(
         title: widget.mode == UserProfileMode.view
-            ? 'User Profile'
-            : 'Edit Profile',
-        leftText: 'Close',
+            ? context.l10n.userProfileTitle
+            : context.l10n.editProfileTitle,
+        leftText: context.l10n.closeLabel,
         onPressedLeft: () => context.pop(),
       ),
       body: Padding(
@@ -88,7 +89,7 @@ class _UserProfileState extends State<UserProfile> {
                   return SizedBox(
                     width: double.infinity,
                     child: AppButtonPrimary(
-                      text: 'Save',
+                      text: context.l10n.saveLabel,
                       onPressed: value
                           ? () async {
                               await context.appController.updateUser(
@@ -109,7 +110,7 @@ class _UserProfileState extends State<UserProfile> {
             SizedBox(
               width: double.infinity,
               child: AppButtonPrimary(
-                text: 'Close',
+                text: context.l10n.closeLabel,
                 onPressed: () {
                   context.pop();
                 },
@@ -133,7 +134,7 @@ class _UserProfileState extends State<UserProfile> {
           spacing: spacing8,
           children: [
             Text(
-              'Name:',
+              context.l10n.nameLabel,
               style: TextStyle(
                 fontSize: h3Size,
                 fontWeight: h3Weight,
@@ -158,7 +159,7 @@ class _UserProfileState extends State<UserProfile> {
           spacing: spacing8,
           children: [
             Text(
-              'Handle:',
+              context.l10n.handleLabel,
               style: TextStyle(
                 fontSize: h3Size,
                 fontWeight: h3Weight,
@@ -195,7 +196,7 @@ class _UserProfileState extends State<UserProfile> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               AppButtonPrimary(
-                text: 'Pick Avatar',
+                text: context.l10n.pickAnAvatarLabel,
                 onPressed: () async {
                   await context.appController.uploadUserAvatar();
                 },
@@ -204,7 +205,7 @@ class _UserProfileState extends State<UserProfile> {
             ],
           ),
           Text(
-            'Name:',
+            context.l10n.nameLabel,
             style: TextStyle(
               fontSize: h3Size,
               fontWeight: h3Weight,
@@ -214,18 +215,13 @@ class _UserProfileState extends State<UserProfile> {
             ),
           ),
           AppTextField(
-            placeholder: 'Enter your name',
+            placeholder: context.l10n.enterYourNameLabel,
             controller: _nameController,
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'Name cannot be empty';
-              }
-              return null;
-            },
+            validator: getValidatorForKeyboardType(context, TextInputType.name),
             onChanged: (_) => _validateForm(),
           ),
           Text(
-            'Handle:',
+            context.l10n.handleLabel,
             style: TextStyle(
               fontSize: h3Size,
               fontWeight: h3Weight,
@@ -243,23 +239,26 @@ class _UserProfileState extends State<UserProfile> {
               if (asyncSnapshot.hasError) {
                 return Center(
                   child: ErrorState(
-                    message: 'Error loading users: ${asyncSnapshot.error}',
+                    message:
+                        '${context.l10n.errorLoadingUsersMessage}: ${asyncSnapshot.error}',
                   ),
                 );
               }
               final users = asyncSnapshot.data ?? [];
               return AppTextField(
-                placeholder: 'Enter your handle',
+                placeholder: context.l10n.enterYourHandleLabel,
                 controller: _handleController,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return null;
                   }
                   if (value.contains(' ')) {
-                    return 'Handle cannot contain spaces';
+                    return context.l10n.handleCannotContainSpacesMessage;
                   }
                   if (!RegExp(r'^[a-zA-Z0-9_]+$').hasMatch(value)) {
-                    return 'Handle can only contain letters, numbers, and underscores';
+                    return context
+                        .l10n
+                        .handleCanOnlyContainLettersNumbersAndUnderscoresMessage;
                   }
                   final isHandleTaken = users.any(
                     (user) =>
@@ -268,7 +267,7 @@ class _UserProfileState extends State<UserProfile> {
                         user.id != widget.user.id,
                   );
                   if (isHandleTaken) {
-                    return 'Handle is already taken';
+                    return context.l10n.handleIsAlreadyTakenMessage;
                   }
                   return null;
                 },

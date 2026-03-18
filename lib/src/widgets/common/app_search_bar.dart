@@ -1,6 +1,7 @@
 ﻿import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:test_app/l10n/locales/l10n.dart';
 import 'package:test_app/src/core/resources/app_icons.dart';
 import 'package:test_app/src/features/themes/app_theme.dart';
 import 'package:test_app/src/features/themes/styles.dart';
@@ -18,7 +19,7 @@ class AppSearchBar extends StatefulWidget {
   const AppSearchBar({
     super.key,
     this.text,
-    this.placeholder = 'Search',
+    required this.placeholder,
     this.recentSearches,
     this.onChanged,
     this.onSubmitted,
@@ -183,7 +184,7 @@ class _AppSearchBarState extends State<AppSearchBar> {
                       Padding(
                         padding: const EdgeInsets.all(spacing16),
                         child: Text(
-                          'RECENT SEARCHES',
+                          context.l10n.recentSearchesLabel,
                           style: TextStyle(
                             fontSize: cMSize,
                             fontWeight: cMWeight,
@@ -202,7 +203,7 @@ class _AppSearchBarState extends State<AppSearchBar> {
                                   horizontal: spacing16,
                                 ),
                                 child: Text(
-                                  'No recent searches found',
+                                  context.l10n.noRecentSearchesFoundLabel,
                                   style: TextStyle(
                                     fontSize: bSSize,
                                     fontWeight: bSWeight,

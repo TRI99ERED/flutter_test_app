@@ -43,7 +43,7 @@ class AppCheckbox extends StatelessWidget {
         side: BorderSide(
           color:
               Theme.of(context).extension<AppTheme>()?.backgroundWeakestColor ??
-              Color(0xC5C6CCFF),
+              Color(0xFFC5C6CC),
           width: 1.5,
         ),
       ),

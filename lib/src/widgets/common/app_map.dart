@@ -269,7 +269,6 @@ class _AppMapState extends State<AppMap> {
           markerId: const MarkerId('user_location'),
           position: _userLocation!,
           icon: _locationMarkerIcon!,
-          infoWindow: const InfoWindow(title: 'My Location'),
         ),
       );
     }

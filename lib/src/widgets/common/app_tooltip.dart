@@ -110,7 +110,7 @@ class _TooltipTipPainter extends CustomPainter {
     final paint = Paint()
       ..color =
           Theme.of(context).extension<AppTheme>()?.foregroundStrongColor ??
-          const Color(0xF8F9FEFF);
+          const Color(0xFFF8F9FE);
     final path = Path();
 
     const triangleWidth = 20.0;

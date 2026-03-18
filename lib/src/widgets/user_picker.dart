@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:test_app/l10n/locales/l10n.dart';
 import 'package:test_app/src/features/app/app_controller/app_controller.dart';
 import 'package:test_app/src/features/app/app_scope.dart';
 import 'package:test_app/src/features/app/data/models/user_model.dart';
@@ -103,16 +104,9 @@ class _UserPickerState extends State<UserPicker> {
 
   String get _title {
     if ((widget.flags & UserPickerFlag.friendsOnly.value) != 0) {
-      return 'Select a friend';
+      return context.l10n.selectAFriendLabel;
     }
-    return 'Select a user';
-  }
-
-  String get _errorLabel {
-    if ((widget.flags & UserPickerFlag.friendsOnly.value) != 0) {
-      return 'friends';
-    }
-    return 'users';
+    return context.l10n.selectAUserLabel;
   }
 
   @override
@@ -126,7 +120,7 @@ class _UserPickerState extends State<UserPicker> {
     return Scaffold(
       appBar: AppNavBar(
         title: _title,
-        leftText: 'Cancel',
+        leftText: context.l10n.cancelLabel,
         onPressedLeft: () => context.pop(),
       ),
       body: Padding(
@@ -135,6 +129,7 @@ class _UserPickerState extends State<UserPicker> {
           spacing: spacing8,
           children: [
             AppSearchBar(
+              placeholder: context.l10n.searchLabel,
               onChanged: (value) {
                 _searchQuery.value = value;
               },
@@ -154,7 +149,11 @@ class _UserPickerState extends State<UserPicker> {
 
                   if (filteredUsers.isEmpty) {
                     return Center(
-                      child: Text('No $_errorLabel match your search'),
+                      child: Text(switch (widget.flags &
+                          UserPickerFlag.friendsOnly.value) {
+                        0 => context.l10n.noUsersMatchYourSearchLabel,
+                        _ => context.l10n.noFriendsMatchYourSearchLabel,
+                      }),
                     );
                   }
 
@@ -178,7 +177,7 @@ class _UserPickerState extends State<UserPicker> {
               width: double.infinity,
               child: AppButtonPrimary(
                 onPressed: () => context.pop(),
-                text: 'Cancel',
+                text: context.l10n.cancelLabel,
               ),
             ),
           ],

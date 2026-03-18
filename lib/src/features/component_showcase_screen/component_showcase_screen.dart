@@ -762,6 +762,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: SizedBox(
                   width: 311,
                   child: AppSearchBar(
+                    placeholder: 'Search',
                     onChanged: (value) => debugPrint('Search changed: $value'),
                   ),
                 ),
@@ -772,6 +773,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   width: 311,
                   child: AppSearchBar(
                     text: 'Text',
+                    placeholder: 'Search',
                     onChanged: (value) => debugPrint('Search changed: $value'),
                   ),
                 ),

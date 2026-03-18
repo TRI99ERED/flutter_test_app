@@ -1,5 +1,6 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:test_app/l10n/locales/l10n.dart';
 import 'package:test_app/src/core/resources/app_icons.dart';
 import 'package:test_app/src/core/widgets/controller_listener.dart';
 import 'package:test_app/src/features/app/app_scope.dart';
@@ -45,9 +46,11 @@ class _HomeScreenState extends State<HomeScreen> {
       },
       listener: (context, previous, current) {
         if (current.isFailed) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text('Error: ${current.message}')));
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('${context.l10n.errorLabel}: ${current.message}'),
+            ),
+          );
         } else if (!current.isAuthorized && previous.isAuthorized) {
           context.go(loginPath);
         }
@@ -66,7 +69,12 @@ class _HomeScreenState extends State<HomeScreen> {
             bottomNavigationBar: AppTapBar(
               tabCount: 4,
               selectedIndex: index,
-              tabTitles: ['Chats', 'Friends', 'Projects', 'Settings'],
+              tabTitles: [
+                context.l10n.chatsTitle,
+                context.l10n.friendsTitle,
+                context.l10n.projectsTitle,
+                context.l10n.settingsTitle,
+              ],
               tabIcons: [
                 AppIcons.chat,
                 AppIcons.profile,

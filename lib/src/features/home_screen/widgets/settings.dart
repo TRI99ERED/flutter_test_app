@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:test_app/l10n/locales/l10n.dart';
 import 'package:test_app/src/core/resources/app_icons.dart';
 import 'package:test_app/src/features/app/app_scope.dart';
 import 'package:test_app/src/features/app/data/models/user_model.dart';
@@ -89,7 +90,7 @@ class Settings extends StatelessWidget {
           ),
           Center(
             child: AppListItem(
-              title: 'Saved messages',
+              title: context.l10n.savedMessagesTitle,
               control: AppListItemControl.smallButton,
               onPressed: () {
                 context.push(savedMessagesPath);
@@ -99,7 +100,7 @@ class Settings extends StatelessWidget {
           AppDivider(),
           Center(
             child: AppListItem(
-              title: 'Notifications',
+              title: context.l10n.notificationsTitle,
               control: AppListItemControl.smallButton,
               onPressed: () {
                 context.push(notificationsPath);
@@ -109,7 +110,7 @@ class Settings extends StatelessWidget {
           AppDivider(),
           Center(
             child: AppListItem(
-              title: 'Appearance',
+              title: context.l10n.appearanceTitle,
               control: AppListItemControl.smallButton,
               onPressed: () {
                 context.push(appearancePath);
@@ -119,7 +120,7 @@ class Settings extends StatelessWidget {
           AppDivider(),
           Center(
             child: AppListItem(
-              title: 'Language',
+              title: context.l10n.languageTitle,
               control: AppListItemControl.smallButton,
               onPressed: () {},
             ),
@@ -127,16 +128,15 @@ class Settings extends StatelessWidget {
           AppDivider(),
           Center(
             child: AppListItem(
-              title: 'Log out',
+              title: context.l10n.logOutLabel,
               control: AppListItemControl.smallButton,
               onPressed: () {
                 AppDialog2.show(
                   context: context,
-                  title: 'Log out',
-                  description:
-                      'Are you sure you want to log out? You\'ll need to login again to use the app.',
-                  buttonText1: 'Cancel',
-                  buttonText2: 'Log out',
+                  title: context.l10n.logOutLabel,
+                  description: context.l10n.areYouSureYouWantToLogOutLabel,
+                  buttonText1: context.l10n.cancelLabel,
+                  buttonText2: context.l10n.logOutLabel,
                   onPressed1: () => context.pop(),
                   onPressed2: () {
                     context.pop();
@@ -161,6 +161,6 @@ class SettingsAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(child: AppNavBar(title: 'Settings'));
+    return SafeArea(child: AppNavBar(title: context.l10n.settingsTitle));
   }
 }

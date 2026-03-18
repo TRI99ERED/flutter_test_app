@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:test_app/l10n/locales/l10n.dart';
 import 'package:test_app/src/features/app/app_scope.dart';
 import 'package:test_app/src/features/app/data/models/chat_model.dart';
 import 'package:test_app/src/features/app/data/models/user_model.dart';
@@ -73,10 +74,10 @@ class _ChatWizardState extends State<ChatWizard> {
     return Scaffold(
       appBar: AppNavBar(
         title: switch (widget.mode) {
-          ChatWizardMode.create => 'Create a chat',
-          ChatWizardMode.edit => 'Edit chat',
+          ChatWizardMode.create => context.l10n.createAChatTitle,
+          ChatWizardMode.edit => context.l10n.editChatTitle,
         },
-        leftText: 'Cancel',
+        leftText: context.l10n.cancelLabel,
         onPressedLeft: () => context.pop(),
       ),
       body: Padding(
@@ -94,7 +95,7 @@ class _ChatWizardState extends State<ChatWizard> {
                       Align(
                         alignment: Alignment.centerRight,
                         child: AppButtonPrimary(
-                          text: 'Add a member',
+                          text: context.l10n.addAParticipantLabel,
                           onPressed: () {
                             UserPicker.pickUser(
                               context,
@@ -156,7 +157,7 @@ class _ChatWizardState extends State<ChatWizard> {
                                                         as AuthorizedUser)
                                                     .id
                                             ? null
-                                            : 'Remove',
+                                            : context.l10n.removeLabel,
                                         onPressed:
                                             _participants.value[index] ==
                                                 (context.appState.user
@@ -182,8 +183,8 @@ class _ChatWizardState extends State<ChatWizard> {
                       if (widget.mode == ChatWizardMode.edit &&
                           widget.chatToEdit! is GroupChat)
                         AppTextField(
-                          title: 'Chat name',
-                          placeholder: 'Enter chat name',
+                          title: context.l10n.chatNameLabel,
+                          placeholder: context.l10n.enterChatNameLabel,
                           controller: _nameController,
                           keyboardType: TextInputType.name,
                         ),
@@ -196,7 +197,7 @@ class _ChatWizardState extends State<ChatWizard> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             AppButtonPrimary(
-                              text: 'Pick an avatar',
+                              text: context.l10n.pickAnAvatarLabel,
                               onPressed: () async {
                                 await context.appController
                                     .uploadGroupChatAvatar(
@@ -228,7 +229,7 @@ class _ChatWizardState extends State<ChatWizard> {
             SizedBox(
               width: double.infinity,
               child: AppButtonPrimary(
-                text: 'Save',
+                text: context.l10n.saveLabel,
                 onPressed: switch (widget.mode) {
                   ChatWizardMode.create => () async {
                     final user = context.appState.user as AuthorizedUser;
@@ -299,7 +300,7 @@ class _ChatWizardState extends State<ChatWizard> {
               width: double.infinity,
               child: AppButtonPrimary(
                 onPressed: () => context.pop(),
-                text: 'Cancel',
+                text: context.l10n.cancelLabel,
               ),
             ),
           ],

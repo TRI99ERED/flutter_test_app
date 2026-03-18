@@ -1,6 +1,7 @@
 import 'package:async/async.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:test_app/l10n/locales/l10n.dart';
 import 'package:test_app/src/core/resources/app_icons.dart';
 import 'package:test_app/src/core/widgets/controller_listener.dart';
 import 'package:test_app/src/features/app/app_scope.dart';
@@ -39,13 +40,15 @@ class _SavedMessagesScreenState extends State<SavedMessagesScreen> {
         return false;
       },
       listener: (context, previous, current) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Error: ${current.message}')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${context.l10n.errorLabel}: ${current.message}'),
+          ),
+        );
       },
       child: Scaffold(
         appBar: AppNavBar(
-          title: 'Saved Messages',
+          title: context.l10n.savedMessagesTitle,
           leftIcon: AppIcons.arrowLeft,
           onPressedLeft: () {
             context.pop();
@@ -61,8 +64,8 @@ class _SavedMessagesScreenState extends State<SavedMessagesScreen> {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return const AppLoader();
                     } else if (snapshot.hasError) {
-                      return const ErrorState(
-                        message: 'Failed to load saved messages',
+                      return ErrorState(
+                        message: context.l10n.failedToLoadSavedMessagesLabel,
                       );
                     } else if (snapshot.hasData) {
                       final messages =
@@ -70,9 +73,10 @@ class _SavedMessagesScreenState extends State<SavedMessagesScreen> {
                       final users =
                           (snapshot.data?[1] ?? []) as List<AuthorizedUser>;
                       if (messages.isEmpty) {
-                        return const EmptyState(
-                          title: 'No saved messages',
-                          body: 'Your saved messages will appear here.',
+                        return EmptyState(
+                          title: context.l10n.noSavedMessagesLabel,
+                          body:
+                              context.l10n.yourSavedMessagesWillAppearHereLabel,
                         );
                       }
                       final messagesWithSenderNames = <SavedMessage, String>{};
@@ -82,7 +86,7 @@ class _SavedMessagesScreenState extends State<SavedMessagesScreen> {
                           orElse: () {
                             return AuthorizedUser(
                               id: message.senderId,
-                              name: 'Unknown',
+                              name: context.l10n.unknownChatterLabel,
                               email: '',
                               handle: '',
                               avatarUrl: '',
@@ -148,9 +152,9 @@ class _SavedMessagesScreenState extends State<SavedMessagesScreen> {
                         },
                       );
                     } else {
-                      return const EmptyState(
-                        title: 'No saved messages',
-                        body: 'Your saved messages will appear here.',
+                      return EmptyState(
+                        title: context.l10n.noSavedMessagesLabel,
+                        body: context.l10n.yourSavedMessagesWillAppearHereLabel,
                       );
                     }
                   },
@@ -188,14 +192,14 @@ class _SavedMessagesScreenState extends State<SavedMessagesScreen> {
             if (message.chatId.isNotEmpty)
               switch (message.chatType) {
                 ChatType.direct => AppListItem(
-                  title: 'Go to direct chat',
+                  title: context.l10n.goToDirectChatLabel,
                   onPressed: () {
                     context.pop();
                     context.push('/chats/direct/${message.chatId}');
                   },
                 ),
                 ChatType.group => AppListItem(
-                  title: 'Go to group chat',
+                  title: context.l10n.goToGroupChatLabel,
                   onPressed: () {
                     context.pop();
                     context.push('/chats/group/${message.chatId}');
@@ -203,7 +207,7 @@ class _SavedMessagesScreenState extends State<SavedMessagesScreen> {
                 ),
               },
             AppListItem(
-              title: 'Delete saved message',
+              title: context.l10n.deleteSavedMessageLabel,
               onPressed: () {
                 context.appController.deleteSavedMessage(message.id);
                 context.pop();

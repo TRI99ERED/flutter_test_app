@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:test_app/l10n/locales/l10n.dart';
 import 'package:test_app/src/core/resources/app_icons.dart';
 import 'package:test_app/src/features/app/app_scope.dart';
 import 'package:test_app/src/features/themes/app_theme.dart';
@@ -54,9 +55,11 @@ class _LoginScreenState extends State<LoginScreen> {
       },
       listener: (context, previous, current) {
         if (current.isFailed) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text('Error: ${current.message}')));
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('${context.l10n.errorLabel}: ${current.message}'),
+            ),
+          );
         } else if (current.isAuthorized && !previous.isAuthorized) {
           context.go(homePath);
         }
@@ -79,7 +82,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     spacing: spacing24,
                     children: [
                       Text(
-                        'Welcome!',
+                        context.l10n.welcomeLabel,
                         style: TextStyle(
                           fontSize: h1Size,
                           fontWeight: h1Weight,
@@ -89,19 +92,21 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                       AppTextField(
-                        placeholder: 'Email Address',
+                        placeholder: context.l10n.emailAddressLabel,
                         controller: _emailController,
                         keyboardType: TextInputType.emailAddress,
                         validator: getValidatorForKeyboardType(
+                          context,
                           TextInputType.emailAddress,
                         ),
                         onChanged: (_) => _validateForm(),
                       ),
                       AppTextField(
-                        placeholder: 'Password',
+                        placeholder: context.l10n.passwordLabel,
                         controller: _passwordController,
                         keyboardType: TextInputType.visiblePassword,
                         validator: getValidatorForKeyboardType(
+                          context,
                           TextInputType.visiblePassword,
                         ),
                         obscureText: true,
@@ -110,7 +115,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       AppButtonTertiary(
                         onPressed: () => context.go(forgotPasswordPath),
-                        text: 'Forgot Password?',
+                        text: context.l10n.forgotPasswordLabel,
                       ),
                       SizedBox(
                         width: double.infinity,
@@ -128,7 +133,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                       );
                                     }
                                   : null,
-                              text: 'Login',
+                              text: context.l10n.loginLabel,
                             );
                           },
                         ),
@@ -136,15 +141,15 @@ class _LoginScreenState extends State<LoginScreen> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Text('Not a member?'),
+                          Text(context.l10n.notAMemberLabel),
                           AppButtonTertiary(
                             onPressed: () => context.go(registerPath),
-                            text: 'Register now',
+                            text: context.l10n.registerNowLabel,
                           ),
                         ],
                       ),
                       AppDivider(),
-                      Center(child: Text('Or continue with')),
+                      Center(child: Text(context.l10n.orContinueWithLabel)),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         spacing: spacing12,
@@ -155,7 +160,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
                                     content: Text(
-                                      'Google Sign-In is not available on web.',
+                                      context
+                                          .l10n
+                                          .googleSignInIsNotAvailableOnWebLabel,
                                     ),
                                   ),
                                 );
@@ -184,7 +191,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
                                   content: Text(
-                                    'Apple Sign-In not implemented',
+                                    context.l10n.appleSignInNotImplementedLabel,
                                   ),
                                 ),
                               );
@@ -208,7 +215,9 @@ class _LoginScreenState extends State<LoginScreen> {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
                                   content: Text(
-                                    'Facebook Sign-In not implemented',
+                                    context
+                                        .l10n
+                                        .facebookSignInNotImplementedLabel,
                                   ),
                                 ),
                               );

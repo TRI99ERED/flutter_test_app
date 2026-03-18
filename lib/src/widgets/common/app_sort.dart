@@ -1,5 +1,6 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:test_app/l10n/locales/l10n.dart';
 import 'package:test_app/src/core/resources/app_icons.dart';
 import 'package:test_app/src/features/themes/app_theme.dart';
 import 'package:test_app/src/widgets/common/app_accordion.dart';
@@ -53,7 +54,7 @@ class AppSort extends StatelessWidget {
             ),
           if (showIcon) SizedBox(width: spacing8),
           Text(
-            'Sort',
+            context.l10n.sortTitle,
             style: TextStyle(
               fontSize: bSSize,
               fontWeight: bSWeight,
@@ -134,9 +135,9 @@ class _AppSortMenuState extends State<AppSortMenu> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppNavBar(
-        title: 'Sort',
-        leftText: 'Cancel',
-        rightText: 'Default',
+        title: context.l10n.sortTitle,
+        leftText: context.l10n.cancelLabel,
+        rightText: context.l10n.defaultLabel,
         onPressedLeft: () {
           context.pop();
         },
@@ -159,7 +160,7 @@ class _AppSortMenuState extends State<AppSortMenu> {
               child: ListView(
                 children: [
                   Text(
-                    'Sort Order',
+                    context.l10n.sortOrderLabel,
                     style: TextStyle(
                       fontSize: bMSize,
                       fontWeight: bMWeight,
@@ -177,7 +178,7 @@ class _AppSortMenuState extends State<AppSortMenu> {
                         runSpacing: spacing8,
                         children: [
                           AppTag(
-                            text: 'DESCENDING',
+                            text: context.l10n.descendingLabel,
                             isSelected:
                                 _internalSortOrder.value ==
                                 SortOrder.descending,
@@ -188,7 +189,7 @@ class _AppSortMenuState extends State<AppSortMenu> {
                             },
                           ),
                           AppTag(
-                            text: 'ASCENDING',
+                            text: context.l10n.ascendingLabel,
                             isSelected:
                                 _internalSortOrder.value == SortOrder.ascending,
                             onChanged: (value) {
@@ -207,7 +208,7 @@ class _AppSortMenuState extends State<AppSortMenu> {
                     valueListenable: _internalSortOption,
                     builder: (context, value, child) {
                       return AppAccordion(
-                        title: 'Sort By',
+                        title: context.l10n.sortByLabel,
                         children: [
                           Wrap(
                             spacing: spacing8,
@@ -243,7 +244,7 @@ class _AppSortMenuState extends State<AppSortMenu> {
               child: SizedBox(
                 width: double.infinity,
                 child: AppButtonPrimary(
-                  text: 'Apply Sort',
+                  text: context.l10n.applySortLabel,
                   onPressed: () {
                     widget.sortOption.value = _internalSortOption.value;
                     widget.sortOrder.value = _internalSortOrder.value;

@@ -185,11 +185,11 @@ class _AppOtpCodeFieldState extends State<AppOtpCodeField> {
               ? Theme.of(
                       context,
                     ).extension<AppTheme>()?.highlightDarkestColor ??
-                    const Color(0x006FFDFF)
+                    const Color(0xFF006FFD)
               : Theme.of(
                       context,
                     ).extension<AppTheme>()?.backgroundWeakestColor ??
-                    const Color(0xC5C6CCFF),
+                    const Color(0xFFC5C6CC),
           width: 2,
         ),
       ),

@@ -1,32 +1,8 @@
 ﻿import 'package:flutter/material.dart';
+import 'package:test_app/l10n/locales/l10n.dart';
 import 'package:test_app/src/core/resources/app_icons.dart';
 import 'package:test_app/src/features/themes/app_theme.dart';
 import 'package:test_app/src/features/themes/styles.dart';
-
-const List<String> _monthLabels = <String>[
-  'Jan',
-  'Feb',
-  'Mar',
-  'Apr',
-  'May',
-  'Jun',
-  'Jul',
-  'Aug',
-  'Sep',
-  'Oct',
-  'Nov',
-  'Dec',
-];
-
-const List<String> _weekdayLabels = <String>[
-  'MO',
-  'TU',
-  'WE',
-  'TH',
-  'FR',
-  'SA',
-  'SU',
-];
 
 class AppCalendarMonthly extends StatefulWidget {
   final DateTime? initialDate;
@@ -47,6 +23,31 @@ class AppCalendarMonthly extends StatefulWidget {
 class _AppCalendarMonthlyState extends State<AppCalendarMonthly> {
   late final ValueNotifier<DateTime?> _selectedDate;
   late final ValueNotifier<DateTime> _displayedMonth;
+
+  late final List<String> _monthLabels = <String>[
+    context.l10n.janLabel,
+    context.l10n.febLabel,
+    context.l10n.marLabel,
+    context.l10n.aprLabel,
+    context.l10n.mayLabel,
+    context.l10n.junLabel,
+    context.l10n.julLabel,
+    context.l10n.augLabel,
+    context.l10n.sepLabel,
+    context.l10n.octLabel,
+    context.l10n.novLabel,
+    context.l10n.decLabel,
+  ];
+
+  late final List<String> _weekdayLabels = <String>[
+    context.l10n.moLabel,
+    context.l10n.tuLabel,
+    context.l10n.weLabel,
+    context.l10n.thLabel,
+    context.l10n.frLabel,
+    context.l10n.saLabel,
+    context.l10n.suLabel,
+  ];
 
   @override
   void initState() {
@@ -321,6 +322,16 @@ class AppCalendarWeekly extends StatelessWidget {
   Widget build(BuildContext context) {
     final referenceDate = initialDate ?? DateTime.now();
 
+    late final List<String> weekdayLabels = <String>[
+      context.l10n.moLabel,
+      context.l10n.tuLabel,
+      context.l10n.weLabel,
+      context.l10n.thLabel,
+      context.l10n.frLabel,
+      context.l10n.saLabel,
+      context.l10n.suLabel,
+    ];
+
     final monday = referenceDate.subtract(
       Duration(days: referenceDate.weekday - 1),
     );
@@ -387,7 +398,7 @@ class AppCalendarWeekly extends StatelessWidget {
                 child: Column(
                   children: [
                     Text(
-                      _weekdayLabels[index],
+                      weekdayLabels[index],
                       style: const TextStyle(
                         fontSize: cMSize,
                         fontWeight: cMWeight,

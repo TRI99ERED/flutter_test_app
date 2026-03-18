@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:test_app/firebase_options.dart';
+import 'package:test_app/l10n/locales/app_localizations.dart';
+import 'package:test_app/l10n/locales/l10n.dart';
 import 'package:test_app/src/features/app/app_controller/app_controller.dart';
 import 'package:test_app/src/features/app/app_scope.dart';
 import 'package:test_app/src/features/themes/app_theme.dart';
@@ -82,10 +84,12 @@ class _AppState extends State<App> {
       valueListenable: _themeMode,
       builder: (context, value, child) {
         return MaterialApp.router(
-          title: 'Test App',
+          title: context.l10n.appTitle,
           theme: _lightTheme,
           darkTheme: _darkTheme,
           themeMode: _themeMode.value,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           routerConfig: _router,
           builder: (context, child) => AppScope(
             controller: _appController,

@@ -1,6 +1,7 @@
 import 'package:async/async.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:test_app/l10n/locales/l10n.dart';
 import 'package:test_app/src/core/resources/app_icons.dart';
 import 'package:test_app/src/core/widgets/controller_listener.dart';
 import 'package:test_app/src/features/app/app_controller/app_controller.dart';
@@ -73,6 +74,7 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   Future<Widget> _buildNavBar(BuildContext context, Chat chat) async {
+    final l10n = context.l10n;
     final resolvedChatName = await context.appController
         .watchAllUsers()
         .first
@@ -82,14 +84,17 @@ class _ChatScreenState extends State<ChatScreen> {
               (id) => id != (context.appState.user as AuthorizedUser).id,
               orElse: () => '',
             );
+            if (!context.mounted) {
+              return l10n.loadingLabel;
+            }
             if (users == null) {
-              return 'Unknown';
+              return l10n.unknownChatterLabel;
             }
             final otherUser = users.firstWhere(
               (user) => user.id == otherId,
               orElse: () => AuthorizedUser(
                 id: otherId,
-                name: 'Unknown',
+                name: l10n.unknownChatterLabel,
                 email: '',
                 handle: '',
                 avatarUrl: '',
@@ -99,7 +104,10 @@ class _ChatScreenState extends State<ChatScreen> {
           } else if (chat is GroupChat) {
             return chat.name;
           }
-          return 'Unknown';
+          if (!context.mounted) {
+            return l10n.loadingLabel;
+          }
+          return l10n.unknownChattersLabel;
         });
     if (chat is DirectChat && chat.participants.length == 2) {
       final otherId = chat.participants.firstWhere(
@@ -107,14 +115,14 @@ class _ChatScreenState extends State<ChatScreen> {
         orElse: () => '',
       );
       if (!context.mounted) {
-        return const AppNavBar(title: 'Loading...');
+        return AppNavBar(title: l10n.loadingLabel);
       }
       return StreamBuilder(
         stream: context.appController.watchUserWithId(otherId),
         builder: (context, asyncSnapshot) {
           if (asyncSnapshot.hasError) {
             return AppNavBar(
-              title: 'Error',
+              title: l10n.errorLabel,
               leftIcon: AppIcons.arrowLeft,
               onPressedLeft: () => context.pop(),
               rightImage: null,
@@ -123,7 +131,7 @@ class _ChatScreenState extends State<ChatScreen> {
           final otherUser = asyncSnapshot.data;
           if (otherUser == null) {
             return AppNavBar(
-              title: 'User not found',
+              title: l10n.userNotFoundLabel,
               leftIcon: AppIcons.arrowLeft,
               onPressedLeft: () {
                 context.pop();
@@ -182,7 +190,8 @@ class _ChatScreenState extends State<ChatScreen> {
         builder: (context, asyncSnapshot) {
           if (asyncSnapshot.hasError) {
             return ErrorState(
-              message: 'Failed to load unread count: ${asyncSnapshot.error}',
+              message:
+                  '${context.l10n.failedToLoadUnreadCountMessage}: ${asyncSnapshot.error}',
             );
           }
           final unreadCount = asyncSnapshot.data ?? 0;
@@ -216,7 +225,7 @@ class _ChatScreenState extends State<ChatScreen> {
                     (u) => u.id == participantId,
                     orElse: () => AuthorizedUser(
                       id: participantId,
-                      name: 'Unknown',
+                      name: context.l10n.unknownChatterLabel,
                       email: '',
                       handle: '',
                       avatarUrl: '',
@@ -240,7 +249,8 @@ class _ChatScreenState extends State<ChatScreen> {
         builder: (context, asyncSnapshot) {
           if (asyncSnapshot.hasError) {
             return ErrorState(
-              message: 'Failed to load unread counts: ${asyncSnapshot.error}',
+              message:
+                  '${context.l10n.failedToLoadUnreadCountsMessage}: ${asyncSnapshot.error}',
             );
           }
           final unreadCounts = asyncSnapshot.data ?? {};
@@ -275,7 +285,7 @@ class _ChatScreenState extends State<ChatScreen> {
                     (u) => u.id == participantId,
                     orElse: () => AuthorizedUser(
                       id: participantId,
-                      name: 'Unknown',
+                      name: context.l10n.unknownChattersLabel,
                       email: '',
                       handle: '',
                       avatarUrl: '',
@@ -310,7 +320,8 @@ class _ChatScreenState extends State<ChatScreen> {
         if (snapshot.hasError) {
           return Center(
             child: ErrorState(
-              message: 'Failed to load chat data: ${snapshot.error}',
+              message:
+                  '${context.l10n.failedToLoadChatDataMessage}: ${snapshot.error}',
             ),
           );
         }
@@ -320,7 +331,7 @@ class _ChatScreenState extends State<ChatScreen> {
         final messages = (snapshot.data?[0] ?? []) as List<Message>;
         final users = (snapshot.data?[1] ?? []) as List<AuthorizedUser>;
         if (messages.isEmpty) {
-          return const EmptyState(title: 'No messages yet');
+          return EmptyState(title: context.l10n.noMessagesYetLabel);
         }
         final messagesWithSenderNames = <Message, String>{};
         for (final message in messages) {
@@ -329,7 +340,7 @@ class _ChatScreenState extends State<ChatScreen> {
             orElse: () {
               return AuthorizedUser(
                 id: message.senderId,
-                name: 'Unknown',
+                name: context.l10n.unknownChatterLabel,
                 email: '',
                 handle: '',
                 avatarUrl: '',
@@ -409,7 +420,7 @@ class _ChatScreenState extends State<ChatScreen> {
           spacing: spacing8,
           children: [
             AppListItem(
-              title: 'Save message',
+              title: context.l10n.saveMessageLabel,
               onPressed: () async {
                 await context.appController.saveMessage(
                   SavedMessage(
@@ -422,9 +433,9 @@ class _ChatScreenState extends State<ChatScreen> {
                   ),
                 );
                 if (!context.mounted) return;
-                ScaffoldMessenger.of(
-                  context,
-                ).showSnackBar(const SnackBar(content: Text('Message saved')));
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(context.l10n.messageSavedLabel)),
+                );
               },
             ),
           ],
@@ -444,9 +455,11 @@ class _ChatScreenState extends State<ChatScreen> {
         return false;
       },
       listener: (context, previous, current) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Error: ${current.message}')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${context.l10n.errorLabel}: ${current.message}'),
+          ),
+        );
       },
       child: switch (widget.chatType) {
         ChatType.direct => StreamBuilder(
@@ -458,7 +471,7 @@ class _ChatScreenState extends State<ChatScreen> {
                   preferredSize: const Size.fromHeight(kToolbarHeight),
                   child: SafeArea(
                     child: AppNavBar(
-                      title: 'Error',
+                      title: context.l10n.errorLabel,
                       leftIcon: AppIcons.arrowLeft,
                       onPressedLeft: () => context.pop(),
                     ),
@@ -467,7 +480,8 @@ class _ChatScreenState extends State<ChatScreen> {
                 body: SafeArea(
                   child: Center(
                     child: ErrorState(
-                      message: 'Failed to load chat: ${directSnapshot.error}',
+                      message:
+                          '${context.l10n.failedToLoadChatDataMessage}: ${directSnapshot.error}',
                     ),
                   ),
                 ),
@@ -486,9 +500,9 @@ class _ChatScreenState extends State<ChatScreen> {
                     future: _buildNavBar(context, directChat),
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
-                        return const AppNavBar(title: 'Loading...');
+                        return AppNavBar(title: context.l10n.loadingLabel);
                       } else if (snapshot.hasError) {
-                        return const AppNavBar(title: 'Error');
+                        return AppNavBar(title: context.l10n.errorLabel);
                       } else {
                         return snapshot.data!;
                       }
@@ -524,7 +538,7 @@ class _ChatScreenState extends State<ChatScreen> {
                   preferredSize: const Size.fromHeight(kToolbarHeight),
                   child: SafeArea(
                     child: AppNavBar(
-                      title: 'Error',
+                      title: context.l10n.errorLabel,
                       leftIcon: AppIcons.arrowLeft,
                       onPressedLeft: () => context.pop(),
                     ),
@@ -533,7 +547,8 @@ class _ChatScreenState extends State<ChatScreen> {
                 body: SafeArea(
                   child: Center(
                     child: ErrorState(
-                      message: 'Failed to load chat: ${groupSnapshot.error}',
+                      message:
+                          '${context.l10n.failedToLoadChatDataMessage}: ${groupSnapshot.error}',
                     ),
                   ),
                 ),
@@ -552,9 +567,9 @@ class _ChatScreenState extends State<ChatScreen> {
                     future: _buildNavBar(context, groupChat),
                     builder: (context, snapshot) {
                       if (snapshot.hasError) {
-                        return const AppNavBar(title: 'Error');
+                        return AppNavBar(title: context.l10n.errorLabel);
                       } else if (!snapshot.hasData || snapshot.data == null) {
-                        return const AppNavBar(title: 'Loading...');
+                        return AppNavBar(title: context.l10n.loadingLabel);
                       } else {
                         return snapshot.data!;
                       }

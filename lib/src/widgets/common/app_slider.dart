@@ -128,7 +128,7 @@ class _InnerDotThumbShape extends SliderComponentShape {
       Paint()
         ..color =
             Theme.of(context).extension<AppTheme>()?.highlightDarkestColor ??
-            const Color(0x006FFDFF),
+            const Color(0xFF006FFD),
     );
   }
 }

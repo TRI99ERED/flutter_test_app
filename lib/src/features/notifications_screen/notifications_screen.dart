@@ -1,6 +1,7 @@
 import 'package:android_intent_plus/android_intent.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:test_app/l10n/locales/l10n.dart';
 import 'package:test_app/src/core/resources/app_icons.dart';
 import 'package:test_app/src/core/widgets/controller_listener.dart';
 import 'package:test_app/src/features/app/app_scope.dart';
@@ -45,13 +46,15 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         return false;
       },
       listener: (context, previous, current) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Error: ${current.message}')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${context.l10n.errorLabel}: ${current.message}'),
+          ),
+        );
       },
       child: Scaffold(
         appBar: AppNavBar(
-          title: 'Notifications',
+          title: context.l10n.notificationsTitle,
           leftIcon: AppIcons.arrowLeft,
           onPressedLeft: () {
             context.pop();
@@ -63,7 +66,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               valueListenable: _enablePushNotifications,
               builder: (context, value, child) {
                 return AppListItem(
-                  title: 'Enable push notifications',
+                  title: context.l10n.enablePushNotificationsLabel,
                   control: AppListItemControl.toggle,
                   value: value,
                   onChanged: (value) async {
@@ -82,7 +85,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               valueListenable: _enableFriendRequestNotifications,
               builder: (context, value, child) {
                 return AppListItem(
-                  title: 'Enable friend request notifications',
+                  title: context.l10n.enableFriendRequestNotificationsLabel,
                   control: AppListItemControl.toggle,
                   value: value,
                   onChanged: (value) async {
@@ -103,7 +106,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               valueListenable: _enableProjectInviteNotifications,
               builder: (context, value, child) {
                 return AppListItem(
-                  title: 'Enable project invite notifications',
+                  title: context.l10n.enableProjectInviteNotificationsLabel,
                   control: AppListItemControl.toggle,
                   value: value,
                   onChanged: (value) async {
@@ -124,7 +127,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               valueListenable: _enableMessageNotifications,
               builder: (context, value, child) {
                 return AppListItem(
-                  title: 'Enable message notifications',
+                  title: context.l10n.enableMessageNotificationsLabel,
                   control: AppListItemControl.toggle,
                   value: value,
                   onChanged: (value) async {
@@ -140,7 +143,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               },
             ),
             AppListItem(
-              title: 'System notification settings',
+              title: context.l10n.systemNotificationsSettingsLabel,
               onPressed: () async {
                 final intent = AndroidIntent(
                   action: 'android.settings.APP_NOTIFICATION_SETTINGS',

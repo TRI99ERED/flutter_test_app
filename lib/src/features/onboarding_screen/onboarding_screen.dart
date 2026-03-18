@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:test_app/l10n/locales/l10n.dart';
 import 'package:test_app/src/features/app/app_scope.dart';
 import 'package:test_app/src/core/widgets/controller_listener.dart';
 import 'package:test_app/src/features/themes/app_theme.dart';
@@ -44,9 +45,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         return false;
       },
       listener: (context, previous, current) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Error: ${current.message}')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${context.l10n.errorLabel}: ${current.message}'),
+          ),
+        );
       },
       child: Scaffold(
         body: SafeArea(
@@ -78,10 +81,22 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         builder: (context, value, child) {
                           return Text(
                             switch (_selectedSection.value) {
-                              0 => 'Create a prototype in just a few minutes',
-                              1 => 'Collaborate with your team seamlessly',
-                              2 => 'Launch your product with confidence',
-                              _ => 'Create a prototype in just a few minutes',
+                              0 =>
+                                context
+                                    .l10n
+                                    .createAPrototypeInJustAFewMinutesLabel,
+                              1 =>
+                                context
+                                    .l10n
+                                    .collaborateWithYourTeamSeamlesslyLabel,
+                              2 =>
+                                context
+                                    .l10n
+                                    .launchYourProjectWithConfidenceLabel,
+                              _ =>
+                                context
+                                    .l10n
+                                    .createAPrototypeInJustAFewMinutesLabel,
                             },
                             style: TextStyle(
                               fontSize: h1Size,
@@ -100,13 +115,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           return Text(
                             switch (_selectedSection.value) {
                               0 =>
-                                'Enjoy these pre-made components and worry only about creating the best product ever.',
-                              1 =>
-                                'Work together with your team seamlessly and efficiently.',
+                                context.l10n.enjoyThesePreMadeComponentsLabel,
+                              1 => context.l10n.workTogetherWithYourTeamLabel,
                               2 =>
-                                'Launch your product with confidence and ease.',
+                                context
+                                    .l10n
+                                    .launchYourProjectWithConfidenceAndEaseLabel,
                               _ =>
-                                'Enjoy these pre-made components and worry only about creating the best product ever.',
+                                context.l10n.enjoyThesePreMadeComponentsLabel,
                             },
                             style: TextStyle(
                               fontSize: bSSize,
@@ -123,7 +139,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       SizedBox(
                         width: double.infinity,
                         child: AppButtonPrimary(
-                          text: 'Next',
+                          text: context.l10n.nextLabel,
                           onPressed: () {
                             if (_selectedSection.value < 2) {
                               _selectedSection.value++;

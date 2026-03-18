@@ -1,105 +1,139 @@
 ﻿import 'package:flutter/material.dart';
+import 'package:test_app/l10n/locales/l10n.dart';
 import 'package:test_app/src/core/resources/app_icons.dart';
 import 'package:test_app/src/features/themes/app_theme.dart';
 import 'package:test_app/src/features/themes/styles.dart';
 
-String? _validateEmail(String? value) {
-  if (value == null || value.isEmpty) return 'Email is required';
+String? _validateEmail(BuildContext context, String? value) {
+  if (value == null || value.isEmpty) {
+    return context.l10n.emailIsRequiredMessage;
+  }
   final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+$');
-  if (!emailRegex.hasMatch(value)) return 'Invalid email format';
+  if (!emailRegex.hasMatch(value)) {
+    return context.l10n.invalidEmailFormatMessage;
+  }
   return null;
 }
 
-String? _validateNumber(String? value) {
-  if (value == null || value.isEmpty) return 'Number is required';
-  if (int.tryParse(value) == null) return 'Must be a valid number';
+String? _validateNumber(BuildContext context, String? value) {
+  if (value == null || value.isEmpty) {
+    return context.l10n.numberIsRequiredMessage;
+  }
+  if (int.tryParse(value) == null) {
+    return context.l10n.mustBeAValidNumberMessage;
+  }
   return null;
 }
 
-String? _validateDecimal(String? value) {
-  if (value == null || value.isEmpty) return 'Number is required';
-  if (double.tryParse(value) == null) return 'Must be a valid decimal';
+String? _validateDecimal(BuildContext context, String? value) {
+  if (value == null || value.isEmpty) {
+    return context.l10n.numberIsRequiredMessage;
+  }
+  if (double.tryParse(value) == null) {
+    return context.l10n.mustBeAValidDecimalMessage;
+  }
   return null;
 }
 
-String? _validatePhone(String? value) {
-  if (value == null || value.isEmpty) return 'Phone is required';
-  if (value.length < 10) return 'Phone must be at least 10 digits';
+String? _validatePhone(BuildContext context, String? value) {
+  if (value == null || value.isEmpty) {
+    return context.l10n.phoneNumberIsRequiredMessage;
+  }
+  if (value.length < 10) {
+    return context.l10n.phoneNumberMustBeAtLeast10DigitsMessage;
+  }
   if (!RegExp(r'^[0-9+\-\s()]+$').hasMatch(value)) {
-    return 'Invalid phone format';
+    return context.l10n.invalidPhoneNumberFormatMessage;
   }
   return null;
 }
 
-String? _validateUrl(String? value) {
-  if (value == null || value.isEmpty) return 'URL is required';
+String? _validateUrl(BuildContext context, String? value) {
+  if (value == null || value.isEmpty) return context.l10n.urlIsRequiredMessage;
   if (!value.startsWith('http://') && !value.startsWith('https://')) {
-    return 'URL must start with http:// or https://';
+    return context.l10n.urlMustStartWithHttpMessage;
   }
   return null;
 }
 
-String? _validateText(String? value) {
-  if (value == null || value.isEmpty) return 'This field is required';
+String? _validateText(BuildContext context, String? value) {
+  if (value == null || value.isEmpty) {
+    return context.l10n.thisFieldIsRequiredMessage;
+  }
   return null;
 }
 
-String? _validateName(String? value) {
-  if (value == null || value.isEmpty) return 'Name is required';
-  if (value.length < 2) return 'Name must be at least 2 characters';
+String? _validateName(BuildContext context, String? value) {
+  if (value == null || value.isEmpty) return context.l10n.nameIsRequiredMessage;
+  if (value.length < 2) return context.l10n.nameMustBeAtLeast2CharactersMessage;
   if (!RegExp(r'^[a-zA-Z0-9\s\-\.]+$').hasMatch(value)) {
-    return 'Name can only contain letters, spaces, hyphens, numbers and periods';
+    return context
+        .l10n
+        .nameMustContainLettersSpacesHyphensNumbersAndPeriodsMessage;
   }
   return null;
 }
 
-String? _validateStreetAddress(String? value) {
-  if (value == null || value.isEmpty) return 'Address is required';
-  if (value.length < 5) return 'Address must be at least 5 characters';
+String? _validateStreetAddress(BuildContext context, String? value) {
+  if (value == null || value.isEmpty) {
+    return context.l10n.addressIsRequiredMessage;
+  }
+  if (value.length < 5) {
+    return context.l10n.addressMustBeAtLeast5CharactersMessage;
+  }
   return null;
 }
 
-String? _validateDatetime(String? value) {
-  if (value == null || value.isEmpty) return 'Date/time is required';
+String? _validateDatetime(BuildContext context, String? value) {
+  if (value == null || value.isEmpty) {
+    return context.l10n.dateTimeIsRequiredMessage;
+  }
   return null;
 }
 
-String? _validateVisiblePassword(String? value) {
-  if (value == null || value.isEmpty) return 'Password is required';
-  if (value.length < 8) return 'Password must be at least 8 characters';
+String? _validateVisiblePassword(BuildContext context, String? value) {
+  if (value == null || value.isEmpty) {
+    return context.l10n.passwordIsRequiredMessage;
+  }
+  if (value.length < 8) {
+    return context.l10n.passwordMustBeAtLeast8CharactersMessage;
+  }
   if (!RegExp(r'[A-Z]').hasMatch(value)) {
-    return 'Password must contain at least one uppercase letter';
+    return context.l10n.passwordMustContainAtLeastOneUppercaseLetterMessage;
   }
   if (!RegExp(r'[a-z]').hasMatch(value)) {
-    return 'Password must contain at least one lowercase letter';
+    return context.l10n.passwordMustContainAtLeastOneLowercaseLetterMessage;
   }
   if (!RegExp(r'[0-9]').hasMatch(value)) {
-    return 'Password must contain at least one number';
+    return context.l10n.passwordMustContainAtLeastOneNumberMessage;
   }
   return null;
 }
 
-String? Function(String?)? getValidatorForKeyboardType(TextInputType? type) {
+String? Function(String?)? getValidatorForKeyboardType(
+  BuildContext context,
+  TextInputType? type,
+) {
   if (type == TextInputType.emailAddress) {
-    return _validateEmail;
+    return (value) => _validateEmail(context, value);
   } else if (type == TextInputType.number) {
-    return _validateNumber;
+    return (value) => _validateNumber(context, value);
   } else if (type == const TextInputType.numberWithOptions(decimal: true)) {
-    return _validateDecimal;
+    return (value) => _validateDecimal(context, value);
   } else if (type == TextInputType.phone) {
-    return _validatePhone;
+    return (value) => _validatePhone(context, value);
   } else if (type == TextInputType.url) {
-    return _validateUrl;
+    return (value) => _validateUrl(context, value);
   } else if (type == TextInputType.text) {
-    return _validateText;
+    return (value) => _validateText(context, value);
   } else if (type == TextInputType.name) {
-    return _validateName;
+    return (value) => _validateName(context, value);
   } else if (type == TextInputType.streetAddress) {
-    return _validateStreetAddress;
+    return (value) => _validateStreetAddress(context, value);
   } else if (type == TextInputType.datetime) {
-    return _validateDatetime;
+    return (value) => _validateDatetime(context, value);
   } else if (type == TextInputType.visiblePassword) {
-    return _validateVisiblePassword;
+    return (value) => _validateVisiblePassword(context, value);
   }
   return null;
 }
@@ -325,11 +359,11 @@ class _AppTextFieldState extends State<AppTextField> {
                             ? Theme.of(
                                     context,
                                   ).extension<AppTheme>()?.errorMediumColor ??
-                                  const Color(0xFF616DFF)
+                                  const Color(0xFFFF616D)
                             : Theme.of(context)
                                       .extension<AppTheme>()
                                       ?.backgroundWeakestColor ??
-                                  const Color(0xC5C6CCFF),
+                                  const Color(0xFFC5C6CC),
                         width: 2,
                       ),
                     ),
@@ -340,11 +374,11 @@ class _AppTextFieldState extends State<AppTextField> {
                             ? Theme.of(
                                     context,
                                   ).extension<AppTheme>()?.errorMediumColor ??
-                                  const Color(0xFF616DFF)
+                                  const Color(0xFFFF616D)
                             : Theme.of(context)
                                       .extension<AppTheme>()
                                       ?.backgroundWeakestColor ??
-                                  const Color(0xC5C6CCFF),
+                                  const Color(0xFFC5C6CC),
                         width: 2,
                       ),
                     ),
@@ -355,11 +389,11 @@ class _AppTextFieldState extends State<AppTextField> {
                             ? Theme.of(
                                     context,
                                   ).extension<AppTheme>()?.errorDarkColor ??
-                                  const Color(0xED3241FF)
+                                  const Color(0xFFED3241)
                             : Theme.of(context)
                                       .extension<AppTheme>()
                                       ?.highlightDarkestColor ??
-                                  const Color(0x006FFDFF),
+                                  const Color(0xFF006FFD),
                         width: 2,
                       ),
                     ),
@@ -370,7 +404,7 @@ class _AppTextFieldState extends State<AppTextField> {
                             Theme.of(
                               context,
                             ).extension<AppTheme>()?.errorMediumColor ??
-                            const Color(0xFF616DFF),
+                            const Color(0xFFFF616D),
                         width: 2,
                       ),
                     ),
@@ -381,7 +415,7 @@ class _AppTextFieldState extends State<AppTextField> {
                             Theme.of(
                               context,
                             ).extension<AppTheme>()?.errorDarkColor ??
-                            const Color(0xED3241FF),
+                            const Color(0xFFED3241),
                         width: 2,
                       ),
                     ),

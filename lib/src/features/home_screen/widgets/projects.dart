@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:test_app/l10n/locales/l10n.dart';
 import 'package:test_app/src/core/resources/app_icons.dart';
 import 'package:test_app/src/features/app/app_scope.dart';
 import 'package:test_app/src/features/app/data/models/project_model.dart';
@@ -85,7 +86,8 @@ class _ProjectsState extends State<Projects> {
                     filters: _filters,
                   ),
                   _ => ErrorState(
-                    message: 'Invalid section index: $sectionIndex',
+                    message:
+                        '${context.l10n.invalidSectionIndexMessage}: $sectionIndex',
                   ),
                 };
               },
@@ -142,7 +144,7 @@ class _ProjectsSectionState extends State<_ProjectsSection> {
     final user = context.appState.user;
 
     if (user is! AuthorizedUser) {
-      return const ErrorState(message: 'User not authorized');
+      return ErrorState(message: context.l10n.userNotAuthorizedMessage);
     }
 
     return Column(
@@ -152,6 +154,7 @@ class _ProjectsSectionState extends State<_ProjectsSection> {
           builder: (context, asyncSnapshot) {
             final syncedUser = asyncSnapshot.data;
             return AppSearchBar(
+              placeholder: context.l10n.searchLabel,
               recentSearches: syncedUser?.projectRecentSearches ?? [],
               onChanged: (value) => _searchQuery.value = value,
               onSubmitted: (value) async {
@@ -197,9 +200,9 @@ class _ProjectsSectionState extends State<_ProjectsSection> {
                       sortOption: widget._sortOption,
                       sortOrder: widget._sortOrder,
                       sortOptions: {
-                        'lastUpdated': 'LAST UPDATED',
-                        'name': 'NAME',
-                        'createdAt': 'CREATED AT',
+                        'lastUpdated': context.l10n.lastUpdatedLabel,
+                        'name': context.l10n.nameLabel,
+                        'createdAt': context.l10n.createdAtLabel,
                       },
                       defaultSortOption: 'lastUpdated',
                     );
@@ -299,7 +302,8 @@ class _ProjectsSectionState extends State<_ProjectsSection> {
                           context,
                           filters: widget._filters,
                           filterOptions: {
-                            MapEntry('creator', 'Creator'): creatorIdToHandle,
+                            MapEntry('creator', context.l10n.creatorTitle):
+                                creatorIdToHandle,
                           },
                         );
                       },
@@ -409,10 +413,10 @@ class _ProjectsSectionState extends State<_ProjectsSection> {
                                 return Center(
                                   child: ErrorState(
                                     message:
-                                        'Error loading ${switch (widget._sectionType) {
-                                          ProjectStatus.todo => 'to do projects',
-                                          ProjectStatus.inProgress => 'in progress projects',
-                                          ProjectStatus.finished => 'finished projects',
+                                        '${switch (widget._sectionType) {
+                                          ProjectStatus.todo => context.l10n.errorLoadingToDoProjectsMessage,
+                                          ProjectStatus.inProgress => context.l10n.errorLoadingInProgressProjectsMessage,
+                                          ProjectStatus.finished => context.l10n.errorLoadingFinishedProjectsMessage,
                                         }}: ${snapshot.error}',
                                   ),
                                 );
@@ -423,16 +427,22 @@ class _ProjectsSectionState extends State<_ProjectsSection> {
                               if (projects.isEmpty) {
                                 return Center(
                                   child: EmptyState(
-                                    title: 'Nothing here. For now.',
+                                    title: context.l10n.nothingHereForNowLabel,
                                     body: switch (widget._sectionType) {
                                       ProjectStatus.todo =>
-                                        'This is where you\'ll find your to do projects.',
+                                        context
+                                            .l10n
+                                            .thisIsWhereYoullfindYourToDoProjectsLabel,
                                       ProjectStatus.inProgress =>
-                                        'This is where you\'ll find your in progress projects.',
+                                        context
+                                            .l10n
+                                            .thisIsWhereYoullfindYourInProgressProjectsLabel,
                                       ProjectStatus.finished =>
-                                        'This is where you\'ll find your finished projects.',
+                                        context
+                                            .l10n
+                                            .thisIsWhereYoullfindYourFinishedProjectsLabel,
                                     },
-                                    buttonText: 'Start a project',
+                                    buttonText: context.l10n.startAProjectLabel,
                                     onButtonPressed: () async {
                                       final project =
                                           await ProjectWizard.manageProject(
@@ -476,7 +486,9 @@ class _ProjectsSectionState extends State<_ProjectsSection> {
                                           title: project.name,
                                           description:
                                               project.description.isEmpty
-                                              ? 'No description provided.'
+                                              ? context
+                                                    .l10n
+                                                    .noDescriptionProvidedLabel
                                               : project.description,
                                           control:
                                               editPressed &&
@@ -486,7 +498,7 @@ class _ProjectsSectionState extends State<_ProjectsSection> {
                                           largeButtonText:
                                               editPressed &&
                                                   project.ownerId == user.id
-                                              ? 'Delete'
+                                              ? context.l10n.deleteLabel
                                               : null,
                                           onPressed:
                                               editPressed &&
@@ -550,8 +562,10 @@ class _ProjectsAppBarState extends State<ProjectsAppBar> {
         valueListenable: widget.editPressed,
         builder: (context, editPressed, child) {
           return AppNavBar(
-            title: 'Projects',
-            leftText: editPressed ? 'Done' : 'Edit',
+            title: context.l10n.projectsTitle,
+            leftText: editPressed
+                ? context.l10n.doneLabel
+                : context.l10n.editLabel,
             rightIcon: AppIcons.create,
             onPressedLeft: () {
               widget.editPressed.value = !widget.editPressed.value;

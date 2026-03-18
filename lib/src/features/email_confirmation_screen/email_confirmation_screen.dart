@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:test_app/l10n/locales/l10n.dart';
 import 'package:test_app/src/features/app/app_scope.dart';
 import 'package:test_app/src/features/app/data/models/user_model.dart';
 import 'package:test_app/src/core/widgets/controller_listener.dart';
@@ -63,7 +64,11 @@ class _EmailConfirmationScreenState extends State<EmailConfirmationScreen> {
             },
             listener: (context, previous, current) {
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Error: ${current.message}')),
+                SnackBar(
+                  content: Text(
+                    '${context.l10n.errorLabel}: ${current.message}',
+                  ),
+                ),
               );
             },
             child: SingleChildScrollView(
@@ -76,7 +81,7 @@ class _EmailConfirmationScreenState extends State<EmailConfirmationScreen> {
                     spacing: spacing8,
                     children: [
                       Text(
-                        'Enter confirmation code',
+                        context.l10n.enterConfirmationCodeLabel,
                         style: TextStyle(
                           fontSize: h3Size,
                           fontWeight: h3Weight,
@@ -90,9 +95,9 @@ class _EmailConfirmationScreenState extends State<EmailConfirmationScreen> {
                           final user = context.appState.user;
                           final email = user is AuthorizedUser
                               ? user.email
-                              : 'your email';
+                              : context.l10n.yourEmailLabel;
                           return Text(
-                            'A 4-digit code was sent to\n$email',
+                            '${context.l10n.codeSentLabel}\n$email',
                             style: TextStyle(
                               fontSize: bSSize,
                               fontWeight: bSWeight,
@@ -122,7 +127,7 @@ class _EmailConfirmationScreenState extends State<EmailConfirmationScreen> {
                       SizedBox(
                         width: double.infinity,
                         child: AppButtonTertiary(
-                          text: 'Resend code',
+                          text: context.l10n.resendCodeLabel,
                           onPressed: () {
                             _codeController.clear();
                             _codeFocusNode.requestFocus();
@@ -136,7 +141,7 @@ class _EmailConfirmationScreenState extends State<EmailConfirmationScreen> {
                           valueListenable: _isFormValid,
                           builder: (context, isFormValid, child) {
                             return AppButtonPrimary(
-                              text: 'Continue',
+                              text: context.l10n.continueLabel,
                               onPressed: isFormValid
                                   ? () async {
                                       final code = _codeController.text;

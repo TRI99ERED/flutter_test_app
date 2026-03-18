@@ -88,7 +88,7 @@ class AppButtonSecondary extends StatelessWidget {
         side: BorderSide(
           color:
               Theme.of(context).extension<AppTheme>()?.highlightDarkestColor ??
-              Color(0x006FFDFF),
+              Color(0xFF006FFD),
           width: 1.5,
         ),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),

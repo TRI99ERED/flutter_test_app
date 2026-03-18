@@ -369,7 +369,7 @@ class _AppDropdownState extends State<AppDropdown> {
                                       Theme.of(context)
                                           .extension<AppTheme>()
                                           ?.backgroundWeakestColor ??
-                                      Color(0xC5C6CCFF),
+                                      Color(0xFFC5C6CC),
                                   width: 2,
                                 ),
                               ),
@@ -382,7 +382,7 @@ class _AppDropdownState extends State<AppDropdown> {
                                       Theme.of(context)
                                           .extension<AppTheme>()
                                           ?.highlightDarkestColor ??
-                                      Color(0x006FFDFF),
+                                      Color(0xFF006FFD),
                                   width: 2,
                                 ),
                               ),
@@ -395,7 +395,7 @@ class _AppDropdownState extends State<AppDropdown> {
                                       Theme.of(context)
                                           .extension<AppTheme>()
                                           ?.errorMediumColor ??
-                                      Color(0xFF616DFF),
+                                      Color(0xFFFF616D),
                                   width: 2,
                                 ),
                               ),
@@ -408,7 +408,7 @@ class _AppDropdownState extends State<AppDropdown> {
                                       Theme.of(
                                         context,
                                       ).extension<AppTheme>()?.errorDarkColor ??
-                                      Color(0xED3241FF),
+                                      Color(0xFFED3241),
                                   width: 2,
                                 ),
                               ),

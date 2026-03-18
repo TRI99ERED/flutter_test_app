@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:test_app/l10n/locales/l10n.dart';
 import 'package:test_app/src/core/resources/app_icons.dart';
 import 'package:test_app/src/features/app/app_scope.dart';
 import 'package:test_app/src/features/app/data/models/user_model.dart';
@@ -53,7 +54,11 @@ class _FriendsState extends State<Friends> {
         children: [
           AppContentSwitcher(
             sectionCount: 3,
-            sectionTitles: ['Friends', 'Incoming', 'Outgoing'],
+            sectionTitles: [
+              context.l10n.friendsTitle,
+              context.l10n.incomingTitle,
+              context.l10n.outgoingTitle,
+            ],
             selectedIndex: _sectionIndex.value,
             onSectionSelected: (value) {
               _sectionIndex.value = value;
@@ -64,6 +69,7 @@ class _FriendsState extends State<Friends> {
             builder: (context, asyncSnapshot) {
               final syncedUser = asyncSnapshot.data;
               return AppSearchBar(
+                placeholder: context.l10n.searchLabel,
                 recentSearches: syncedUser?.friendRecentSearches ?? [],
                 onChanged: (value) => _searchQuery.value = value,
                 onSubmitted: (value) async {
@@ -114,7 +120,10 @@ class _FriendsState extends State<Friends> {
                     searchQuery: _searchQuery,
                     editPressed: widget.editPressed,
                   ),
-                  _ => ErrorState(message: 'Invalid section index: $value'),
+                  _ => ErrorState(
+                    message:
+                        '${context.l10n.invalidSectionIndexMessage}: $value',
+                  ),
                 };
               },
             ),
@@ -155,7 +164,7 @@ class _FriendsSectionState extends State<_FriendsSection> {
     final user = context.appState.user;
 
     if (user is! AuthorizedUser) {
-      return const ErrorState(message: 'User not authorized');
+      return ErrorState(message: context.l10n.userNotAuthorizedMessage);
     }
 
     return StreamBuilder(
@@ -174,10 +183,10 @@ class _FriendsSectionState extends State<_FriendsSection> {
         } else if (snapshot.hasError) {
           return ErrorState(
             message:
-                'Error loading ${switch (widget._sectionType) {
-                  FriendsSectionType.friends => 'friends',
-                  FriendsSectionType.incomingRequests => 'incoming requests',
-                  FriendsSectionType.outgoingRequests => 'outgoing requests',
+                '${switch (widget._sectionType) {
+                  FriendsSectionType.friends => context.l10n.errorLoadingFriendsMessage,
+                  FriendsSectionType.incomingRequests => context.l10n.errorLoadingIncomingRequestsMessage,
+                  FriendsSectionType.outgoingRequests => context.l10n.errorLoadingOutgoingRequestsMessage,
                 }}: ${snapshot.error}',
           );
         }
@@ -186,17 +195,19 @@ class _FriendsSectionState extends State<_FriendsSection> {
 
         if (friends.isEmpty) {
           return EmptyState(
-            title: 'Nothing here. For now.',
-            body:
-                'This is where your ${switch (widget._sectionType) {
-                  FriendsSectionType.friends => 'friends',
-                  FriendsSectionType.incomingRequests => 'incoming requests',
-                  FriendsSectionType.outgoingRequests => 'outgoing requests',
-                }} will appear.',
+            title: context.l10n.nothingHereForNowLabel,
+            body: switch (widget._sectionType) {
+              FriendsSectionType.friends =>
+                context.l10n.thisIsWhereYourFriendsWillAppearLabel,
+              FriendsSectionType.incomingRequests =>
+                context.l10n.thisIsWhereYourIncomingRequestsWillAppearLabel,
+              FriendsSectionType.outgoingRequests =>
+                context.l10n.thisIsWhereYourOutgoingRequestsWillAppearLabel,
+            },
             buttonText:
                 widget._sectionType == FriendsSectionType.friends ||
                     widget._sectionType == FriendsSectionType.outgoingRequests
-                ? 'Send friend request'
+                ? context.l10n.sendFriendRequestLabel
                 : null,
             onButtonPressed:
                 widget._sectionType == FriendsSectionType.friends ||
@@ -232,13 +243,15 @@ class _FriendsSectionState extends State<_FriendsSection> {
 
             if (filteredFriends.isEmpty) {
               return EmptyState(
-                title:
-                    'No ${switch (widget._sectionType) {
-                      FriendsSectionType.friends => 'friends',
-                      FriendsSectionType.incomingRequests => 'incoming requests',
-                      FriendsSectionType.outgoingRequests => 'outgoing requests',
-                    }} found.',
-                body: 'Try adjusting your search query.',
+                title: switch (widget._sectionType) {
+                  FriendsSectionType.friends =>
+                    context.l10n.noFriendsFoundLabel,
+                  FriendsSectionType.incomingRequests =>
+                    context.l10n.noIncomingRequestsFoundLabel,
+                  FriendsSectionType.outgoingRequests =>
+                    context.l10n.noOutgoingRequestsFoundLabel,
+                },
+                body: context.l10n.tryAdjustingYourSearchQueryLabel,
               );
             }
 
@@ -268,10 +281,10 @@ class _FriendsSectionState extends State<_FriendsSection> {
                     } else if (snapshot.hasError) {
                       return ErrorState(
                         message:
-                            'Error loading ${switch (widget._sectionType) {
-                              FriendsSectionType.friends => 'friend',
-                              FriendsSectionType.incomingRequests => 'incoming request',
-                              FriendsSectionType.outgoingRequests => 'outgoing request',
+                            '${switch (widget._sectionType) {
+                              FriendsSectionType.friends => context.l10n.errorLoadingFriend,
+                              FriendsSectionType.incomingRequests => context.l10n.errorLoadingIncomingRequest,
+                              FriendsSectionType.outgoingRequests => context.l10n.errorLoadingOutgoingRequest,
                             }}: ${snapshot.error}',
                       );
                     }
@@ -301,14 +314,18 @@ class _FriendsSectionState extends State<_FriendsSection> {
                               },
                               leftButtonText: switch (widget._sectionType) {
                                 FriendsSectionType.incomingRequests =>
-                                  'Decline',
+                                  context.l10n.declineLabel,
                                 _ => null,
                               },
                               rightButtonText: switch (widget._sectionType) {
                                 FriendsSectionType.friends =>
-                                  editPressed ? 'Remove' : 'Message',
-                                FriendsSectionType.incomingRequests => 'Accept',
-                                FriendsSectionType.outgoingRequests => 'Cancel',
+                                  editPressed
+                                      ? context.l10n.removeLabel
+                                      : context.l10n.messageLabel,
+                                FriendsSectionType.incomingRequests =>
+                                  context.l10n.acceptLabel,
+                                FriendsSectionType.outgoingRequests =>
+                                  context.l10n.cancelLabel,
                               },
                               onPressedLeft: switch (widget._sectionType) {
                                 FriendsSectionType.incomingRequests =>
@@ -403,8 +420,10 @@ class _FriendsAppBarState extends State<FriendsAppBar> {
         valueListenable: widget.editPressed,
         builder: (context, value, child) {
           return AppNavBar(
-            title: 'Friends',
-            leftText: widget.editPressed.value ? 'Done' : 'Edit',
+            title: context.l10n.friendsTitle,
+            leftText: widget.editPressed.value
+                ? context.l10n.doneLabel
+                : context.l10n.editLabel,
             rightIcon: AppIcons.add,
             onPressedLeft: () {
               widget.editPressed.value = !widget.editPressed.value;
