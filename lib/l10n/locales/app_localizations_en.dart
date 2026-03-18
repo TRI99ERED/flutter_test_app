@@ -15,13 +15,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get themeLabel => 'Theme';
 
   @override
-  String get themeModeSystem => 'System';
+  String get systemLabel => 'System';
 
   @override
-  String get themeModeLight => 'Light';
+  String get lightLabel => 'Light';
 
   @override
-  String get themeModeDark => 'Dark';
+  String get darkLabel => 'Dark';
 
   @override
   String get unknownChatterLabel => 'Unknown';
@@ -196,6 +196,15 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get cancelLabel => 'Cancel';
+
+  @override
+  String get toDoLabel => 'To Do';
+
+  @override
+  String get inProgressLabel => 'In Progress';
+
+  @override
+  String get finishedLabel => 'Finished';
 
   @override
   String get lastUpdatedLabel => 'LAST UPDATED';
@@ -767,12 +776,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get setDeadlineLabel => 'Set Deadline';
 
   @override
-  String get inProgressLabel => 'In Progress';
-
-  @override
-  String get finishedLabel => 'Finished';
-
-  @override
   String get selectAFriendLabel => 'Select a friend';
 
   @override
@@ -817,4 +820,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get handleIsAlreadyTakenMessage => 'Handle is already taken';
+
+  @override
+  String get englishLabel => 'English';
+
+  @override
+  String get ukrainianLabel => 'Ukrainian';
 }

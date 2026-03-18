@@ -1,19 +1,21 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:test_app/l10n/locales/l10n.dart';
 
 enum ProjectStatus {
   todo,
   inProgress,
   finished;
 
-  String get displayName {
+  String displayName(BuildContext context) {
     switch (this) {
       case ProjectStatus.todo:
-        return 'To Do';
+        return context.l10n.toDoLabel;
       case ProjectStatus.inProgress:
-        return 'In Progress';
+        return context.l10n.inProgressLabel;
       case ProjectStatus.finished:
-        return 'Finished';
+        return context.l10n.finishedLabel;
     }
   }
 }

@@ -10,14 +10,14 @@ import 'package:test_app/src/features/themes/styles.dart';
 import 'package:test_app/src/widgets/common/app_nav_bar.dart';
 import 'package:test_app/src/widgets/common/app_radio_button.dart';
 
-class AppearanceScreen extends StatefulWidget {
-  const AppearanceScreen({super.key});
+class LanguageScreen extends StatefulWidget {
+  const LanguageScreen({super.key});
 
   @override
-  State<AppearanceScreen> createState() => _AppearanceScreenState();
+  State<LanguageScreen> createState() => _LanguageScreenState();
 }
 
-class _AppearanceScreenState extends State<AppearanceScreen> {
+class _LanguageScreenState extends State<LanguageScreen> {
   @override
   Widget build(BuildContext context) {
     return ControllerListener(
@@ -35,7 +35,7 @@ class _AppearanceScreenState extends State<AppearanceScreen> {
       },
       child: Scaffold(
         appBar: AppNavBar(
-          title: context.l10n.appearanceTitle,
+          title: context.l10n.languageTitle,
           leftIcon: AppIcons.arrowLeft,
           onPressedLeft: () {
             context.pop();
@@ -46,7 +46,7 @@ class _AppearanceScreenState extends State<AppearanceScreen> {
             Padding(
               padding: const EdgeInsets.all(spacing16),
               child: Text(
-                context.l10n.themeLabel,
+                context.l10n.languageTitle,
                 style: TextStyle(
                   fontSize: h3Size,
                   fontWeight: h3Weight,
@@ -59,36 +59,36 @@ class _AppearanceScreenState extends State<AppearanceScreen> {
               ),
             ),
             ValueListenableBuilder(
-              valueListenable: context.themeMode,
+              valueListenable: context.locale,
               builder: (context, value, child) {
-                return RadioGroup<ThemeMode>(
-                  groupValue: context.themeMode.value,
+                return RadioGroup<Locale?>(
+                  groupValue: context.locale.value,
                   onChanged: (value) {
                     if (value != null) {
-                      context.themeMode.value = value;
+                      context.locale.value = value;
                     }
                   },
                   child: Column(
                     children: [
-                      AppRadioTile(
-                        value: ThemeMode.system,
+                      AppRadioTile<Locale?>(
+                        value: null,
                         title: context.l10n.systemLabel,
                         onChanged: (value) {
-                          context.themeMode.value = value;
+                          context.locale.value = value;
                         },
                       ),
-                      AppRadioTile(
-                        value: ThemeMode.light,
-                        title: context.l10n.lightLabel,
+                      AppRadioTile<Locale?>(
+                        value: const Locale('en'),
+                        title: context.l10n.englishLabel,
                         onChanged: (value) {
-                          context.themeMode.value = value;
+                          context.locale.value = value;
                         },
                       ),
-                      AppRadioTile(
-                        value: ThemeMode.dark,
-                        title: context.l10n.darkLabel,
+                      AppRadioTile<Locale?>(
+                        value: const Locale('uk'),
+                        title: context.l10n.ukrainianLabel,
                         onChanged: (value) {
-                          context.themeMode.value = value;
+                          context.locale.value = value;
                         },
                       ),
                     ],

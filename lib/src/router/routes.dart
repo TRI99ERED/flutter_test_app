@@ -8,6 +8,7 @@ import 'package:test_app/src/features/email_confirmation_screen/email_confirmati
 import 'package:test_app/src/features/forgot_password_screen/forgot_password_screen.dart';
 import 'package:test_app/src/features/home_screen/home_screen.dart';
 import 'package:test_app/src/features/interests_screen/interests_screen.dart';
+import 'package:test_app/src/features/language_screen/language_screen.dart';
 import 'package:test_app/src/features/notifications_screen/notifications_screen.dart';
 import 'package:test_app/src/features/onboarding_screen/onboarding_screen.dart';
 import 'package:test_app/src/features/login_screen/login_screen.dart';
@@ -30,6 +31,7 @@ const projectFeedbackPath = '/projects/:projectId/feedback';
 const savedMessagesPath = '/saved-messages';
 const notificationsPath = '/notifications';
 const appearancePath = '/appearance';
+const languagePath = '/language';
 
 GoRouter generateRouter(
   AppController appController,
@@ -112,6 +114,12 @@ GoRouter generateRouter(
         path: appearancePath,
         builder: (context, state) {
           return const AppearanceScreen();
+        },
+      ),
+      GoRoute(
+        path: languagePath,
+        builder: (context, state) {
+          return const LanguageScreen();
         },
       ),
     ],

@@ -15,13 +15,13 @@ class AppLocalizationsUk extends AppLocalizations {
   String get themeLabel => 'Тема';
 
   @override
-  String get themeModeSystem => 'Системна';
+  String get systemLabel => 'Системна';
 
   @override
-  String get themeModeLight => 'Світла';
+  String get lightLabel => 'Світла';
 
   @override
-  String get themeModeDark => 'Темна';
+  String get darkLabel => 'Темна';
 
   @override
   String get unknownChatterLabel => 'Невідомий';
@@ -200,6 +200,15 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get cancelLabel => 'Скасувати';
+
+  @override
+  String get toDoLabel => 'До виконання';
+
+  @override
+  String get inProgressLabel => 'В процесі';
+
+  @override
+  String get finishedLabel => 'Завершено';
 
   @override
   String get lastUpdatedLabel => 'ВОСТАННЄ ОНОВЛЕНО';
@@ -777,12 +786,6 @@ class AppLocalizationsUk extends AppLocalizations {
   String get setDeadlineLabel => 'Встановити кінцевий термін';
 
   @override
-  String get inProgressLabel => 'В Процесі';
-
-  @override
-  String get finishedLabel => 'Завершений';
-
-  @override
   String get selectAFriendLabel => 'Виберіть друга';
 
   @override
@@ -830,4 +833,10 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get handleIsAlreadyTakenMessage => 'Ім\'я користувача вже зайняте';
+
+  @override
+  String get englishLabel => 'Англійська';
+
+  @override
+  String get ukrainianLabel => 'Українська';
 }

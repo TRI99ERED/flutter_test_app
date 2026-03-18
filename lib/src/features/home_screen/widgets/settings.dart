@@ -122,7 +122,9 @@ class Settings extends StatelessWidget {
             child: AppListItem(
               title: context.l10n.languageTitle,
               control: AppListItemControl.smallButton,
-              onPressed: () {},
+              onPressed: () {
+                context.push(languagePath);
+              },
             ),
           ),
           AppDivider(),

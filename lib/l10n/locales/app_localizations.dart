@@ -110,23 +110,23 @@ abstract class AppLocalizations {
   /// **'Theme'**
   String get themeLabel;
 
-  /// No description provided for @themeModeSystem.
+  /// No description provided for @systemLabel.
   ///
   /// In en, this message translates to:
   /// **'System'**
-  String get themeModeSystem;
+  String get systemLabel;
 
-  /// No description provided for @themeModeLight.
+  /// No description provided for @lightLabel.
   ///
   /// In en, this message translates to:
   /// **'Light'**
-  String get themeModeLight;
+  String get lightLabel;
 
-  /// No description provided for @themeModeDark.
+  /// No description provided for @darkLabel.
   ///
   /// In en, this message translates to:
   /// **'Dark'**
-  String get themeModeDark;
+  String get darkLabel;
 
   /// No description provided for @unknownChatterLabel.
   ///
@@ -463,6 +463,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Cancel'**
   String get cancelLabel;
+
+  /// No description provided for @toDoLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'To Do'**
+  String get toDoLabel;
+
+  /// No description provided for @inProgressLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'In Progress'**
+  String get inProgressLabel;
+
+  /// No description provided for @finishedLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Finished'**
+  String get finishedLabel;
 
   /// No description provided for @lastUpdatedLabel.
   ///
@@ -1520,18 +1538,6 @@ abstract class AppLocalizations {
   /// **'Set Deadline'**
   String get setDeadlineLabel;
 
-  /// No description provided for @inProgressLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'In Progress'**
-  String get inProgressLabel;
-
-  /// No description provided for @finishedLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Finished'**
-  String get finishedLabel;
-
   /// No description provided for @selectAFriendLabel.
   ///
   /// In en, this message translates to:
@@ -1621,6 +1627,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Handle is already taken'**
   String get handleIsAlreadyTakenMessage;
+
+  /// No description provided for @englishLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'English'**
+  String get englishLabel;
+
+  /// No description provided for @ukrainianLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Ukrainian'**
+  String get ukrainianLabel;
 }
 
 class _AppLocalizationsDelegate

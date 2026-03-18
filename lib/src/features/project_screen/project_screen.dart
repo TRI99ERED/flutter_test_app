@@ -109,7 +109,7 @@ class ProjectScreen extends StatelessWidget {
             _buildOwnerRow(context, project),
             const SizedBox(height: spacing16),
             Text(
-              '${context.l10n.statusLabel}: ${project.status.displayName}',
+              '${context.l10n.statusLabel}: ${project.status.displayName(context)}',
               style: TextStyle(
                 fontSize: bMSize,
                 fontWeight: bMWeight,

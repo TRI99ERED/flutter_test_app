@@ -59,7 +59,6 @@ class _AppTapBarState extends State<AppTapBar> {
       ),
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
       child: Row(
-        spacing: 4,
         children: List.generate(widget.tabCount, (index) {
           return Expanded(
             child: _TabItem(

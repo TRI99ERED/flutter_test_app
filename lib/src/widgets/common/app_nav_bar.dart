@@ -36,7 +36,7 @@ class AppNavBar extends StatelessWidget implements PreferredSizeWidget {
       child: Row(
         children: [
           SizedBox(
-            width: 80,
+            width: 100,
             child: (leftText != null || leftIcon != null || leftImage != null)
                 ? _AppControl(
                     text: leftText,
@@ -62,7 +62,7 @@ class AppNavBar extends StatelessWidget implements PreferredSizeWidget {
             ),
           ),
           SizedBox(
-            width: 80,
+            width: 100,
             child:
                 (rightText != null || rightIcon != null || rightImage != null)
                 ? _AppControl(

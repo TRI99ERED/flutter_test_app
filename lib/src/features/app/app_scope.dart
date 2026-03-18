@@ -6,12 +6,14 @@ class AppScope extends StatefulWidget {
   final Widget child;
   final AppController controller;
   final ValueNotifier<ThemeMode> themeMode;
+  final ValueNotifier<Locale?> locale;
 
   const AppScope({
     super.key,
     required this.child,
     required this.controller,
     required this.themeMode,
+    required this.locale,
   });
 
   @override
@@ -50,6 +52,7 @@ class _AppScopeState extends State<AppScope> {
       controller: _controller,
       state: _state,
       themeMode: widget.themeMode,
+      locale: widget.locale,
       child: widget.child,
     );
   }
@@ -65,12 +68,14 @@ class InheritedScopeWidget extends InheritedWidget {
   final AppController controller;
   final AppState state;
   final ValueNotifier<ThemeMode> themeMode;
+  final ValueNotifier<Locale?> locale;
 
   const InheritedScopeWidget({
     super.key,
     required this.controller,
     required this.state,
     required this.themeMode,
+    required this.locale,
     required super.child,
   });
 
@@ -89,7 +94,9 @@ class InheritedScopeWidget extends InheritedWidget {
 
   @override
   bool updateShouldNotify(InheritedScopeWidget oldWidget) {
-    return state != oldWidget.state || themeMode != oldWidget.themeMode;
+    return state != oldWidget.state ||
+        themeMode != oldWidget.themeMode ||
+        locale != oldWidget.locale;
   }
 }
 
@@ -100,4 +107,6 @@ extension AppScopeExtension on BuildContext {
       dependOnInheritedWidgetOfExactType<InheritedScopeWidget>()!.controller;
   ValueNotifier<ThemeMode> get themeMode =>
       dependOnInheritedWidgetOfExactType<InheritedScopeWidget>()!.themeMode;
+  ValueNotifier<Locale?> get locale =>
+      dependOnInheritedWidgetOfExactType<InheritedScopeWidget>()!.locale;
 }

@@ -63,6 +63,7 @@ class _AppState extends State<App> {
     visualDensity: VisualDensity.adaptivePlatformDensity,
   );
   final _themeMode = ValueNotifier<ThemeMode>(ThemeMode.system);
+  final _locale = ValueNotifier<Locale?>(null);
 
   @override
   void initState() {
@@ -81,21 +82,28 @@ class _AppState extends State<App> {
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder(
-      valueListenable: _themeMode,
+      valueListenable: _locale,
       builder: (context, value, child) {
-        return MaterialApp.router(
-          title: context.l10n.appTitle,
-          theme: _lightTheme,
-          darkTheme: _darkTheme,
-          themeMode: _themeMode.value,
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          routerConfig: _router,
-          builder: (context, child) => AppScope(
-            controller: _appController,
-            themeMode: _themeMode,
-            child: child!,
-          ),
+        return ValueListenableBuilder(
+          valueListenable: _themeMode,
+          builder: (context, value, child) {
+            return MaterialApp.router(
+              title: 'Test App',
+              theme: _lightTheme,
+              darkTheme: _darkTheme,
+              themeMode: _themeMode.value,
+              locale: _locale.value,
+              localizationsDelegates: AppLocalizations.localizationsDelegates,
+              supportedLocales: AppLocalizations.supportedLocales,
+              routerConfig: _router,
+              builder: (context, child) => AppScope(
+                controller: _appController,
+                themeMode: _themeMode,
+                locale: _locale,
+                child: child!,
+              ),
+            );
+          },
         );
       },
     );

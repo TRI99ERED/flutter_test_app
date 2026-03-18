@@ -50,9 +50,9 @@ class _ProjectsState extends State<Projects> {
           AppContentSwitcher(
             sectionCount: 3,
             sectionTitles: [
-              ProjectStatus.todo.displayName,
-              ProjectStatus.inProgress.displayName,
-              ProjectStatus.finished.displayName,
+              ProjectStatus.todo.displayName(context),
+              ProjectStatus.inProgress.displayName(context),
+              ProjectStatus.finished.displayName(context),
             ],
             selectedIndex: _sectionIndex.value,
             onSectionSelected: (value) {
