@@ -581,7 +581,7 @@ class AppLocalizationsUk extends AppLocalizations {
       'Ваші збережені повідомлення з\'являться тут.';
 
   @override
-  String get goToDirectChatLabel => 'Перейти до прямого чату';
+  String get goToDirectChatLabel => 'Перейти до особистого чату';
 
   @override
   String get goToGroupChatLabel => 'Перейти до групового чату';
