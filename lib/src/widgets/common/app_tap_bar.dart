@@ -97,6 +97,7 @@ class _TabItem extends StatelessWidget {
     return TextButton(
       onPressed: onPressed,
       style: TextButton.styleFrom(
+        padding: EdgeInsets.zero,
         shape: const ContinuousRectangleBorder(borderRadius: BorderRadius.zero),
       ),
       child: Column(

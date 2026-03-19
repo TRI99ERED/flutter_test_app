@@ -67,7 +67,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             children: [
               Expanded(child: PlaceholderImage()),
               Container(
-                height: MediaQuery.sizeOf(context).height * 0.4,
+                height: MediaQuery.sizeOf(context).height * 0.5,
                 color: Theme.of(
                   context,
                 ).extension<AppTheme>()?.backgroundStrongestColor,

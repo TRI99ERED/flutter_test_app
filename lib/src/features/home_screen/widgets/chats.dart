@@ -81,7 +81,6 @@ class _ChatsState extends State<Chats> {
             child: StreamBuilder(
               stream: context.appController.watchAllChatsForUser(user.id),
               builder: (context, snapshot) {
-                debugPrint('Chats stream emitted new value: ${snapshot.data}');
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(
                     child: SizedBox(height: 72, child: AppLoader()),

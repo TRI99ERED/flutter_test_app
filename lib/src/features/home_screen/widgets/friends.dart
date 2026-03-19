@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:test_app/l10n/locales/l10n.dart';
+import 'package:test_app/main.dart';
 import 'package:test_app/src/core/resources/app_icons.dart';
 import 'package:test_app/src/features/app/app_scope.dart';
+import 'package:test_app/src/features/app/data/models/chat_model.dart';
 import 'package:test_app/src/features/app/data/models/user_model.dart';
 import 'package:test_app/src/widgets/common/app_avatar.dart';
 import 'package:test_app/src/widgets/user_picker.dart';
@@ -353,19 +355,50 @@ class _FriendsSectionState extends State<_FriendsSection> {
                                                   as AuthorizedUser;
                                           final appController =
                                               context.appController;
+                                          final existingChat =
+                                              await appController
+                                                  .watchDirectChatsForUser(
+                                                    user.id,
+                                                  )
+                                                  .first
+                                                  .then((chats) {
+                                                    if (chats == null) {
+                                                      return null;
+                                                    }
+                                                    return chats.firstWhere(
+                                                      (c) => c.participants
+                                                          .contains(friend.id),
+                                                      orElse: () => DirectChat(
+                                                        id: '',
+                                                        name: '',
+                                                        participants: [],
+                                                        lastMessage: '',
+                                                        lastUpdated:
+                                                            DateTime.now(),
+                                                        unreadCount: 0,
+                                                      ),
+                                                    );
+                                                  });
+                                          if (existingChat != null &&
+                                              existingChat.id.isNotEmpty) {
+                                            rootNavigatorKey.currentContext?.push(
+                                              '/chats/direct/${existingChat.id}',
+                                            );
+                                            return;
+                                          }
 
-                                          if (!mounted) return;
+                                          if (!context.mounted) return;
                                           final chat = await appController
                                               .createDirectChat(
                                                 participants: [
                                                   user.id,
                                                   friend.id,
                                                 ],
-                                                chatName: '',
+                                                chatName:
+                                                    '${(context.appState.user as AuthorizedUser).name}, ${friend.name}',
                                               );
 
-                                          if (!context.mounted) return;
-                                          context.push(
+                                          rootNavigatorKey.currentContext?.push(
                                             '/chats/direct/${chat.id}',
                                           );
                                         },

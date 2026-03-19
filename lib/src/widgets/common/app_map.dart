@@ -79,29 +79,19 @@ class _AppMapState extends State<AppMap> {
   Future<void> _requestLocationPermissionAndStartListening() async {
     try {
       final permission = await Geolocator.checkPermission();
-      debugPrint('Current location permission: $permission');
 
       LocationPermission finalPermission = permission;
 
       if (permission == LocationPermission.denied) {
-        debugPrint('Permission denied, requesting...');
         finalPermission = await Geolocator.requestPermission();
-        debugPrint('Permission after request: $finalPermission');
       }
 
       if (finalPermission == LocationPermission.whileInUse ||
           finalPermission == LocationPermission.always) {
-        debugPrint('Permission granted, starting location listening');
         _startListeningToLocation();
-      } else if (finalPermission == LocationPermission.deniedForever) {
-        debugPrint(
-          'Location permission denied forever. User needs to enable it in settings.',
-        );
-      } else {
-        debugPrint('Location permission not granted: $finalPermission');
       }
     } catch (e) {
-      debugPrint('Error requesting location permission: $e');
+      throw Exception('Error requesting location permission: $e');
     }
   }
 
@@ -114,13 +104,7 @@ class _AppMapState extends State<AppMap> {
     _positionStream =
         Geolocator.getPositionStream(locationSettings: locationSettings).listen(
           (Position position) {
-            debugPrint(
-              'Location updated: ${position.latitude}, ${position.longitude}',
-            );
             _userLocation = LatLng(position.latitude, position.longitude);
-          },
-          onError: (error) {
-            debugPrint('Error getting location: $error');
           },
         );
   }

@@ -24,7 +24,7 @@ class FirebaseAuthRepositoryImpl implements IFirebaseAuthRepository {
         .authStateChanges()
         .asyncMap((user) => _mapFirebaseUser(user))
         .handleError((Object error) {
-          debugPrint('Auth state stream error (non-fatal): $error');
+          throw Exception('Auth state stream error: $error');
         });
   }
 
@@ -214,7 +214,7 @@ class FirebaseAuthRepositoryImpl implements IFirebaseAuthRepository {
         try {
           await user.updateDisplayName(name);
         } catch (e) {
-          debugPrint('Failed to set display name: $e');
+          throw Exception('Failed to set display name: $e');
         }
       }
 
@@ -263,7 +263,7 @@ class FirebaseAuthRepositoryImpl implements IFirebaseAuthRepository {
           return _mapFirebaseUserToAuthorizedWithFirestore(user);
         })
         .handleError((Object error) {
-          debugPrint('Auth state stream error (non-fatal): $error');
+          throw Exception('Auth state stream error: $error');
         });
   }
 

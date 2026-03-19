@@ -184,13 +184,9 @@ final class AppController extends BaseController<AppState> {
         email: email,
         password: password,
       );
-      debugPrint('User signed in: $user');
       final fcmToken = await _messagingRepository.getToken();
-      debugPrint('FCM token: $fcmToken');
       final updatedUser = user.copyWith(fcmToken: fcmToken) as AuthorizedUser;
-      debugPrint('Updating user with FCM token: $updatedUser');
       await _firestoreRepository.updateUser(updatedUser);
-      debugPrint('User updated with FCM token');
       setState(AppState.idle(message: 'Sign in successful', user: updatedUser));
     } catch (error, stackTrace) {
       setState(

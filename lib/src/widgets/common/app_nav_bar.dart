@@ -35,16 +35,18 @@ class AppNavBar extends StatelessWidget implements PreferredSizeWidget {
     return SafeArea(
       child: Row(
         children: [
-          SizedBox(
-            width: 100,
-            child: (leftText != null || leftIcon != null || leftImage != null)
-                ? _AppControl(
-                    text: leftText,
-                    icon: leftIcon,
-                    image: leftImage,
-                    onPressed: onPressedLeft,
-                  )
-                : const SizedBox.shrink(),
+          Expanded(
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: (leftText != null || leftIcon != null || leftImage != null)
+                  ? _AppControl(
+                      text: leftText,
+                      icon: leftIcon,
+                      image: leftImage,
+                      onPressed: onPressedLeft,
+                    )
+                  : const SizedBox.shrink(),
+            ),
           ),
           Expanded(
             child: Center(
@@ -61,17 +63,19 @@ class AppNavBar extends StatelessWidget implements PreferredSizeWidget {
               ),
             ),
           ),
-          SizedBox(
-            width: 100,
-            child:
-                (rightText != null || rightIcon != null || rightImage != null)
-                ? _AppControl(
-                    text: rightText,
-                    icon: rightIcon,
-                    image: rightImage,
-                    onPressed: onPressedRight,
-                  )
-                : const SizedBox.shrink(),
+          Expanded(
+            child: Align(
+              alignment: Alignment.centerRight,
+              child:
+                  (rightText != null || rightIcon != null || rightImage != null)
+                  ? _AppControl(
+                      text: rightText,
+                      icon: rightIcon,
+                      image: rightImage,
+                      onPressed: onPressedRight,
+                    )
+                  : const SizedBox.shrink(),
+            ),
           ),
         ],
       ),
