@@ -263,12 +263,42 @@ class _ChatWizardState extends State<ChatWizard> {
                       context.pop(chat);
                       return;
                     }
-                    final chat = await context.appController.createDirectChat(
-                      participants: participants,
-                      chatName: chatName,
-                    );
-                    if (!context.mounted) return;
-                    context.pop(chat);
+                    if (participants.length == 2) {
+                      final existingChat = await context.appController
+                          .watchDirectChatsForUser(user.id)
+                          .first
+                          .then((chats) {
+                            if (chats == null) {
+                              return null;
+                            }
+                            return chats.firstWhere(
+                              (c) => c.participants.contains(
+                                participants.firstWhere((id) => id != user.id),
+                              ),
+                              orElse: () => DirectChat(
+                                id: '',
+                                name: '',
+                                participants: [],
+                                lastMessage: '',
+                                lastUpdated: DateTime.now(),
+                                unreadCount: 0,
+                              ),
+                            );
+                          });
+                      if (existingChat != null &&
+                          existingChat.id.isNotEmpty &&
+                          context.mounted) {
+                        context.pop(existingChat);
+                        return;
+                      }
+                      if (!context.mounted) return;
+                      final chat = await context.appController.createDirectChat(
+                        participants: participants,
+                        chatName: chatName,
+                      );
+                      if (!context.mounted) return;
+                      context.pop(chat);
+                    }
                   },
                   ChatWizardMode.edit => () async {
                     if (widget.chatToEdit == null) return;
