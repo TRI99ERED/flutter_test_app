@@ -28,7 +28,7 @@ class AppListSelectable extends StatelessWidget {
         },
         style: TextButton.styleFrom(
           backgroundColor: (value ?? false)
-              ? Theme.of(context).extension<AppTheme>()?.highlightLightestColor
+              ? Theme.of(context).extension<AppTheme>()?.backgroundStrongColor
               : Theme.of(
                   context,
                 ).extension<AppTheme>()?.backgroundStrongestColor,

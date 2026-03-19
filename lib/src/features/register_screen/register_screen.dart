@@ -65,7 +65,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
         listener: (context, previous, current) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('${context.l10n.errorLabel}: ${current.message}'),
+              backgroundColor: Theme.of(
+                context,
+              ).extension<AppTheme>()?.backgroundStrongColor,
+              content: Text(
+                '${context.l10n.errorLabel}: ${current.message}',
+                style: TextStyle(
+                  color: Theme.of(
+                    context,
+                  ).extension<AppTheme>()?.foregroundStrongestColor,
+                ),
+              ),
             ),
           );
         },
@@ -195,6 +205,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                     context
                                         .l10n
                                         .iveReadAndAgreeWithTermsAndConditionsLabel,
+                                    style: TextStyle(
+                                      fontSize: bMSize,
+                                      fontWeight: bMWeight,
+                                      color: Theme.of(context)
+                                          .extension<AppTheme>()
+                                          ?.foregroundStrongestColor,
+                                    ),
                                   ),
                                 ),
                               ],

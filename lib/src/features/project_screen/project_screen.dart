@@ -33,7 +33,17 @@ class ProjectScreen extends StatelessWidget {
         if (current.isFailed) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('${context.l10n.errorLabel}: ${current.message}'),
+              backgroundColor: Theme.of(
+                context,
+              ).extension<AppTheme>()?.backgroundStrongColor,
+              content: Text(
+                '${context.l10n.errorLabel}: ${current.message}',
+                style: TextStyle(
+                  color: Theme.of(
+                    context,
+                  ).extension<AppTheme>()?.foregroundStrongestColor,
+                ),
+              ),
             ),
           );
         }
@@ -313,7 +323,17 @@ class ProjectScreen extends StatelessWidget {
                 if (!context.mounted) return;
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text(context.l10n.noOtherParticipantsMessage),
+                    backgroundColor: Theme.of(
+                      context,
+                    ).extension<AppTheme>()?.backgroundStrongColor,
+                    content: Text(
+                      context.l10n.noOtherParticipantsMessage,
+                      style: TextStyle(
+                        color: Theme.of(
+                          context,
+                        ).extension<AppTheme>()?.foregroundStrongestColor,
+                      ),
+                    ),
                   ),
                 );
                 return;
@@ -372,7 +392,19 @@ class ProjectScreen extends StatelessWidget {
           }
           if (!context.mounted) return;
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(context.l10n.noGroupChatFoundMessage)),
+            SnackBar(
+              backgroundColor: Theme.of(
+                context,
+              ).extension<AppTheme>()?.backgroundStrongColor,
+              content: Text(
+                context.l10n.noGroupChatFoundMessage,
+                style: TextStyle(
+                  color: Theme.of(
+                    context,
+                  ).extension<AppTheme>()?.foregroundStrongestColor,
+                ),
+              ),
+            ),
           );
         });
       };

@@ -65,8 +65,16 @@ class _EmailConfirmationScreenState extends State<EmailConfirmationScreen> {
             listener: (context, previous, current) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
+                  backgroundColor: Theme.of(
+                    context,
+                  ).extension<AppTheme>()?.backgroundStrongColor,
                   content: Text(
                     '${context.l10n.errorLabel}: ${current.message}',
+                    style: TextStyle(
+                      color: Theme.of(
+                        context,
+                      ).extension<AppTheme>()?.foregroundStrongestColor,
+                    ),
                   ),
                 ),
               );

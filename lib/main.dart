@@ -10,6 +10,7 @@ import 'package:test_app/l10n/locales/l10n.dart';
 import 'package:test_app/src/features/app/app_controller/app_controller.dart';
 import 'package:test_app/src/features/app/app_scope.dart';
 import 'package:test_app/src/features/themes/app_theme.dart';
+import 'package:test_app/src/features/themes/styles.dart';
 import 'package:test_app/src/router/routes.dart';
 import 'package:test_app/src/services/notification_service.dart';
 
@@ -53,6 +54,14 @@ class _AppState extends State<App> {
     textTheme: GoogleFonts.interTextTheme(),
     primaryTextTheme: GoogleFonts.interTextTheme(),
     visualDensity: VisualDensity.adaptivePlatformDensity,
+    snackBarTheme: SnackBarThemeData(
+      backgroundColor: appThemeLight.backgroundStrongColor,
+      contentTextStyle: GoogleFonts.inter(
+        color: appThemeLight.foregroundStrongestColor,
+        fontSize: cMSize,
+        fontWeight: cMWeight,
+      ),
+    ),
   );
   final ThemeData _darkTheme = ThemeData(
     brightness: Brightness.dark,
@@ -61,6 +70,14 @@ class _AppState extends State<App> {
     textTheme: GoogleFonts.interTextTheme(),
     primaryTextTheme: GoogleFonts.interTextTheme(),
     visualDensity: VisualDensity.adaptivePlatformDensity,
+    snackBarTheme: SnackBarThemeData(
+      backgroundColor: appThemeDark.backgroundStrongColor,
+      contentTextStyle: GoogleFonts.inter(
+        color: appThemeDark.foregroundStrongestColor,
+        fontSize: cMSize,
+        fontWeight: cMWeight,
+      ),
+    ),
   );
   final _themeMode = ValueNotifier<ThemeMode>(ThemeMode.system);
   final _locale = ValueNotifier<Locale?>(null);

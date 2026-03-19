@@ -37,7 +37,17 @@ class _ProjectFeedbackScreenState extends State<ProjectFeedbackScreen> {
         if (current.isFailed) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('${context.l10n.errorLabel}: ${current.message}'),
+              backgroundColor: Theme.of(
+                context,
+              ).extension<AppTheme>()?.backgroundStrongColor,
+              content: Text(
+                '${context.l10n.errorLabel}: ${current.message}',
+                style: TextStyle(
+                  color: Theme.of(
+                    context,
+                  ).extension<AppTheme>()?.foregroundStrongestColor,
+                ),
+              ),
             ),
           );
         }
@@ -317,7 +327,17 @@ class _ProjectFeedbackScreenState extends State<ProjectFeedbackScreen> {
                       if (!context.mounted) return;
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
-                          content: Text(context.l10n.feedbackSubmittedLabel),
+                          backgroundColor: Theme.of(
+                            context,
+                          ).extension<AppTheme>()?.backgroundStrongColor,
+                          content: Text(
+                            context.l10n.feedbackSubmittedLabel,
+                            style: TextStyle(
+                              color: Theme.of(
+                                context,
+                              ).extension<AppTheme>()?.foregroundStrongestColor,
+                            ),
+                          ),
                         ),
                       );
                     },

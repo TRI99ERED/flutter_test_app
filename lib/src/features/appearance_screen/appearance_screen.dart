@@ -29,9 +29,21 @@ class _AppearanceScreenState extends State<AppearanceScreen> {
         return false;
       },
       listener: (context, previous, current) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Error: ${current.message}')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            backgroundColor: Theme.of(
+              context,
+            ).extension<AppTheme>()?.backgroundStrongColor,
+            content: Text(
+              'Error: ${current.message}',
+              style: TextStyle(
+                color: Theme.of(
+                  context,
+                ).extension<AppTheme>()?.foregroundStrongestColor,
+              ),
+            ),
+          ),
+        );
       },
       child: Scaffold(
         appBar: AppNavBar(

@@ -258,15 +258,7 @@ class FirebaseAuthRepositoryImpl implements IFirebaseAuthRepository {
         .authStateChanges()
         .asyncMap((user) {
           if (user == null) {
-            return Future.value(
-              const AuthorizedUser(
-                id: '',
-                name: 'Guest',
-                email: '',
-                handle: '',
-                avatarUrl: '',
-              ),
-            );
+            return Future<AuthorizedUser>.error('User is not authorized');
           }
           return _mapFirebaseUserToAuthorizedWithFirestore(user);
         })

@@ -325,7 +325,7 @@ final class AppController extends BaseController<AppState> {
           stackTrace: stackTrace,
         ),
       );
-      rethrow;
+      return Future.error(error, stackTrace);
     }
   });
 
@@ -363,7 +363,7 @@ final class AppController extends BaseController<AppState> {
           stackTrace: stackTrace,
         ),
       );
-      rethrow;
+      return Future.error(error, stackTrace);
     }
   });
 
@@ -415,7 +415,7 @@ final class AppController extends BaseController<AppState> {
           stackTrace: stackTrace,
         ),
       );
-      rethrow;
+      return Future.error(error, stackTrace);
     }
   });
 
@@ -455,7 +455,7 @@ final class AppController extends BaseController<AppState> {
           stackTrace: stackTrace,
         ),
       );
-      rethrow;
+      return Future.error(error, stackTrace);
     }
   });
 
@@ -491,7 +491,7 @@ final class AppController extends BaseController<AppState> {
           stackTrace: stackTrace,
         ),
       );
-      rethrow;
+      return Future.error(error, stackTrace);
     }
   });
 
@@ -526,7 +526,7 @@ final class AppController extends BaseController<AppState> {
           stackTrace: stackTrace,
         ),
       );
-      rethrow;
+      return Future.error(error, stackTrace);
     }
   });
 
@@ -570,7 +570,7 @@ final class AppController extends BaseController<AppState> {
           stackTrace: stackTrace,
         ),
       );
-      rethrow;
+      return Future.error(error, stackTrace);
     }
   });
 
@@ -606,7 +606,7 @@ final class AppController extends BaseController<AppState> {
           stackTrace: stackTrace,
         ),
       );
-      rethrow;
+      return Future.error(error, stackTrace);
     }
   });
 
@@ -645,7 +645,7 @@ final class AppController extends BaseController<AppState> {
           stackTrace: stackTrace,
         ),
       );
-      rethrow;
+      return Future.error(error, stackTrace);
     }
   });
 
@@ -697,7 +697,7 @@ final class AppController extends BaseController<AppState> {
           stackTrace: stackTrace,
         ),
       );
-      rethrow;
+      return Future.error(error, stackTrace);
     }
   });
 
@@ -733,7 +733,7 @@ final class AppController extends BaseController<AppState> {
           stackTrace: stackTrace,
         ),
       );
-      rethrow;
+      return Future.error(error, stackTrace);
     }
   });
 
@@ -769,7 +769,7 @@ final class AppController extends BaseController<AppState> {
           stackTrace: stackTrace,
         ),
       );
-      rethrow;
+      return Future.error(error, stackTrace);
     }
   });
 
@@ -805,7 +805,7 @@ final class AppController extends BaseController<AppState> {
           stackTrace: stackTrace,
         ),
       );
-      rethrow;
+      return Future.error(error, stackTrace);
     }
   });
 
@@ -835,7 +835,7 @@ final class AppController extends BaseController<AppState> {
               stackTrace: stackTrace,
             ),
           );
-          rethrow;
+          return Future.error(error, stackTrace);
         }
       });
 
@@ -878,7 +878,7 @@ final class AppController extends BaseController<AppState> {
               stackTrace: stackTrace,
             ),
           );
-          rethrow;
+          return Future.error(error, stackTrace);
         }
       });
 
@@ -962,7 +962,7 @@ final class AppController extends BaseController<AppState> {
           stackTrace: stackTrace,
         ),
       );
-      rethrow;
+      return Future.error(error, stackTrace);
     }
   });
 
@@ -993,7 +993,7 @@ final class AppController extends BaseController<AppState> {
           stackTrace: stackTrace,
         ),
       );
-      rethrow;
+      return Future.error(error, stackTrace);
     }
   });
 
@@ -1052,7 +1052,7 @@ final class AppController extends BaseController<AppState> {
           stackTrace: stackTrace,
         ),
       );
-      rethrow;
+      return Future.error(error, stackTrace);
     }
   });
 
@@ -1090,7 +1090,7 @@ final class AppController extends BaseController<AppState> {
           stackTrace: stackTrace,
         ),
       );
-      rethrow;
+      return Future.error(error, stackTrace);
     }
   });
 
@@ -1120,7 +1120,7 @@ final class AppController extends BaseController<AppState> {
               stackTrace: stackTrace,
             ),
           );
-          rethrow;
+          return Future.error(error, stackTrace);
         }
       });
 
@@ -1190,7 +1190,7 @@ final class AppController extends BaseController<AppState> {
           stackTrace: stackTrace,
         ),
       );
-      rethrow;
+      return Future.error(error, stackTrace);
     }
   });
 
@@ -1223,7 +1223,7 @@ final class AppController extends BaseController<AppState> {
           stackTrace: stackTrace,
         ),
       );
-      rethrow;
+      return Future.error(error, stackTrace);
     }
   });
 
@@ -1274,7 +1274,7 @@ final class AppController extends BaseController<AppState> {
           stackTrace: stackTrace,
         ),
       );
-      rethrow;
+      return Future.error(error, stackTrace);
     }
   });
 
@@ -1321,7 +1321,7 @@ final class AppController extends BaseController<AppState> {
           stackTrace: stackTrace,
         ),
       );
-      rethrow;
+      return Future.error(error, stackTrace);
     }
   });
 
@@ -1361,7 +1361,7 @@ final class AppController extends BaseController<AppState> {
           stackTrace: stackTrace,
         ),
       );
-      rethrow;
+      return Future.error(error, stackTrace);
     }
   });
 
@@ -1397,7 +1397,7 @@ final class AppController extends BaseController<AppState> {
           stackTrace: stackTrace,
         ),
       );
-      rethrow;
+      return Future.error(error, stackTrace);
     }
   });
 
@@ -1436,7 +1436,7 @@ final class AppController extends BaseController<AppState> {
           stackTrace: stackTrace,
         ),
       );
-      rethrow;
+      return Future.error(error, stackTrace);
     }
   });
 
@@ -1483,7 +1483,7 @@ final class AppController extends BaseController<AppState> {
           stackTrace: stackTrace,
         ),
       );
-      rethrow;
+      return Future.error(error, stackTrace);
     }
   });
 
@@ -1514,7 +1514,7 @@ final class AppController extends BaseController<AppState> {
           stackTrace: stackTrace,
         ),
       );
-      rethrow;
+      return Future.error(error, stackTrace);
     }
   });
 
@@ -1559,7 +1559,7 @@ final class AppController extends BaseController<AppState> {
           stackTrace: stackTrace,
         ),
       );
-      rethrow;
+      return Future.error(error, stackTrace);
     }
   });
 
@@ -1625,7 +1625,7 @@ final class AppController extends BaseController<AppState> {
           stackTrace: stackTrace,
         ),
       );
-      rethrow;
+      return Future.error(error, stackTrace);
     }
   }
 
@@ -1657,7 +1657,7 @@ final class AppController extends BaseController<AppState> {
           stackTrace: stackTrace,
         ),
       );
-      rethrow;
+      return Future.error(error, stackTrace);
     }
   });
 
@@ -1687,7 +1687,7 @@ final class AppController extends BaseController<AppState> {
           stackTrace: stackTrace,
         ),
       );
-      rethrow;
+      return Future.error(error, stackTrace);
     }
   });
 
@@ -1718,7 +1718,7 @@ final class AppController extends BaseController<AppState> {
           stackTrace: stackTrace,
         ),
       );
-      rethrow;
+      return Future.error(error, stackTrace);
     }
   }
 
@@ -1747,7 +1747,7 @@ final class AppController extends BaseController<AppState> {
               stackTrace: stackTrace,
             ),
           );
-          rethrow;
+          return Future.error(error, stackTrace);
         }
       });
 
@@ -1785,7 +1785,7 @@ final class AppController extends BaseController<AppState> {
               stackTrace: stackTrace,
             ),
           );
-          rethrow;
+          return Future.error(error, stackTrace);
         }
       });
 
@@ -1817,7 +1817,7 @@ final class AppController extends BaseController<AppState> {
               stackTrace: stackTrace,
             ),
           );
-          rethrow;
+          return Future.error(error, stackTrace);
         }
       });
 
@@ -1867,7 +1867,7 @@ final class AppController extends BaseController<AppState> {
               stackTrace: stackTrace,
             ),
           );
-          rethrow;
+          return Future.error(error, stackTrace);
         }
       });
 
@@ -1929,7 +1929,7 @@ final class AppController extends BaseController<AppState> {
           stackTrace: stackTrace,
         ),
       );
-      rethrow;
+      return Future.error(error, stackTrace);
     }
   }
 
@@ -1971,7 +1971,7 @@ final class AppController extends BaseController<AppState> {
           stackTrace: stackTrace,
         ),
       );
-      rethrow;
+      return Future.error(error, stackTrace);
     }
   });
 

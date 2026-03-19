@@ -57,7 +57,17 @@ class _LoginScreenState extends State<LoginScreen> {
         if (current.isFailed) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('${context.l10n.errorLabel}: ${current.message}'),
+              backgroundColor: Theme.of(
+                context,
+              ).extension<AppTheme>()?.backgroundStrongColor,
+              content: Text(
+                '${context.l10n.errorLabel}: ${current.message}',
+                style: TextStyle(
+                  color: Theme.of(
+                    context,
+                  ).extension<AppTheme>()?.foregroundStrongestColor,
+                ),
+              ),
             ),
           );
         } else if (current.isAuthorized && !previous.isAuthorized) {
@@ -141,7 +151,16 @@ class _LoginScreenState extends State<LoginScreen> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Text(context.l10n.notAMemberLabel),
+                          Text(
+                            context.l10n.notAMemberLabel,
+                            style: TextStyle(
+                              fontSize: bSSize,
+                              fontWeight: bSWeight,
+                              color: Theme.of(
+                                context,
+                              ).extension<AppTheme>()?.foregroundStrongestColor,
+                            ),
+                          ),
                           AppButtonTertiary(
                             onPressed: () => context.go(registerPath),
                             text: context.l10n.registerNowLabel,
@@ -149,7 +168,18 @@ class _LoginScreenState extends State<LoginScreen> {
                         ],
                       ),
                       AppDivider(),
-                      Center(child: Text(context.l10n.orContinueWithLabel)),
+                      Center(
+                        child: Text(
+                          context.l10n.orContinueWithLabel,
+                          style: TextStyle(
+                            fontSize: bSSize,
+                            fontWeight: bSWeight,
+                            color: Theme.of(
+                              context,
+                            ).extension<AppTheme>()?.foregroundStrongestColor,
+                          ),
+                        ),
+                      ),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         spacing: spacing12,
@@ -159,10 +189,18 @@ class _LoginScreenState extends State<LoginScreen> {
                               if (kIsWeb) {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
+                                    backgroundColor: Theme.of(context)
+                                        .extension<AppTheme>()
+                                        ?.backgroundStrongColor,
                                     content: Text(
                                       context
                                           .l10n
                                           .googleSignInIsNotAvailableOnWebLabel,
+                                      style: TextStyle(
+                                        color: Theme.of(context)
+                                            .extension<AppTheme>()
+                                            ?.foregroundStrongestColor,
+                                      ),
                                     ),
                                   ),
                                 );
@@ -190,8 +228,16 @@ class _LoginScreenState extends State<LoginScreen> {
                             onPressed: () {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
+                                  backgroundColor: Theme.of(context)
+                                      .extension<AppTheme>()
+                                      ?.backgroundStrongColor,
                                   content: Text(
                                     context.l10n.appleSignInNotImplementedLabel,
+                                    style: TextStyle(
+                                      color: Theme.of(context)
+                                          .extension<AppTheme>()
+                                          ?.foregroundStrongestColor,
+                                    ),
                                   ),
                                 ),
                               );
@@ -214,10 +260,18 @@ class _LoginScreenState extends State<LoginScreen> {
                             onPressed: () {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
+                                  backgroundColor: Theme.of(context)
+                                      .extension<AppTheme>()
+                                      ?.backgroundStrongColor,
                                   content: Text(
                                     context
                                         .l10n
                                         .facebookSignInNotImplementedLabel,
+                                    style: TextStyle(
+                                      color: Theme.of(context)
+                                          .extension<AppTheme>()
+                                          ?.foregroundStrongestColor,
+                                    ),
                                   ),
                                 ),
                               );

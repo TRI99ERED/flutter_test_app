@@ -47,7 +47,17 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       listener: (context, previous, current) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('${context.l10n.errorLabel}: ${current.message}'),
+            backgroundColor: Theme.of(
+              context,
+            ).extension<AppTheme>()?.backgroundStrongColor,
+            content: Text(
+              '${context.l10n.errorLabel}: ${current.message}',
+              style: TextStyle(
+                color: Theme.of(
+                  context,
+                ).extension<AppTheme>()?.foregroundStrongestColor,
+              ),
+            ),
           ),
         );
       },
@@ -57,7 +67,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             children: [
               Expanded(child: PlaceholderImage()),
               Container(
-                height: 350,
+                height: MediaQuery.sizeOf(context).height * 0.4,
                 color: Theme.of(
                   context,
                 ).extension<AppTheme>()?.backgroundStrongestColor,

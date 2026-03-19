@@ -5,6 +5,7 @@ import 'package:test_app/l10n/locales/l10n.dart';
 import 'package:test_app/src/core/resources/app_icons.dart';
 import 'package:test_app/src/core/widgets/controller_listener.dart';
 import 'package:test_app/src/features/app/app_scope.dart';
+import 'package:test_app/src/features/themes/app_theme.dart';
 import 'package:test_app/src/widgets/common/app_list_item.dart';
 import 'package:test_app/src/widgets/common/app_nav_bar.dart';
 
@@ -48,7 +49,17 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       listener: (context, previous, current) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('${context.l10n.errorLabel}: ${current.message}'),
+            backgroundColor: Theme.of(
+              context,
+            ).extension<AppTheme>()?.backgroundStrongColor,
+            content: Text(
+              '${context.l10n.errorLabel}: ${current.message}',
+              style: TextStyle(
+                color: Theme.of(
+                  context,
+                ).extension<AppTheme>()?.foregroundStrongestColor,
+              ),
+            ),
           ),
         );
       },

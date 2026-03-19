@@ -344,7 +344,7 @@ class AppLocalizationsUk extends AppLocalizations {
   String get registerNowLabel => 'Зареєструватися зараз';
 
   @override
-  String get orContinueWithLabel => 'Або продовжити з';
+  String get orContinueWithLabel => 'Або продовжуйте з';
 
   @override
   String get googleSignInIsNotAvailableOnWebLabel =>

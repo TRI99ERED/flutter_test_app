@@ -41,25 +41,35 @@ class _InterestsScreenState extends State<InterestsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(spacing24),
-      child: ControllerListener(
-        controller: context.appController,
-        listenWhen: (previous, current) {
-          if (!previous.isFailed && current.isFailed) {
-            return true;
-          }
-          return false;
-        },
-        listener: (context, previous, current) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('${context.l10n.errorLabel}: ${current.message}'),
+    return ControllerListener(
+      controller: context.appController,
+      listenWhen: (previous, current) {
+        if (!previous.isFailed && current.isFailed) {
+          return true;
+        }
+        return false;
+      },
+      listener: (context, previous, current) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            backgroundColor: Theme.of(
+              context,
+            ).extension<AppTheme>()?.backgroundStrongColor,
+            content: Text(
+              '${context.l10n.errorLabel}: ${current.message}',
+              style: TextStyle(
+                color: Theme.of(
+                  context,
+                ).extension<AppTheme>()?.foregroundStrongestColor,
+              ),
             ),
-          );
-        },
-        child: Scaffold(
-          body: SafeArea(
+          ),
+        );
+      },
+      child: Scaffold(
+        body: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(spacing16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               spacing: spacing40,
