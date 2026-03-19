@@ -180,9 +180,7 @@ class _FriendsSectionState extends State<_FriendsSection> {
           context.appController.watchFriendOutgoingRequestsForUser(user.id),
       },
       builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: SizedBox(height: 72, child: AppLoader()));
-        } else if (snapshot.hasError) {
+        if (snapshot.hasError) {
           return ErrorState(
             message:
                 '${switch (widget._sectionType) {
@@ -191,9 +189,11 @@ class _FriendsSectionState extends State<_FriendsSection> {
                   FriendsSectionType.outgoingRequests => context.l10n.errorLoadingOutgoingRequestsMessage,
                 }}: ${snapshot.error}',
           );
+        } else if (!snapshot.hasData || snapshot.data == null) {
+          return const Center(child: AppLoader());
         }
 
-        final friends = snapshot.data ?? const [];
+        final friends = snapshot.data!;
 
         if (friends.isEmpty) {
           return EmptyState(

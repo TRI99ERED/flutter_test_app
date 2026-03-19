@@ -81,14 +81,14 @@ class _ChatsState extends State<Chats> {
             child: StreamBuilder(
               stream: context.appController.watchAllChatsForUser(user.id),
               builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(
-                    child: SizedBox(height: 72, child: AppLoader()),
-                  );
-                } else if (snapshot.hasError) {
+                if (snapshot.hasError) {
                   return ErrorState(
                     message:
                         '${context.l10n.errorLoadingChatsMessage}: ${snapshot.error}',
+                  );
+                } else if (!snapshot.hasData || snapshot.data == null) {
+                  return const Center(
+                    child: SizedBox(height: 72, child: AppLoader()),
                   );
                 }
                 final chats = snapshot.data ?? const [];

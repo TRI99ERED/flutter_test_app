@@ -75,6 +75,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
   Future<Widget> _buildNavBar(BuildContext context, Chat chat) async {
     final l10n = context.l10n;
+    final appController = context.appController;
     final resolvedChatName = await context.appController
         .watchAllUsers()
         .first
@@ -84,9 +85,6 @@ class _ChatScreenState extends State<ChatScreen> {
               (id) => id != (context.appState.user as AuthorizedUser).id,
               orElse: () => '',
             );
-            if (!context.mounted) {
-              return l10n.loadingLabel;
-            }
             if (users == null) {
               return l10n.unknownChatterLabel;
             }
@@ -104,9 +102,6 @@ class _ChatScreenState extends State<ChatScreen> {
           } else if (chat is GroupChat) {
             return chat.name;
           }
-          if (!context.mounted) {
-            return l10n.loadingLabel;
-          }
           return l10n.unknownChattersLabel;
         });
     if (chat is DirectChat && chat.participants.length == 2) {
@@ -114,11 +109,8 @@ class _ChatScreenState extends State<ChatScreen> {
         (id) => id != (context.appState.user as AuthorizedUser).id,
         orElse: () => '',
       );
-      if (!context.mounted) {
-        return AppNavBar(title: l10n.loadingLabel);
-      }
       return StreamBuilder(
-        stream: context.appController.watchUserWithId(otherId),
+        stream: appController.watchUserWithId(otherId),
         builder: (context, asyncSnapshot) {
           if (asyncSnapshot.hasError) {
             return AppNavBar(
@@ -155,7 +147,7 @@ class _ChatScreenState extends State<ChatScreen> {
         },
       );
     }
-    if (chat is GroupChat) {
+    if (chat is GroupChat && chat.participants.length > 2) {
       return AppNavBar(
         title: chat.name,
         leftIcon: AppIcons.arrowLeft,
@@ -324,8 +316,7 @@ class _ChatScreenState extends State<ChatScreen> {
                   '${context.l10n.failedToLoadChatDataMessage}: ${snapshot.error}',
             ),
           );
-        }
-        if (!snapshot.hasData || snapshot.data == null) {
+        } else if (!snapshot.hasData || snapshot.data == null) {
           return const Center(child: AppLoader());
         }
         final messages = (snapshot.data?[0] ?? []) as List<Message>;
@@ -551,12 +542,11 @@ class _ChatScreenState extends State<ChatScreen> {
                   ),
                 ),
               );
-            }
-            final directChat = directSnapshot.data;
-
-            if (!directSnapshot.hasData || directChat == null) {
+            } else if (!directSnapshot.hasData || directSnapshot.data == null) {
               return const Scaffold(body: Center(child: AppLoader()));
             }
+            final directChat = directSnapshot.data!;
+
             return Scaffold(
               appBar: PreferredSize(
                 preferredSize: const Size.fromHeight(kToolbarHeight),
@@ -564,10 +554,10 @@ class _ChatScreenState extends State<ChatScreen> {
                   child: FutureBuilder<Widget>(
                     future: _buildNavBar(context, directChat),
                     builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return AppNavBar(title: context.l10n.loadingLabel);
-                      } else if (snapshot.hasError) {
+                      if (snapshot.hasError) {
                         return AppNavBar(title: context.l10n.errorLabel);
+                      } else if (!snapshot.hasData || snapshot.data == null) {
+                        return AppNavBar(title: context.l10n.loadingLabel);
                       } else {
                         return snapshot.data!;
                       }
@@ -618,12 +608,11 @@ class _ChatScreenState extends State<ChatScreen> {
                   ),
                 ),
               );
-            }
-            final groupChat = groupSnapshot.data;
-
-            if (!groupSnapshot.hasData || groupChat == null) {
+            } else if (!groupSnapshot.hasData || groupSnapshot.data == null) {
               return const Scaffold(body: Center(child: AppLoader()));
             }
+            final groupChat = groupSnapshot.data!;
+
             return Scaffold(
               appBar: PreferredSize(
                 preferredSize: const Size.fromHeight(kToolbarHeight),

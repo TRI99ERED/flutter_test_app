@@ -290,8 +290,9 @@ class _ProjectsSectionState extends State<_ProjectsSection> {
                     }
 
                     final creators = asyncSnapshot.data ?? <AuthorizedUser>[];
-                    final creatorIdToHandle = {
-                      for (var u in creators) u.id: u.handle,
+                    final creatorIdToHandleOrName = {
+                      for (var u in creators)
+                        u.id: u.handle.isEmpty ? u.name : u.handle,
                     };
 
                     return AppFilter(
@@ -303,7 +304,7 @@ class _ProjectsSectionState extends State<_ProjectsSection> {
                           filters: widget._filters,
                           filterOptions: {
                             MapEntry('creator', context.l10n.creatorTitle):
-                                creatorIdToHandle,
+                                creatorIdToHandleOrName,
                           },
                         );
                       },
@@ -401,15 +402,7 @@ class _ProjectsSectionState extends State<_ProjectsSection> {
                                     }),
                             },
                             builder: (context, snapshot) {
-                              if (snapshot.connectionState ==
-                                  ConnectionState.waiting) {
-                                return const Center(
-                                  child: SizedBox(
-                                    width: 32,
-                                    child: AppLoader(),
-                                  ),
-                                );
-                              } else if (snapshot.hasError) {
+                              if (snapshot.hasError) {
                                 return Center(
                                   child: ErrorState(
                                     message:
@@ -420,9 +413,17 @@ class _ProjectsSectionState extends State<_ProjectsSection> {
                                         }}: ${snapshot.error}',
                                   ),
                                 );
+                              } else if (!snapshot.hasData ||
+                                  snapshot.data == null) {
+                                return const Center(
+                                  child: SizedBox(
+                                    width: 32,
+                                    child: AppLoader(),
+                                  ),
+                                );
                               }
 
-                              final projects = snapshot.data ?? [];
+                              final projects = snapshot.data!;
 
                               if (projects.isEmpty) {
                                 return Center(

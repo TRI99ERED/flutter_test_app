@@ -88,22 +88,18 @@ class ProjectScreen extends StatelessWidget {
     return StreamBuilder(
       stream: context.appController.watchProjectWithId(projectId),
       builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: AppLoader());
-        } else if (snapshot.hasError) {
+        if (snapshot.hasError) {
           return Center(
             child: ErrorState(
               message:
                   '${context.l10n.errorLoadingProjectMessage}: ${snapshot.error}',
             ),
           );
+        } else if (!snapshot.hasData || snapshot.data == null) {
+          return const Center(child: AppLoader());
         }
-        final project = snapshot.data;
-        if (project == null) {
-          return ErrorState(
-            message: context.l10n.projectWithIdNotFoundMessage(projectId),
-          );
-        }
+        final project = snapshot.data!;
+
         return ListView(
           children: [
             Text(
@@ -275,15 +271,19 @@ class ProjectScreen extends StatelessWidget {
         (context.appState.user as AuthorizedUser).id,
       ),
       builder: (context, asyncSnapshot) {
-        if (asyncSnapshot.connectionState == ConnectionState.waiting) {
-          return const AppLoader();
-        } else if (asyncSnapshot.hasError) {
+        if (asyncSnapshot.hasError) {
           return ErrorState(
             message:
                 '${context.l10n.errorLoadingChatsMessage}: ${asyncSnapshot.error}',
           );
+        } else if (!asyncSnapshot.hasData || asyncSnapshot.data == null) {
+          return AppButtonPrimary(
+            text: context.l10n.chatLabel,
+            onPressed: null,
+          );
         }
-        final chats = asyncSnapshot.data ?? [];
+
+        final chats = asyncSnapshot.data!;
         final doesGroupChatExistForProject = chats.any(
           (c) => c.id == project.groupChatId,
         );
@@ -442,9 +442,6 @@ class ProjectScreen extends StatelessWidget {
     return StreamBuilder(
       stream: context.appController.watchProjectParticipants(project.id),
       builder: (context, asyncSnapshot) {
-        if (asyncSnapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: AppLoader());
-        }
         if (asyncSnapshot.hasError) {
           return Center(
             child: ErrorState(
@@ -452,8 +449,11 @@ class ProjectScreen extends StatelessWidget {
                   '${context.l10n.errorLoadingParticipantsMessage}: ${asyncSnapshot.error}',
             ),
           );
+        } else if (!asyncSnapshot.hasData || asyncSnapshot.data == null) {
+          return const SizedBox.shrink();
         }
-        final users = asyncSnapshot.data ?? [];
+
+        final users = asyncSnapshot.data!;
         if (users.isEmpty) {
           return Center(
             child: ErrorState(message: context.l10n.noParticipantsFoundMessage),
