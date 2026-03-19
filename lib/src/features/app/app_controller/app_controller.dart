@@ -854,8 +854,19 @@ final class AppController extends BaseController<AppState> {
               .first;
           final associatedProject = projects?.firstWhere(
             (p) => p.groupChatId == chatId,
+            orElse: () => Project(
+              id: '',
+              name: '',
+              description: '',
+              ownerId: '',
+              participants: [],
+              status: ProjectStatus.todo,
+              createdAt: DateTime.now(),
+              lastUpdated: DateTime.now(),
+              deadline: DateTime.now(),
+            ),
           );
-          if (associatedProject != null) {
+          if (associatedProject != null && associatedProject.id.isNotEmpty) {
             await updateProject(associatedProject.copyWith(groupChatId: ''));
           }
           setState(

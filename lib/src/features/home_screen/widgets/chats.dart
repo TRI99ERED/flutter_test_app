@@ -102,8 +102,10 @@ class _ChatsState extends State<Chats> {
                       if (!context.mounted || chat == null) return;
                       if (chat is DirectChat) {
                         context.push('/chats/direct/${chat.id}');
+                        widget.editPressed.value = false;
                       } else if (chat is GroupChat) {
                         context.push('/chats/group/${chat.id}');
+                        widget.editPressed.value = false;
                       }
                     },
                   );
@@ -201,6 +203,7 @@ class _FilteredChatsList extends StatelessWidget {
                     canEdit: canEdit,
                     mounted: mounted,
                     context: this.context,
+                    editPressed: editPressed,
                   );
                 },
               );
@@ -219,6 +222,7 @@ class _FilteredChatsList extends StatelessWidget {
                     canEdit: canEdit,
                     mounted: mounted,
                     context: this.context,
+                    editPressed: editPressed,
                   );
                 },
               );
@@ -237,6 +241,7 @@ class _ChatListItem extends StatelessWidget {
   final bool canEdit;
   final bool mounted;
   final BuildContext context;
+  final ValueNotifier<bool> editPressed;
 
   const _ChatListItem({
     super.key,
@@ -245,6 +250,7 @@ class _ChatListItem extends StatelessWidget {
     required this.canEdit,
     required this.mounted,
     required this.context,
+    required this.editPressed,
   });
 
   @override
@@ -321,6 +327,7 @@ class _ChatListItem extends StatelessWidget {
                                   unreadCount: 0,
                                 );
                           }
+                          editPressed.value = false;
                         };
                   return Padding(
                     padding: const EdgeInsets.symmetric(vertical: spacing4),
@@ -418,6 +425,7 @@ class _ChatListItem extends StatelessWidget {
                               unreadCount: 0,
                             );
                       }
+                      editPressed.value = false;
                     };
               return Padding(
                 padding: const EdgeInsets.symmetric(vertical: spacing4),
@@ -481,8 +489,10 @@ class _ChatsAppBarState extends State<ChatsAppBar> {
               if (context.mounted) {
                 if (chat is DirectChat) {
                   context.push('/chats/direct/${chat.id}');
+                  widget.editPressed.value = false;
                 } else if (chat is GroupChat) {
                   context.push('/chats/group/${chat.id}');
+                  widget.editPressed.value = false;
                 }
               }
             },

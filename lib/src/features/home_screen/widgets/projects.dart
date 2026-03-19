@@ -453,6 +453,7 @@ class _ProjectsSectionState extends State<_ProjectsSection> {
 
                                       if (project != null && context.mounted) {
                                         context.push('/projects/${project.id}');
+                                        widget._editPressed.value = false;
                                       }
                                     },
                                   ),
@@ -514,6 +515,8 @@ class _ProjectsSectionState extends State<_ProjectsSection> {
                                                   context.push(
                                                     '/projects/${project.id}',
                                                   );
+                                                  widget._editPressed.value =
+                                                      false;
                                                 },
                                         );
                                       },
@@ -578,6 +581,7 @@ class _ProjectsAppBarState extends State<ProjectsAppBar> {
               ).then((project) {
                 if (project != null && context.mounted) {
                   context.push('/projects/${project.id}');
+                  widget.editPressed.value = false;
                 }
               });
             },
