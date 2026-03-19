@@ -81,6 +81,7 @@ class _ChatsState extends State<Chats> {
             child: StreamBuilder(
               stream: context.appController.watchAllChatsForUser(user.id),
               builder: (context, snapshot) {
+                debugPrint('Chats stream emitted new value: ${snapshot.data}');
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(
                     child: SizedBox(height: 72, child: AppLoader()),
@@ -195,6 +196,7 @@ class _FilteredChatsList extends StatelessWidget {
                     return const SizedBox.shrink();
                   }
                   return _ChatListItem(
+                    key: ValueKey(chat.id),
                     chat: chat,
                     user: user,
                     canEdit: canEdit,
@@ -212,6 +214,7 @@ class _FilteredChatsList extends StatelessWidget {
                     return const SizedBox.shrink();
                   }
                   return _ChatListItem(
+                    key: ValueKey(chat.id),
                     chat: chat,
                     user: user,
                     canEdit: canEdit,
@@ -237,6 +240,7 @@ class _ChatListItem extends StatelessWidget {
   final BuildContext context;
 
   const _ChatListItem({
+    super.key,
     required this.chat,
     required this.user,
     required this.canEdit,
@@ -378,15 +382,43 @@ class _ChatListItem extends StatelessWidget {
             ),
             builder: (context, msgSnapshot) {
               final messages = msgSnapshot.data;
+              final lastSenderId = messages?.isNotEmpty == true
+                  ? messages!.first.senderId
+                  : null;
               final description = messages == null || messages.isEmpty
                   ? context.l10n.noMessagesYetLabel
                   : groupChat.lastMessage;
+              final unreadCounts = groupChat.unreadCounts;
+              final unreadCount = unreadCounts[user.id] ?? 0;
+              final control = canEdit
+                  ? AppListItemControl.largeButton
+                  : (lastSenderId != null &&
+                        lastSenderId != user.id &&
+                        unreadCount > 0)
+                  ? AppListItemControl.badge
+                  : AppListItemControl.none;
+              final symbol = canEdit
+                  ? null
+                  : (lastSenderId != null &&
+                        lastSenderId != user.id &&
+                        unreadCount > 0)
+                  ? unreadCount.toString()
+                  : null;
               final largeButtonText = canEdit ? context.l10n.deleteLabel : null;
               final onPressed = canEdit
                   ? () => context.appController.deleteGroupChat(groupChat.id)
-                  : () {
+                  : () async {
                       if (!mounted) return;
                       context.push('/chats/group/${groupChat.id}');
+                      if (lastSenderId != null &&
+                          lastSenderId != user.id &&
+                          unreadCount > 0) {
+                        await context.appController
+                            .updateGroupChatThisUserUnreadCount(
+                              chatId: groupChat.id,
+                              unreadCount: 0,
+                            );
+                      }
                     };
               return Padding(
                 padding: const EdgeInsets.symmetric(vertical: spacing4),
@@ -399,10 +431,8 @@ class _ChatListItem extends StatelessWidget {
                       groupChat,
                       AvatarSize.small,
                     ),
-                    control: canEdit
-                        ? AppListItemControl.largeButton
-                        : AppListItemControl.none,
-                    symbol: null,
+                    control: control,
+                    symbol: symbol,
                     largeButtonText: largeButtonText,
                     onPressed: onPressed,
                   ),

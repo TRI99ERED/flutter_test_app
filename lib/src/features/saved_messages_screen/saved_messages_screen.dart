@@ -113,6 +113,7 @@ class _SavedMessagesScreenState extends State<SavedMessagesScreen> {
                               index: index,
                               isFirstInSequence: true,
                               isLastInSequence: true,
+                              timestamp: messages[index].timestamp,
                               onTap: () {
                                 _handleMessageTap(context, messages[index]);
                               },
@@ -125,6 +126,7 @@ class _SavedMessagesScreenState extends State<SavedMessagesScreen> {
                               messagesWithSenderNames: messagesWithSenderNames,
                               index: index,
                               isLastInSequence: true,
+                              timestamp: messages[index].timestamp,
                               onTap: () {
                                 _handleMessageTap(context, messages[index]);
                               },
@@ -137,6 +139,7 @@ class _SavedMessagesScreenState extends State<SavedMessagesScreen> {
                               messagesWithSenderNames: messagesWithSenderNames,
                               index: index,
                               isFirstInSequence: true,
+                              timestamp: messages[index].timestamp,
                               onTap: () {
                                 _handleMessageTap(context, messages[index]);
                               },
@@ -145,6 +148,7 @@ class _SavedMessagesScreenState extends State<SavedMessagesScreen> {
                           return AlignedMessageBubble(
                             messagesWithSenderNames: messagesWithSenderNames,
                             index: index,
+                            timestamp: messages[index].timestamp,
                             onTap: () {
                               _handleMessageTap(context, messages[index]);
                             },

@@ -26,7 +26,15 @@ class Settings extends StatelessWidget {
           Center(
             child: Stack(
               children: [
-                AppAvatar.avatarOrPlaceholder(user, AvatarSize.large),
+                StreamBuilder(
+                  stream: context.appController.watchUserWithId(user.id),
+                  builder: (context, asyncSnapshot) {
+                    return AppAvatar.avatarOrPlaceholder(
+                      asyncSnapshot.data ?? user,
+                      AvatarSize.large,
+                    );
+                  },
+                ),
                 Positioned(
                   bottom: 0,
                   right: 0,

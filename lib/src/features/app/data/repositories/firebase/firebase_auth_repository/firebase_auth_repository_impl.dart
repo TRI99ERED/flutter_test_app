@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -21,7 +22,7 @@ class FirebaseAuthRepositoryImpl implements IFirebaseAuthRepository {
   Stream<UserEntity> get authStateChanges {
     return FirebaseAuth.instance
         .authStateChanges()
-        .map((user) => _mapFirebaseUser(user))
+        .asyncMap((user) => _mapFirebaseUser(user))
         .handleError((Object error) {
           debugPrint('Auth state stream error (non-fatal): $error');
         });
@@ -101,7 +102,7 @@ class FirebaseAuthRepositoryImpl implements IFirebaseAuthRepository {
         email: email,
         password: password,
       );
-      return _mapFirebaseUserToAuthorized(credential.user!);
+      return _mapFirebaseUserToAuthorizedWithFirestore(credential.user!);
     } on FirebaseAuthException catch (e) {
       throw _handleAuthException(e);
     }
@@ -176,7 +177,9 @@ class FirebaseAuthRepositoryImpl implements IFirebaseAuthRepository {
           );
           final userCredential = await FirebaseAuth.instance
               .signInWithCredential(credential);
-          return _mapFirebaseUserToAuthorized(userCredential.user!);
+          return _mapFirebaseUserToAuthorizedWithFirestore(
+            userCredential.user!,
+          );
         } else {
           return null;
         }
@@ -215,7 +218,9 @@ class FirebaseAuthRepositoryImpl implements IFirebaseAuthRepository {
         }
       }
 
-      return _mapFirebaseUserToAuthorized(FirebaseAuth.instance.currentUser!);
+      return _mapFirebaseUserToAuthorizedWithFirestore(
+        FirebaseAuth.instance.currentUser!,
+      );
     } on FirebaseAuthException catch (e) {
       throw _handleAuthException(e);
     }
@@ -239,7 +244,9 @@ class FirebaseAuthRepositoryImpl implements IFirebaseAuthRepository {
         await user.updatePhotoURL(avatarUrl);
       }
       await user.reload();
-      return _mapFirebaseUserToAuthorized(FirebaseAuth.instance.currentUser!);
+      return _mapFirebaseUserToAuthorizedWithFirestore(
+        FirebaseAuth.instance.currentUser!,
+      );
     } on FirebaseAuthException catch (e) {
       throw _handleAuthException(e);
     }
@@ -249,7 +256,20 @@ class FirebaseAuthRepositoryImpl implements IFirebaseAuthRepository {
   Stream<AuthorizedUser> watchAuthState() {
     return FirebaseAuth.instance
         .authStateChanges()
-        .map((user) => _mapFirebaseUserToAuthorized(user!))
+        .asyncMap((user) {
+          if (user == null) {
+            return Future.value(
+              const AuthorizedUser(
+                id: '',
+                name: 'Guest',
+                email: '',
+                handle: '',
+                avatarUrl: '',
+              ),
+            );
+          }
+          return _mapFirebaseUserToAuthorizedWithFirestore(user);
+        })
         .handleError((Object error) {
           debugPrint('Auth state stream error (non-fatal): $error');
         });
@@ -282,20 +302,30 @@ class FirebaseAuthRepositoryImpl implements IFirebaseAuthRepository {
     }
   }
 
-  UserEntity _mapFirebaseUser(User? user) {
+  Future<UserEntity> _mapFirebaseUser(User? user) async {
     if (user == null) {
       return const UnauthorizedUser();
     }
-    return _mapFirebaseUserToAuthorized(user);
+    return await _mapFirebaseUserToAuthorizedWithFirestore(user);
   }
 
-  AuthorizedUser _mapFirebaseUserToAuthorized(User user) {
+  Future<AuthorizedUser> _mapFirebaseUserToAuthorizedWithFirestore(
+    User user,
+  ) async {
+    final doc = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.uid)
+        .get();
+    final data = doc.data() ?? {};
     return AuthorizedUser(
       id: user.uid,
-      name: user.displayName ?? 'user_${user.uid.substring(0, 8)}',
-      email: user.email ?? '',
-      handle: '',
-      avatarUrl: user.photoURL ?? '',
+      name:
+          data['name'] ??
+          user.displayName ??
+          'user_${user.uid.substring(0, 8)}',
+      email: data['email'] ?? user.email ?? '',
+      handle: data['handle'] ?? '',
+      avatarUrl: data['avatarUrl'] ?? user.photoURL ?? '',
     );
   }
 }

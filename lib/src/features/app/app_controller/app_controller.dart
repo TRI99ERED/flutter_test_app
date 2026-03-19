@@ -107,7 +107,6 @@ final class AppController extends BaseController<AppState> {
         if (user is AuthorizedUser) {
           loadNotificationsSettings();
         }
-        _startUserSync();
       },
       onError: (error, stackTrace) {
         setState(
@@ -120,33 +119,6 @@ final class AppController extends BaseController<AppState> {
         );
       },
     );
-  }
-
-  void _startUserSync() {
-    if (state.user is! AuthorizedUser) {
-      _userStreamSubscription?.cancel();
-      return;
-    }
-    final userId = (state.user as AuthorizedUser).id;
-    _userStream = watchUserWithId(userId);
-    if (_userStream == null) {
-      setState(
-        const AppState.failed(
-          message: 'Failed to initialize user sync stream',
-          user: UnauthorizedUser(),
-        ),
-      );
-      return;
-    }
-    _userStreamSubscription?.cancel();
-    _userStreamSubscription = _userStream!.listen((user) {
-      setState(
-        AppState.idle(
-          message: 'User synced from Firebase: $user',
-          user: user ?? const UnauthorizedUser(),
-        ),
-      );
-    });
   }
 
   Future<void> register(
@@ -220,7 +192,6 @@ final class AppController extends BaseController<AppState> {
       await _firestoreRepository.updateUser(updatedUser);
       debugPrint('User updated with FCM token');
       setState(AppState.idle(message: 'Sign in successful', user: updatedUser));
-      _startUserSync();
     } catch (error, stackTrace) {
       setState(
         AppState.failed(
@@ -1209,7 +1180,6 @@ final class AppController extends BaseController<AppState> {
           user: state.user,
         ),
       );
-      _startUserSync();
     } catch (error, stackTrace) {
       setState(
         AppState.failed(
@@ -1962,6 +1932,48 @@ final class AppController extends BaseController<AppState> {
       rethrow;
     }
   }
+
+  Future<void> updateGroupChatThisUserUnreadCount({
+    required String chatId,
+    required int unreadCount,
+  }) async => await serialExecutor.synchronized(() async {
+    setState(
+      AppState.processing(
+        message:
+            'Updating this user\'s unread count for group chat "$chatId"...',
+        user: state.user,
+      ),
+    );
+    try {
+      final groupChatUnreadCounts = await watchGroupChatWithId(
+        chatId,
+      ).map((chat) => chat?.unreadCounts ?? {}).first;
+      final updatedUnreadCounts = Map<String, int>.from(groupChatUnreadCounts)
+        ..[(state.user as AuthorizedUser).id] = unreadCount;
+      await _firestoreRepository.updateGroupChatUnreadCounts(
+        chatId: chatId,
+        unreadCounts: updatedUnreadCounts,
+      );
+      setState(
+        AppState.idle(
+          message:
+              'This user\'s unread count updated successfully for group chat "$chatId".',
+          user: state.user,
+        ),
+      );
+    } catch (error, stackTrace) {
+      setState(
+        AppState.failed(
+          message:
+              'Failed to update this user\'s unread count for group chat "$chatId": ${error.toString()}',
+          user: state.user,
+          error: error,
+          stackTrace: stackTrace,
+        ),
+      );
+      rethrow;
+    }
+  });
 
   @override
   void dispose() {

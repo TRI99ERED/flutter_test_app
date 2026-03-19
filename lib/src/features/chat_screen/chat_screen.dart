@@ -353,6 +353,41 @@ class _ChatScreenState extends State<ChatScreen> {
           reverse: true,
           itemCount: messages.length,
           itemBuilder: (context, index) {
+            final message = messages[index];
+            bool? isRead;
+            if (message.senderId ==
+                (context.appState.user as AuthorizedUser).id) {
+              if (chat is DirectChat) {
+                final sentMessages = messages
+                    .where(
+                      (m) =>
+                          m.senderId ==
+                          (context.appState.user as AuthorizedUser).id,
+                    )
+                    .toList();
+                final sentIndex = sentMessages.indexOf(message);
+                isRead = sentIndex >= chat.unreadCount;
+              } else if (chat is GroupChat) {
+                final sentMessages = messages
+                    .where(
+                      (m) =>
+                          m.senderId ==
+                          (context.appState.user as AuthorizedUser).id,
+                    )
+                    .toList();
+                final sentIndex = sentMessages.indexOf(message);
+                final unreadCountsExcludingThisUser = chat.unreadCounts
+                  ..remove((context.appState.user as AuthorizedUser).id);
+                final lowestUnreadCount =
+                    unreadCountsExcludingThisUser.values.isEmpty
+                    ? 0
+                    : unreadCountsExcludingThisUser.values.reduce(
+                        (a, b) => a < b ? a : b,
+                      );
+                isRead = sentIndex >= lowestUnreadCount;
+              }
+            }
+
             if ((index == 0 ||
                     messages[index - 1].senderId != messages[index].senderId) &&
                 (index == messages.length - 1 ||
@@ -362,6 +397,8 @@ class _ChatScreenState extends State<ChatScreen> {
                 index: index,
                 isFirstInSequence: true,
                 isLastInSequence: true,
+                isRead: isRead,
+                timestamp: messages[index].timestamp,
                 onTap: () {
                   _handleMessageTap(context, messages[index]);
                 },
@@ -373,6 +410,8 @@ class _ChatScreenState extends State<ChatScreen> {
                 messagesWithSenderNames: messagesWithSenderNames,
                 index: index,
                 isLastInSequence: true,
+                isRead: isRead,
+                timestamp: messages[index].timestamp,
                 onTap: () {
                   _handleMessageTap(context, messages[index]);
                 },
@@ -384,6 +423,8 @@ class _ChatScreenState extends State<ChatScreen> {
                 messagesWithSenderNames: messagesWithSenderNames,
                 index: index,
                 isFirstInSequence: true,
+                isRead: isRead,
+                timestamp: messages[index].timestamp,
                 onTap: () {
                   _handleMessageTap(context, messages[index]);
                 },
@@ -392,6 +433,8 @@ class _ChatScreenState extends State<ChatScreen> {
             return AlignedMessageBubble(
               messagesWithSenderNames: messagesWithSenderNames,
               index: index,
+              isRead: isRead,
+              timestamp: messages[index].timestamp,
               onTap: () {
                 _handleMessageTap(context, messages[index]);
               },

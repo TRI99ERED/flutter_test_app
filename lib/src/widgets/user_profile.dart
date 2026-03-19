@@ -77,11 +77,12 @@ class _UserProfileState extends State<UserProfile> {
         child: Column(
           spacing: spacing8,
           children: [
-            switch (widget.mode) {
-              UserProfileMode.view => _buildProfileView(),
-              UserProfileMode.edit => _buildProfileEdit(),
-            },
-            Spacer(),
+            Expanded(
+              child: switch (widget.mode) {
+                UserProfileMode.view => _buildProfileView(),
+                UserProfileMode.edit => _buildProfileEdit(),
+              },
+            ),
             if (widget.mode == UserProfileMode.edit)
               ValueListenableBuilder(
                 valueListenable: _isFormValid,
@@ -123,12 +124,18 @@ class _UserProfileState extends State<UserProfile> {
   }
 
   Widget _buildProfileView() {
-    return Column(
-      spacing: spacing16,
-      crossAxisAlignment: CrossAxisAlignment.center,
+    return ListView(
       children: [
         Center(
-          child: AppAvatar.avatarOrPlaceholder(widget.user, AvatarSize.large),
+          child: StreamBuilder(
+            stream: context.appController.watchUserWithId(widget.user.id),
+            builder: (context, asyncSnapshot) {
+              return AppAvatar.avatarOrPlaceholder(
+                asyncSnapshot.data ?? widget.user,
+                AvatarSize.large,
+              );
+            },
+          ),
         ),
         Column(
           spacing: spacing8,
@@ -188,9 +195,7 @@ class _UserProfileState extends State<UserProfile> {
   Widget _buildProfileEdit() {
     return Form(
       key: _formKey,
-      child: Column(
-        spacing: spacing16,
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: ListView(
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -201,7 +206,15 @@ class _UserProfileState extends State<UserProfile> {
                   await context.appController.uploadUserAvatar();
                 },
               ),
-              AppAvatar.avatarOrPlaceholder(widget.user, AvatarSize.medium),
+              StreamBuilder(
+                stream: context.appController.watchUserWithId(widget.user.id),
+                builder: (context, asyncSnapshot) {
+                  return AppAvatar.avatarOrPlaceholder(
+                    asyncSnapshot.data ?? widget.user,
+                    AvatarSize.medium,
+                  );
+                },
+              ),
             ],
           ),
           Text(

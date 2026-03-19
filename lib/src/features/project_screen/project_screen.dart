@@ -208,7 +208,7 @@ class ProjectScreen extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              '${context.l10n.createdByLabel('@${owner.handle}')}\n'
+              '${context.l10n.createdByLabel(owner.handle.isEmpty ? owner.name : '@${owner.handle}')}\n'
               '${context.l10n.atLabel(project.createdAt.toLocal().toString().split('.').first)}\n'
               '${context.l10n.lastUpdatedAtLabel(project.lastUpdated.toLocal().toString().split('.').first)}',
               style: TextStyle(

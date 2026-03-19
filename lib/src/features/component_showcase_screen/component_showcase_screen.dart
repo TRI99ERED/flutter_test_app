@@ -1618,10 +1618,12 @@ class _HomeScreenState extends State<HomeScreen> {
               Center(
                 child: SizedBox(
                   width: 226,
-                  child: const AppMessageBubble(
+                  child: AppMessageBubble(
                     body: 'Message. Lorem ipsum dolor.',
                     isLastInSequence: false,
+                    isRead: true,
                     messageType: MessageType.received,
+                    timestamp: DateTime.now(),
                   ),
                 ),
               ),
@@ -1629,10 +1631,12 @@ class _HomeScreenState extends State<HomeScreen> {
               Center(
                 child: SizedBox(
                   width: 226,
-                  child: const AppMessageBubble(
+                  child: AppMessageBubble(
                     body: 'Message. Lorem ipsum dolor.',
                     isLastInSequence: true,
+                    isRead: true,
                     messageType: MessageType.received,
+                    timestamp: DateTime.now(),
                   ),
                 ),
               ),
@@ -1640,10 +1644,12 @@ class _HomeScreenState extends State<HomeScreen> {
               Center(
                 child: SizedBox(
                   width: 226,
-                  child: const AppMessageBubble(
+                  child: AppMessageBubble(
                     body: 'Message. Lorem ipsum dolor.',
                     isLastInSequence: false,
+                    isRead: true,
                     messageType: MessageType.sent,
+                    timestamp: DateTime.now(),
                   ),
                 ),
               ),
@@ -1651,10 +1657,12 @@ class _HomeScreenState extends State<HomeScreen> {
               Center(
                 child: SizedBox(
                   width: 226,
-                  child: const AppMessageBubble(
+                  child: AppMessageBubble(
                     body: 'Message. Lorem ipsum dolor.',
                     isLastInSequence: true,
+                    isRead: true,
                     messageType: MessageType.sent,
+                    timestamp: DateTime.now(),
                   ),
                 ),
               ),
