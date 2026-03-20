@@ -529,5 +529,61 @@
     "englishLabel": "Англійська",
     "@englishLabel": {},
     "ukrainianLabel": "Українська",
-    "@ukrainianLabel": {}
+    "@ukrainianLabel": {},
+    "copyMessageLabel": "Копіювати повідомлення",
+    "@copyMessageLabel": {},
+    "messageCopiedLabel": "Повідомлення скопійовано",
+    "@messageCopiedLabel": {},
+    "dateSeparatorLabel": "{day} {month} {year} р.",
+    "@dateSeparatorLabel": {
+        "placeholders": {
+            "month": {},
+            "day": {},
+            "year": {}
+        }
+    },
+    "ofJanuaryLabel": "січеня",
+    "@ofJanuaryLabel": {},
+    "ofFebruaryLabel": "лютого",
+    "@ofFebruaryLabel": {},
+    "ofMarchLabel": "березня",
+    "@ofMarchLabel": {},
+    "ofAprilLabel": "квітня",
+    "@ofAprilLabel": {},
+    "ofMayLabel": "травня",
+    "@ofMayLabel": {},
+    "ofJuneLabel": "червня",
+    "@ofJuneLabel": {},
+    "ofJulyLabel": "липня",
+    "@ofJulyLabel": {},
+    "ofAugustLabel": "серпня",
+    "@ofAugustLabel": {},
+    "ofSeptemberLabel": "вересня",
+    "@ofSeptemberLabel": {},
+    "ofOctoberLabel": "жовтня",
+    "@ofOctoberLabel": {},
+    "ofNovemberLabel": "листопада",
+    "@ofNovemberLabel": {},
+    "ofDecemberLabel": "грудня",
+    "@ofDecemberLabel": {},
+    "deleteChatLabel": "Видалити чат?",
+    "@deleteChatLabel": {},
+    "deleteChatConfirmationLabel": "Ви впевнені, що хочете видалити цей чат? Цю дію не можна скасувати.",
+    "@deleteChatConfirmationLabel": {},
+    "removeFriendLabel": "Видалити друга?",
+    "@removeFriendLabel": {},
+    "removeFriendConfirmationLabel": "Ви впевнені, що хочете видалити {friend} з друзів? Цю дію не можна скасувати.",
+    "@removeFriendConfirmationLabel": {
+        "placeholders": {
+            "friend": {}
+        }
+    },
+    "deleteProjectLabel": "Видалити проєкт?",
+    "@deleteProjectLabel": {},
+    "deleteProjectConfirmationLabel": "Ви впевнені, що хочете видалити проєкт {project}? Цю дію не можна скасувати.",
+    "@deleteProjectConfirmationLabel": {
+        "placeholders": {
+            "project": {}
+        }
+    }
 }

@@ -8,6 +8,7 @@ import 'package:test_app/firebase_options.dart';
 import 'package:test_app/l10n/locales/app_localizations.dart';
 import 'package:test_app/l10n/locales/l10n.dart';
 import 'package:test_app/src/features/app/app_controller/app_controller.dart';
+import 'package:test_app/src/features/app/app_lifecycle_handler.dart';
 import 'package:test_app/src/features/app/app_scope.dart';
 import 'package:test_app/src/features/themes/app_theme.dart';
 import 'package:test_app/src/features/themes/styles.dart';
@@ -92,7 +93,9 @@ class _AppState extends State<App> {
 
   void _rebuild() {
     if (mounted) {
-      setState(() {});
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) setState(() {});
+      });
     }
   }
 
@@ -117,7 +120,9 @@ class _AppState extends State<App> {
                 controller: _appController,
                 themeMode: _themeMode,
                 locale: _locale,
-                child: child!,
+                child: child == null
+                    ? const SizedBox.shrink()
+                    : AppLifecycleHandler(child: child),
               ),
             );
           },

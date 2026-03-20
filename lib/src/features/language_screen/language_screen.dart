@@ -37,6 +37,8 @@ class _LanguageScreenState extends State<LanguageScreen> {
             content: Text(
               'Error: ${current.message}',
               style: TextStyle(
+                fontSize: cMSize,
+                fontWeight: cMWeight,
                 color: Theme.of(
                   context,
                 ).extension<AppTheme>()?.foregroundStrongestColor,

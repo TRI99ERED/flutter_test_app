@@ -5,6 +5,7 @@ import 'package:test_app/src/core/resources/app_icons.dart';
 import 'package:test_app/src/features/app/app_scope.dart';
 import 'package:test_app/src/features/app/data/models/project_model.dart';
 import 'package:test_app/src/features/app/data/models/user_model.dart';
+import 'package:test_app/src/widgets/common/app_dialog.dart';
 import 'package:test_app/src/widgets/common/app_filter.dart';
 import 'package:test_app/src/widgets/common/app_search_bar.dart';
 import 'package:test_app/src/widgets/common/app_sort.dart';
@@ -302,10 +303,8 @@ class _ProjectsSectionState extends State<_ProjectsSection> {
                         AppFilterMenu.show(
                           context,
                           filters: widget._filters,
-                          filterOptions: {
-                            MapEntry('creator', context.l10n.creatorTitle):
-                                creatorIdToHandleOrName,
-                          },
+                          filterOptions: {'creator': creatorIdToHandleOrName},
+                          filterTitles: {'creator': context.l10n.creatorTitle},
                         );
                       },
                     );
@@ -319,87 +318,38 @@ class _ProjectsSectionState extends State<_ProjectsSection> {
         Expanded(
           child: ValueListenableBuilder(
             valueListenable: widget._filters,
-            builder: (context, value, child) {
+            builder: (context, filtersValue, child) {
               return ValueListenableBuilder(
                 valueListenable: widget._sortOrder,
-                builder: (context, value, child) {
+                builder: (context, sortOrderValue, child) {
                   return ValueListenableBuilder(
                     valueListenable: widget._sortOption,
-                    builder: (context, value, child) {
+                    builder: (context, sortOptionValue, child) {
                       return ValueListenableBuilder(
                         valueListenable: _searchQuery,
-                        builder: (context, value, child) {
+                        builder: (context, searchQueryValue, child) {
                           return StreamBuilder(
                             stream: switch (widget._sectionType) {
                               ProjectStatus.todo =>
-                                context.appController
-                                    .watchToDoProjectsForUser(
-                                      user.id,
-                                      widget._sortOption.value,
-                                      widget._sortOrder.value ==
-                                          SortOrder.descending,
-                                    )
-                                    .asyncMap((projects) async {
-                                      if (projects == null) return null;
-                                      return projects.where((project) {
-                                        final creatorFilter =
-                                            widget._filters.value['creator'];
-                                        if (creatorFilter != null &&
-                                            creatorFilter.isNotEmpty &&
-                                            !creatorFilter.contains(
-                                              project.ownerId,
-                                            )) {
-                                          return false;
-                                        }
-                                        return true;
-                                      }).toList();
-                                    }),
+                                context.appController.watchToDoProjectsForUser(
+                                  user.id,
+                                  sortOptionValue,
+                                  sortOrderValue == SortOrder.descending,
+                                ),
                               ProjectStatus.inProgress =>
                                 context.appController
                                     .watchInProgressProjectsForUser(
                                       user.id,
-                                      widget._sortOption.value,
-                                      widget._sortOrder.value ==
-                                          SortOrder.descending,
-                                    )
-                                    .asyncMap((projects) async {
-                                      if (projects == null) return null;
-                                      return projects.where((project) {
-                                        final creatorFilter =
-                                            widget._filters.value['creator'];
-                                        if (creatorFilter != null &&
-                                            creatorFilter.isNotEmpty &&
-                                            !creatorFilter.contains(
-                                              project.ownerId,
-                                            )) {
-                                          return false;
-                                        }
-                                        return true;
-                                      }).toList();
-                                    }),
+                                      sortOptionValue,
+                                      sortOrderValue == SortOrder.descending,
+                                    ),
                               ProjectStatus.finished =>
                                 context.appController
                                     .watchFinishedProjectsForUser(
                                       user.id,
-                                      widget._sortOption.value,
-                                      widget._sortOrder.value ==
-                                          SortOrder.descending,
-                                    )
-                                    .asyncMap((projects) async {
-                                      if (projects == null) return null;
-                                      return projects.where((project) {
-                                        final creatorFilter =
-                                            widget._filters.value['creator'];
-                                        if (creatorFilter != null &&
-                                            creatorFilter.isNotEmpty &&
-                                            !creatorFilter.contains(
-                                              project.ownerId,
-                                            )) {
-                                          return false;
-                                        }
-                                        return true;
-                                      }).toList();
-                                    }),
+                                      sortOptionValue,
+                                      sortOrderValue == SortOrder.descending,
+                                    ),
                             },
                             builder: (context, snapshot) {
                               if (snapshot.hasError) {
@@ -463,13 +413,20 @@ class _ProjectsSectionState extends State<_ProjectsSection> {
                               final filteredProjects = projects.where((
                                 project,
                               ) {
-                                final query = value.toLowerCase();
-                                return project.name.toLowerCase().contains(
+                                final query = searchQueryValue.toLowerCase();
+                                final creatorFilter = filtersValue['creator'];
+                                final matchesCreator =
+                                    creatorFilter == null ||
+                                    creatorFilter.isEmpty ||
+                                    creatorFilter.contains(project.ownerId);
+                                final matchesQuery =
+                                    project.name.toLowerCase().contains(
                                       query,
                                     ) ||
                                     project.description.toLowerCase().contains(
                                       query,
                                     );
+                                return matchesCreator && matchesQuery;
                               }).toList();
 
                               return ListView.builder(
@@ -505,12 +462,30 @@ class _ProjectsSectionState extends State<_ProjectsSection> {
                                           onPressed:
                                               editPressed &&
                                                   project.ownerId == user.id
-                                              ? () {
-                                                  context.appController
-                                                      .deleteProject(
-                                                        project.id,
-                                                      );
-                                                }
+                                              ? () => AppDialog2.show(
+                                                  context: context,
+                                                  title: context
+                                                      .l10n
+                                                      .deleteProjectLabel,
+                                                  description: context.l10n
+                                                      .deleteProjectConfirmationLabel(
+                                                        project.name,
+                                                      ),
+                                                  buttonText1:
+                                                      context.l10n.cancelLabel,
+                                                  buttonText2:
+                                                      context.l10n.deleteLabel,
+                                                  onPressed1: (context) {
+                                                    context.pop();
+                                                  },
+                                                  onPressed2: (context) async {
+                                                    context.pop();
+                                                    await context.appController
+                                                        .deleteProject(
+                                                          project.id,
+                                                        );
+                                                  },
+                                                )
                                               : () {
                                                   context.push(
                                                     '/projects/${project.id}',

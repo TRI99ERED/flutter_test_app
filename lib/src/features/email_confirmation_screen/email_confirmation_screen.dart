@@ -71,6 +71,8 @@ class _EmailConfirmationScreenState extends State<EmailConfirmationScreen> {
                   content: Text(
                     '${context.l10n.errorLabel}: ${current.message}',
                     style: TextStyle(
+                      fontSize: cMSize,
+                      fontWeight: cMWeight,
                       color: Theme.of(
                         context,
                       ).extension<AppTheme>()?.foregroundStrongestColor,

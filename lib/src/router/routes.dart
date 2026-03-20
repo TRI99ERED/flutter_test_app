@@ -1,5 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
+import 'package:test_app/main.dart';
 import 'package:test_app/src/features/app/app_controller/app_controller.dart';
 import 'package:test_app/src/features/app/app_scope.dart';
 import 'package:test_app/src/features/appearance_screen/appearance_screen.dart';
@@ -41,6 +42,7 @@ GoRouter generateRouter(
     initialLocation: onboardingPath,
     refreshListenable: appController,
     navigatorKey: rootNavigatorKey,
+    observers: [AppRouterObserver()],
     routes: [
       GoRoute(path: homePath, builder: (context, state) => const HomeScreen()),
       GoRoute(
@@ -141,4 +143,20 @@ GoRouter generateRouter(
       return null;
     },
   );
+}
+
+class AppRouterObserver extends NavigatorObserver {
+  @override
+  void didPush(Route route, Route? previousRoute) {
+    final location = route.settings.arguments?.toString() ?? '';
+
+    rootNavigatorKey.currentContext?.appController.updateCurrentRoute(location);
+  }
+
+  @override
+  void didPop(Route route, Route? previousRoute) {
+    final location = previousRoute?.settings.arguments?.toString() ?? '';
+
+    rootNavigatorKey.currentContext?.appController.updateCurrentRoute(location);
+  }
 }

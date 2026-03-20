@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:test_app/src/core/controller/base_controller/base_controller.dart';
 import 'package:test_app/src/features/app/data/models/chat_model.dart';
@@ -1940,7 +1941,7 @@ final class AppController extends BaseController<AppState> {
     }
   }
 
-  Future<void> updateGroupChatThisUserUnreadCount({
+  Future<void> updateGroupChatCurrentUserUnreadCount({
     required String chatId,
     required int unreadCount,
   }) async => await serialExecutor.synchronized(() async {
@@ -1981,6 +1982,93 @@ final class AppController extends BaseController<AppState> {
       return Future.error(error, stackTrace);
     }
   });
+
+  Future<void> updateCurrentRoute(String location) async {
+    setState(
+      AppState.processing(
+        message: 'Updating current route...',
+        user: state.user,
+      ),
+    );
+    try {
+      await _sharedPreferencesRepository.setString('currentRoute', location);
+      setState(
+        AppState.idle(
+          message: 'Current route updated successfully.',
+          user: state.user,
+        ),
+      );
+    } catch (error, stackTrace) {
+      setState(
+        AppState.failed(
+          message: 'Failed to update current route: ${error.toString()}',
+          user: state.user,
+          error: error,
+          stackTrace: stackTrace,
+        ),
+      );
+      return Future.error(error, stackTrace);
+    }
+  }
+
+  Future<String?> loadCurrentRoute() async {
+    setState(
+      AppState.processing(
+        message: 'Retrieving current route...',
+        user: state.user,
+      ),
+    );
+    try {
+      final location = await _sharedPreferencesRepository.getString(
+        'currentRoute',
+      );
+      setState(
+        AppState.idle(
+          message: 'Current route retrieved successfully: $location',
+          user: state.user,
+        ),
+      );
+      return location;
+    } catch (error, stackTrace) {
+      setState(
+        AppState.failed(
+          message: 'Failed to retrieve current route: ${error.toString()}',
+          user: state.user,
+          error: error,
+          stackTrace: stackTrace,
+        ),
+      );
+      return Future.error(error, stackTrace);
+    }
+  }
+
+  Future<void> copyTextToClipboard(String body) async {
+    setState(
+      AppState.processing(
+        message: 'Copying text to clipboard...',
+        user: state.user,
+      ),
+    );
+    try {
+      await Clipboard.setData(ClipboardData(text: body));
+      setState(
+        AppState.idle(
+          message: 'Text copied to clipboard successfully.',
+          user: state.user,
+        ),
+      );
+    } catch (error, stackTrace) {
+      setState(
+        AppState.failed(
+          message: 'Failed to copy text to clipboard: ${error.toString()}',
+          user: state.user,
+          error: error,
+          stackTrace: stackTrace,
+        ),
+      );
+      return Future.error(error, stackTrace);
+    }
+  }
 
   @override
   void dispose() {

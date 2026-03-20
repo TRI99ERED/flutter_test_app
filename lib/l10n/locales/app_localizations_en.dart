@@ -826,4 +826,74 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get ukrainianLabel => 'Ukrainian';
+
+  @override
+  String get copyMessageLabel => 'Copy message';
+
+  @override
+  String get messageCopiedLabel => 'Message copied';
+
+  @override
+  String dateSeparatorLabel(Object day, Object month, Object year) {
+    return '$month $day, $year';
+  }
+
+  @override
+  String get ofJanuaryLabel => 'January';
+
+  @override
+  String get ofFebruaryLabel => 'February';
+
+  @override
+  String get ofMarchLabel => 'March';
+
+  @override
+  String get ofAprilLabel => 'April';
+
+  @override
+  String get ofMayLabel => 'May';
+
+  @override
+  String get ofJuneLabel => 'June';
+
+  @override
+  String get ofJulyLabel => 'July';
+
+  @override
+  String get ofAugustLabel => 'August';
+
+  @override
+  String get ofSeptemberLabel => 'September';
+
+  @override
+  String get ofOctoberLabel => 'October';
+
+  @override
+  String get ofNovemberLabel => 'November';
+
+  @override
+  String get ofDecemberLabel => 'December';
+
+  @override
+  String get deleteChatLabel => 'Delete chat?';
+
+  @override
+  String get deleteChatConfirmationLabel =>
+      'Are you sure you want to delete this chat? This action cannot be undone.';
+
+  @override
+  String get removeFriendLabel => 'Remove friend?';
+
+  @override
+  String removeFriendConfirmationLabel(Object friend) {
+    return 'Are you sure you want to remove $friend from your friends? This action cannot be undone.';
+  }
+
+  @override
+  String get deleteProjectLabel => 'Delete project?';
+
+  @override
+  String deleteProjectConfirmationLabel(Object project) {
+    return 'Are you sure you want to delete project $project? This action cannot be undone.';
+  }
 }

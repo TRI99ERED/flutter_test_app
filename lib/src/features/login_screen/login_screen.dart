@@ -63,6 +63,8 @@ class _LoginScreenState extends State<LoginScreen> {
               content: Text(
                 '${context.l10n.errorLabel}: ${current.message}',
                 style: TextStyle(
+                  fontSize: cMSize,
+                  fontWeight: cMWeight,
                   color: Theme.of(
                     context,
                   ).extension<AppTheme>()?.foregroundStrongestColor,
@@ -197,6 +199,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                           .l10n
                                           .googleSignInIsNotAvailableOnWebLabel,
                                       style: TextStyle(
+                                        fontSize: cMSize,
+                                        fontWeight: cMWeight,
                                         color: Theme.of(context)
                                             .extension<AppTheme>()
                                             ?.foregroundStrongestColor,
@@ -234,6 +238,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                   content: Text(
                                     context.l10n.appleSignInNotImplementedLabel,
                                     style: TextStyle(
+                                      fontSize: cMSize,
+                                      fontWeight: cMWeight,
                                       color: Theme.of(context)
                                           .extension<AppTheme>()
                                           ?.foregroundStrongestColor,
@@ -268,6 +274,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                         .l10n
                                         .facebookSignInNotImplementedLabel,
                                     style: TextStyle(
+                                      fontSize: cMSize,
+                                      fontWeight: cMWeight,
                                       color: Theme.of(context)
                                           .extension<AppTheme>()
                                           ?.foregroundStrongestColor,

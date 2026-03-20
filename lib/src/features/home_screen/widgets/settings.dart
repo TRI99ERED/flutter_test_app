@@ -147,8 +147,10 @@ class Settings extends StatelessWidget {
                   description: context.l10n.areYouSureYouWantToLogOutLabel,
                   buttonText1: context.l10n.cancelLabel,
                   buttonText2: context.l10n.logOutLabel,
-                  onPressed1: () => context.pop(),
-                  onPressed2: () {
+                  width: MediaQuery.sizeOf(context).width * 0.8,
+                  height: MediaQuery.sizeOf(context).height * 0.2,
+                  onPressed1: (context) => context.pop(),
+                  onPressed2: (context) {
                     context.pop();
                     context.appController.logout();
                   },

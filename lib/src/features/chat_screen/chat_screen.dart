@@ -189,7 +189,8 @@ class _ChatScreenState extends State<ChatScreen> {
           final unreadCount = asyncSnapshot.data ?? 0;
           return AppMessageInput(
             onSendPressed: (value) async {
-              if (value.trim().isEmpty) {
+              final message = value.trim();
+              if (message.isEmpty) {
                 return;
               }
               final user = context.appState.user as AuthorizedUser;
@@ -198,11 +199,11 @@ class _ChatScreenState extends State<ChatScreen> {
                 chatId: widget.chatId,
                 senderId: user.id,
                 senderName: user.name,
-                body: value,
+                body: message,
               );
               await appController.updateDirectChatLastMessage(
                 chatId: widget.chatId,
-                lastMessage: value,
+                lastMessage: message,
               );
               final chatList = await appController
                   .watchDirectChatsForUser(user.id)
@@ -248,7 +249,8 @@ class _ChatScreenState extends State<ChatScreen> {
           final unreadCounts = asyncSnapshot.data ?? {};
           return AppMessageInput(
             onSendPressed: (value) async {
-              if (value.trim().isEmpty) {
+              final message = value.trim();
+              if (message.isEmpty) {
                 return;
               }
               final user = context.appState.user as AuthorizedUser;
@@ -257,11 +259,11 @@ class _ChatScreenState extends State<ChatScreen> {
                 chatId: widget.chatId,
                 senderId: user.id,
                 senderName: user.name,
-                body: value,
+                body: message,
               );
               await appController.updateGroupChatLastMessage(
                 chatId: widget.chatId,
-                lastMessage: value,
+                lastMessage: message,
               );
               final chatList = await appController
                   .watchGroupChatsForUser(user.id)
@@ -340,9 +342,45 @@ class _ChatScreenState extends State<ChatScreen> {
           );
           messagesWithSenderNames[message] = sender.name;
         }
-        return ListView.builder(
+        return ListView.separated(
           reverse: true,
           itemCount: messages.length,
+          separatorBuilder: (context, index) {
+            if (index < messages.length - 1 &&
+                messages[index].timestamp.day !=
+                    messages[index + 1].timestamp.day) {
+              return Text(
+                context.l10n.dateSeparatorLabel(
+                  messages[index].timestamp.day,
+                  switch (messages[index].timestamp.month) {
+                    1 => context.l10n.ofJanuaryLabel,
+                    2 => context.l10n.ofFebruaryLabel,
+                    3 => context.l10n.ofMarchLabel,
+                    4 => context.l10n.ofAprilLabel,
+                    5 => context.l10n.ofMayLabel,
+                    6 => context.l10n.ofJuneLabel,
+                    7 => context.l10n.ofJulyLabel,
+                    8 => context.l10n.ofAugustLabel,
+                    9 => context.l10n.ofSeptemberLabel,
+                    10 => context.l10n.ofOctoberLabel,
+                    11 => context.l10n.ofNovemberLabel,
+                    12 => context.l10n.ofDecemberLabel,
+                    _ => '',
+                  },
+                  messages[index].timestamp.year,
+                ),
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: cMSize,
+                  fontWeight: cMWeight,
+                  color: Theme.of(
+                    context,
+                  ).extension<AppTheme>()?.foregroundStrongestColor,
+                ),
+              );
+            }
+            return const SizedBox.shrink();
+          },
           itemBuilder: (context, index) {
             final message = messages[index];
             bool? isRead;
@@ -378,7 +416,97 @@ class _ChatScreenState extends State<ChatScreen> {
                 isRead = sentIndex >= lowestUnreadCount;
               }
             }
-
+            if (index == messages.length - 1 &&
+                messages[index].senderId != messages[index - 1].senderId) {
+              return Column(
+                children: [
+                  Text(
+                    context.l10n.dateSeparatorLabel(
+                      message.timestamp.day,
+                      switch (message.timestamp.month) {
+                        1 => context.l10n.ofJanuaryLabel,
+                        2 => context.l10n.ofFebruaryLabel,
+                        3 => context.l10n.ofMarchLabel,
+                        4 => context.l10n.ofAprilLabel,
+                        5 => context.l10n.ofMayLabel,
+                        6 => context.l10n.ofJuneLabel,
+                        7 => context.l10n.ofJulyLabel,
+                        8 => context.l10n.ofAugustLabel,
+                        9 => context.l10n.ofSeptemberLabel,
+                        10 => context.l10n.ofOctoberLabel,
+                        11 => context.l10n.ofNovemberLabel,
+                        12 => context.l10n.ofDecemberLabel,
+                        _ => '',
+                      },
+                      message.timestamp.year,
+                    ),
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: cMSize,
+                      fontWeight: cMWeight,
+                      color: Theme.of(
+                        context,
+                      ).extension<AppTheme>()?.foregroundStrongestColor,
+                    ),
+                  ),
+                  AlignedMessageBubble(
+                    messagesWithSenderNames: messagesWithSenderNames,
+                    index: index,
+                    isFirstInSequence: true,
+                    isLastInSequence: true,
+                    isRead: isRead,
+                    timestamp: message.timestamp,
+                    onTap: () {
+                      _handleMessageTap(context, message);
+                    },
+                  ),
+                ],
+              );
+            } else if (index == messages.length - 1) {
+              return Column(
+                children: [
+                  Text(
+                    context.l10n.dateSeparatorLabel(
+                      message.timestamp.day,
+                      switch (message.timestamp.month) {
+                        1 => context.l10n.ofJanuaryLabel,
+                        2 => context.l10n.ofFebruaryLabel,
+                        3 => context.l10n.ofMarchLabel,
+                        4 => context.l10n.ofAprilLabel,
+                        5 => context.l10n.ofMayLabel,
+                        6 => context.l10n.ofJuneLabel,
+                        7 => context.l10n.ofJulyLabel,
+                        8 => context.l10n.ofAugustLabel,
+                        9 => context.l10n.ofSeptemberLabel,
+                        10 => context.l10n.ofOctoberLabel,
+                        11 => context.l10n.ofNovemberLabel,
+                        12 => context.l10n.ofDecemberLabel,
+                        _ => '',
+                      },
+                      message.timestamp.year,
+                    ),
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: cMSize,
+                      fontWeight: cMWeight,
+                      color: Theme.of(
+                        context,
+                      ).extension<AppTheme>()?.foregroundStrongestColor,
+                    ),
+                  ),
+                  AlignedMessageBubble(
+                    messagesWithSenderNames: messagesWithSenderNames,
+                    index: index,
+                    isFirstInSequence: true,
+                    isRead: isRead,
+                    timestamp: message.timestamp,
+                    onTap: () {
+                      _handleMessageTap(context, message);
+                    },
+                  ),
+                ],
+              );
+            }
             if ((index == 0 ||
                     messages[index - 1].senderId != messages[index].senderId) &&
                 (index == messages.length - 1 ||
@@ -389,9 +517,9 @@ class _ChatScreenState extends State<ChatScreen> {
                 isFirstInSequence: true,
                 isLastInSequence: true,
                 isRead: isRead,
-                timestamp: messages[index].timestamp,
+                timestamp: message.timestamp,
                 onTap: () {
-                  _handleMessageTap(context, messages[index]);
+                  _handleMessageTap(context, message);
                 },
               );
             }
@@ -402,9 +530,9 @@ class _ChatScreenState extends State<ChatScreen> {
                 index: index,
                 isLastInSequence: true,
                 isRead: isRead,
-                timestamp: messages[index].timestamp,
+                timestamp: message.timestamp,
                 onTap: () {
-                  _handleMessageTap(context, messages[index]);
+                  _handleMessageTap(context, message);
                 },
               );
             }
@@ -415,9 +543,9 @@ class _ChatScreenState extends State<ChatScreen> {
                 index: index,
                 isFirstInSequence: true,
                 isRead: isRead,
-                timestamp: messages[index].timestamp,
+                timestamp: message.timestamp,
                 onTap: () {
-                  _handleMessageTap(context, messages[index]);
+                  _handleMessageTap(context, message);
                 },
               );
             }
@@ -425,9 +553,9 @@ class _ChatScreenState extends State<ChatScreen> {
               messagesWithSenderNames: messagesWithSenderNames,
               index: index,
               isRead: isRead,
-              timestamp: messages[index].timestamp,
+              timestamp: message.timestamp,
               onTap: () {
-                _handleMessageTap(context, messages[index]);
+                _handleMessageTap(context, message);
               },
             );
           },
@@ -475,6 +603,32 @@ class _ChatScreenState extends State<ChatScreen> {
                     content: Text(
                       context.l10n.messageSavedLabel,
                       style: TextStyle(
+                        fontSize: cMSize,
+                        fontWeight: cMWeight,
+                        color: Theme.of(
+                          context,
+                        ).extension<AppTheme>()?.foregroundStrongestColor,
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+            AppListItem(
+              title: context.l10n.copyMessageLabel,
+              onPressed: () async {
+                await context.appController.copyTextToClipboard(message.body);
+                if (!context.mounted) return;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    backgroundColor: Theme.of(
+                      context,
+                    ).extension<AppTheme>()?.backgroundStrongColor,
+                    content: Text(
+                      context.l10n.messageCopiedLabel,
+                      style: TextStyle(
+                        fontSize: cMSize,
+                        fontWeight: cMWeight,
                         color: Theme.of(
                           context,
                         ).extension<AppTheme>()?.foregroundStrongestColor,
@@ -509,6 +663,8 @@ class _ChatScreenState extends State<ChatScreen> {
             content: Text(
               '${context.l10n.errorLabel}: ${current.message}',
               style: TextStyle(
+                fontSize: cMSize,
+                fontWeight: cMWeight,
                 color: Theme.of(
                   context,
                 ).extension<AppTheme>()?.foregroundStrongestColor,

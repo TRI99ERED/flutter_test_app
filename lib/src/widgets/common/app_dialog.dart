@@ -7,8 +7,8 @@ import 'package:test_app/src/features/themes/styles.dart';
 class AppDialog2 extends StatelessWidget {
   final String? title;
   final String? description;
-  final VoidCallback? onPressed1;
-  final VoidCallback? onPressed2;
+  final ValueChanged<BuildContext>? onPressed1;
+  final ValueChanged<BuildContext>? onPressed2;
   final String? buttonText1;
   final String? buttonText2;
 
@@ -38,9 +38,9 @@ class AppDialog2 extends StatelessWidget {
     String? buttonText1,
     String? buttonText2,
     double width = 300,
-    double height = 167,
-    VoidCallback? onPressed1,
-    VoidCallback? onPressed2,
+    double height = 200,
+    ValueChanged<BuildContext>? onPressed1,
+    ValueChanged<BuildContext>? onPressed2,
   }) {
     showDialog(
       context: context,
@@ -112,14 +112,18 @@ class AppDialog2 extends StatelessWidget {
             children: [
               Expanded(
                 child: AppButtonSecondary(
-                  onPressed: onPressed1,
+                  onPressed: onPressed1 != null
+                      ? () => onPressed1!(context)
+                      : null,
                   text: buttonText1,
                 ),
               ),
               const SizedBox(width: spacing8),
               Expanded(
                 child: AppButtonPrimary(
-                  onPressed: onPressed2,
+                  onPressed: onPressed2 != null
+                      ? () => onPressed2!(context)
+                      : null,
                   text: buttonText2,
                 ),
               ),
@@ -134,9 +138,9 @@ class AppDialog2 extends StatelessWidget {
 class AppDialog3 extends StatelessWidget {
   final String? title;
   final String? description;
-  final VoidCallback? onPressed1;
-  final VoidCallback? onPressed2;
-  final VoidCallback? onPressed3;
+  final ValueChanged<BuildContext>? onPressed1;
+  final ValueChanged<BuildContext>? onPressed2;
+  final ValueChanged<BuildContext>? onPressed3;
   final String? buttonText1;
   final String? buttonText2;
   final String? buttonText3;
@@ -175,10 +179,10 @@ class AppDialog3 extends StatelessWidget {
     String? buttonText2,
     String? buttonText3,
     double width = 300,
-    double height = 167,
-    VoidCallback? onPressed1,
-    VoidCallback? onPressed2,
-    VoidCallback? onPressed3,
+    double height = 200,
+    ValueChanged<BuildContext>? onPressed1,
+    ValueChanged<BuildContext>? onPressed2,
+    ValueChanged<BuildContext>? onPressed3,
   }) {
     showDialog(
       context: context,
@@ -248,11 +252,20 @@ class AppDialog3 extends StatelessWidget {
             ),
           if (description != null) const SizedBox(height: spacing8),
           Spacer(),
-          AppButtonSecondary(onPressed: onPressed1, text: buttonText1),
+          AppButtonSecondary(
+            onPressed: onPressed1 != null ? () => onPressed1!(context) : null,
+            text: buttonText1,
+          ),
           const SizedBox(height: spacing8),
-          AppButtonSecondary(onPressed: onPressed2, text: buttonText2),
+          AppButtonSecondary(
+            onPressed: onPressed2 != null ? () => onPressed2!(context) : null,
+            text: buttonText2,
+          ),
           const SizedBox(height: spacing8),
-          AppButtonPrimary(onPressed: onPressed3, text: buttonText3),
+          AppButtonPrimary(
+            onPressed: onPressed3 != null ? () => onPressed3!(context) : null,
+            text: buttonText3,
+          ),
         ],
       ),
     );

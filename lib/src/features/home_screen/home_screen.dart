@@ -9,6 +9,7 @@ import 'package:test_app/src/features/home_screen/widgets/friends.dart';
 import 'package:test_app/src/features/home_screen/widgets/projects.dart';
 import 'package:test_app/src/features/home_screen/widgets/settings.dart';
 import 'package:test_app/src/features/themes/app_theme.dart';
+import 'package:test_app/src/features/themes/styles.dart';
 import 'package:test_app/src/router/routes.dart';
 import 'package:test_app/src/widgets/common/app_tap_bar.dart';
 
@@ -55,6 +56,8 @@ class _HomeScreenState extends State<HomeScreen> {
               content: Text(
                 '${context.l10n.errorLabel}: ${current.message}',
                 style: TextStyle(
+                  fontSize: cMSize,
+                  fontWeight: cMWeight,
                   color: Theme.of(
                     context,
                   ).extension<AppTheme>()?.foregroundStrongestColor,

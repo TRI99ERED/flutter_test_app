@@ -7,6 +7,7 @@ import 'package:test_app/src/features/app/data/models/chat_model.dart';
 import 'package:test_app/src/features/app/data/models/user_model.dart';
 import 'package:test_app/src/widgets/chat_wizard.dart';
 import 'package:test_app/src/widgets/common/app_avatar.dart';
+import 'package:test_app/src/widgets/common/app_dialog.dart';
 import 'package:test_app/src/widgets/common/app_loader.dart';
 import 'package:test_app/src/widgets/common/empty_state.dart';
 import 'package:test_app/src/widgets/common/error_state.dart';
@@ -312,8 +313,19 @@ class _ChatListItem extends StatelessWidget {
                       ? context.l10n.deleteLabel
                       : null;
                   final onPressed = canEdit
-                      ? () => context.appController.deleteDirectChat(
-                          directChat.id,
+                      ? () => AppDialog2.show(
+                          context: context,
+                          title: context.l10n.deleteChatLabel,
+                          description: context.l10n.deleteChatConfirmationLabel,
+                          buttonText1: context.l10n.cancelLabel,
+                          buttonText2: context.l10n.deleteLabel,
+                          onPressed1: (context) => context.pop(),
+                          onPressed2: (context) async {
+                            context.pop();
+                            await context.appController.deleteDirectChat(
+                              directChat.id,
+                            );
+                          },
                         )
                       : () async {
                           if (!mounted) return;
@@ -396,7 +408,7 @@ class _ChatListItem extends StatelessWidget {
                   : groupChat.lastMessage;
               final unreadCounts = groupChat.unreadCounts;
               final unreadCount = unreadCounts[user.id] ?? 0;
-              final control = canEdit
+              final control = canEdit && groupChat.ownerId == user.id
                   ? AppListItemControl.largeButton
                   : (lastSenderId != null &&
                         lastSenderId != user.id &&
@@ -410,9 +422,24 @@ class _ChatListItem extends StatelessWidget {
                         unreadCount > 0)
                   ? unreadCount.toString()
                   : null;
-              final largeButtonText = canEdit ? context.l10n.deleteLabel : null;
-              final onPressed = canEdit
-                  ? () => context.appController.deleteGroupChat(groupChat.id)
+              final largeButtonText = canEdit && groupChat.ownerId == user.id
+                  ? context.l10n.deleteLabel
+                  : null;
+              final onPressed = canEdit && groupChat.ownerId == user.id
+                  ? () => AppDialog2.show(
+                      context: context,
+                      title: context.l10n.deleteChatLabel,
+                      description: context.l10n.deleteChatConfirmationLabel,
+                      buttonText1: context.l10n.cancelLabel,
+                      buttonText2: context.l10n.deleteLabel,
+                      onPressed1: (context) => context.pop(),
+                      onPressed2: (context) async {
+                        context.pop();
+                        await context.appController.deleteGroupChat(
+                          groupChat.id,
+                        );
+                      },
+                    )
                   : () async {
                       if (!mounted) return;
                       context.push('/chats/group/${groupChat.id}');
@@ -420,7 +447,7 @@ class _ChatListItem extends StatelessWidget {
                           lastSenderId != user.id &&
                           unreadCount > 0) {
                         await context.appController
-                            .updateGroupChatThisUserUnreadCount(
+                            .updateGroupChatCurrentUserUnreadCount(
                               chatId: groupChat.id,
                               unreadCount: 0,
                             );

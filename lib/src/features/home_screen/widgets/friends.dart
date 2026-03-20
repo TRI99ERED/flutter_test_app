@@ -7,6 +7,7 @@ import 'package:test_app/src/features/app/app_scope.dart';
 import 'package:test_app/src/features/app/data/models/chat_model.dart';
 import 'package:test_app/src/features/app/data/models/user_model.dart';
 import 'package:test_app/src/widgets/common/app_avatar.dart';
+import 'package:test_app/src/widgets/common/app_dialog.dart';
 import 'package:test_app/src/widgets/user_picker.dart';
 import 'package:test_app/src/widgets/common/app_card.dart';
 import 'package:test_app/src/widgets/common/app_content_switcher.dart';
@@ -345,8 +346,28 @@ class _FriendsSectionState extends State<_FriendsSection> {
                                       ? () async {
                                           final appController =
                                               context.appController;
-                                          await appController.removeFriend(
-                                            friendUserId: friend.id,
+
+                                          AppDialog2.show(
+                                            context: context,
+                                            title:
+                                                context.l10n.removeFriendLabel,
+                                            description: context.l10n
+                                                .removeFriendConfirmationLabel(
+                                                  friend.name,
+                                                ),
+                                            buttonText1:
+                                                context.l10n.cancelLabel,
+                                            buttonText2:
+                                                context.l10n.removeLabel,
+                                            onPressed1: (context) {
+                                              context.pop();
+                                            },
+                                            onPressed2: (context) async {
+                                              context.pop();
+                                              await appController.removeFriend(
+                                                friendUserId: friend.id,
+                                              );
+                                            },
                                           );
                                         }
                                       : () async {

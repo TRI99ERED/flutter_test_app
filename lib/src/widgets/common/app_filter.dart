@@ -83,24 +83,31 @@ class AppFilter extends StatelessWidget {
 
 class AppFilterMenu extends StatefulWidget {
   final ValueNotifier<Map<String, Set<String>>> filters;
-  final Map<MapEntry<String, String>, Map<String, String>> filterOptions;
+  final Map<String, Map<String, String>> filterOptions;
+  final Map<String, String> filterTitles;
 
   const AppFilterMenu({
     super.key,
     required this.filters,
     required this.filterOptions,
+    required this.filterTitles,
   });
 
   static void show(
     BuildContext context, {
     required ValueNotifier<Map<String, Set<String>>> filters,
-    required Map<MapEntry<String, String>, Map<String, String>> filterOptions,
+    required Map<String, Map<String, String>> filterOptions,
+    required Map<String, String> filterTitles,
   }) {
     showDialog(
       context: context,
       barrierColor: Colors.black.withAlpha(216),
       builder: (context) {
-        return AppFilterMenu(filters: filters, filterOptions: filterOptions);
+        return AppFilterMenu(
+          filters: filters,
+          filterOptions: filterOptions,
+          filterTitles: filterTitles,
+        );
       },
     );
   }
@@ -133,7 +140,7 @@ class _AppFilterMenuState extends State<AppFilterMenu> {
         },
         onPressedRight: () {
           _internalFilters.value = widget.filterOptions.map(
-            (k, v) => MapEntry(k.key, <String>{}),
+            (k, v) => MapEntry(k, <String>{}),
           );
         },
       ),
@@ -154,14 +161,13 @@ class _AppFilterMenuState extends State<AppFilterMenu> {
                   return ListView.builder(
                     itemCount: widget.filterOptions.length,
                     itemBuilder: (context, index) {
-                      MapEntry<String, String> entry = widget.filterOptions.keys
-                          .elementAt(index);
-                      String name = entry.value;
-                      Set<String> options = widget.filterOptions[entry]!.keys
+                      String name = widget.filterOptions.keys.elementAt(index);
+                      Set<String> options = widget.filterOptions[name]!.keys
                           .toSet();
-                      final labelMap = widget.filterOptions[entry];
+                      final label = widget.filterTitles[name];
+                      final tagNameMap = widget.filterOptions[name];
                       return AppAccordion(
-                        title: name,
+                        title: label ?? name,
                         selectedCount:
                             _internalFilters.value[name]?.length ?? 0,
                         children: [
@@ -174,8 +180,8 @@ class _AppFilterMenuState extends State<AppFilterMenu> {
                                     option,
                                   ) ??
                                   false;
-                              final displayText = labelMap != null
-                                  ? (labelMap[option] ?? option)
+                              final displayText = label != null
+                                  ? (tagNameMap?[option] ?? option)
                                   : option;
                               return AppTag(
                                 text: displayText.toUpperCase(),

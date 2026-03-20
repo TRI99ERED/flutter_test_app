@@ -839,4 +839,74 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get ukrainianLabel => 'Українська';
+
+  @override
+  String get copyMessageLabel => 'Копіювати повідомлення';
+
+  @override
+  String get messageCopiedLabel => 'Повідомлення скопійовано';
+
+  @override
+  String dateSeparatorLabel(Object day, Object month, Object year) {
+    return '$day $month $year р.';
+  }
+
+  @override
+  String get ofJanuaryLabel => 'січеня';
+
+  @override
+  String get ofFebruaryLabel => 'лютого';
+
+  @override
+  String get ofMarchLabel => 'березня';
+
+  @override
+  String get ofAprilLabel => 'квітня';
+
+  @override
+  String get ofMayLabel => 'травня';
+
+  @override
+  String get ofJuneLabel => 'червня';
+
+  @override
+  String get ofJulyLabel => 'липня';
+
+  @override
+  String get ofAugustLabel => 'серпня';
+
+  @override
+  String get ofSeptemberLabel => 'вересня';
+
+  @override
+  String get ofOctoberLabel => 'жовтня';
+
+  @override
+  String get ofNovemberLabel => 'листопада';
+
+  @override
+  String get ofDecemberLabel => 'грудня';
+
+  @override
+  String get deleteChatLabel => 'Видалити чат?';
+
+  @override
+  String get deleteChatConfirmationLabel =>
+      'Ви впевнені, що хочете видалити цей чат? Цю дію не можна скасувати.';
+
+  @override
+  String get removeFriendLabel => 'Видалити друга?';
+
+  @override
+  String removeFriendConfirmationLabel(Object friend) {
+    return 'Ви впевнені, що хочете видалити $friend з друзів? Цю дію не можна скасувати.';
+  }
+
+  @override
+  String get deleteProjectLabel => 'Видалити проєкт?';
+
+  @override
+  String deleteProjectConfirmationLabel(Object project) {
+    return 'Ви впевнені, що хочете видалити проєкт $project? Цю дію не можна скасувати.';
+  }
 }

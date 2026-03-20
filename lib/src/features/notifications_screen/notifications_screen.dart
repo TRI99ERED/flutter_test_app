@@ -6,6 +6,7 @@ import 'package:test_app/src/core/resources/app_icons.dart';
 import 'package:test_app/src/core/widgets/controller_listener.dart';
 import 'package:test_app/src/features/app/app_scope.dart';
 import 'package:test_app/src/features/themes/app_theme.dart';
+import 'package:test_app/src/features/themes/styles.dart';
 import 'package:test_app/src/widgets/common/app_list_item.dart';
 import 'package:test_app/src/widgets/common/app_nav_bar.dart';
 
@@ -55,6 +56,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             content: Text(
               '${context.l10n.errorLabel}: ${current.message}',
               style: TextStyle(
+                fontSize: cMSize,
+                fontWeight: cMWeight,
                 color: Theme.of(
                   context,
                 ).extension<AppTheme>()?.foregroundStrongestColor,

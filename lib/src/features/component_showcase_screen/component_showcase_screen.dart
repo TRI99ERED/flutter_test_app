@@ -5,6 +5,7 @@ import 'package:test_app/src/core/resources/app_icons.dart';
 import 'package:test_app/src/core/widgets/controller_listener.dart';
 import 'package:test_app/src/features/app/app_scope.dart';
 import 'package:test_app/src/features/themes/app_theme.dart';
+import 'package:test_app/src/features/themes/styles.dart';
 import 'package:test_app/src/router/routes.dart';
 import 'package:test_app/src/widgets/common/app_accordion.dart';
 import 'package:test_app/src/widgets/common/app_action_sheet.dart';
@@ -77,6 +78,8 @@ class _HomeScreenState extends State<HomeScreen> {
               content: Text(
                 'Error: ${current.message}',
                 style: TextStyle(
+                  fontSize: cMSize,
+                  fontWeight: cMWeight,
                   color: Theme.of(
                     context,
                   ).extension<AppTheme>()?.foregroundStrongestColor,
@@ -136,8 +139,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     title: 'Title',
                     description:
                         'Description. Lorem ipsum dolor sit amet consectetur adipiscing elit, sed do.',
-                    onPressed1: () => debugPrint('Button 1 pressed'),
-                    onPressed2: () => debugPrint('Button 2 pressed'),
+                    onPressed1: (_) => debugPrint('Button 1 pressed'),
+                    onPressed2: (_) => debugPrint('Button 2 pressed'),
                     buttonText1: 'Button 1',
                     buttonText2: 'Button 2',
                   ),
@@ -151,9 +154,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     title: 'Title',
                     description:
                         'Description. Lorem ipsum dolor sit amet consectetur adipiscing elit, sed do.',
-                    onPressed1: () => debugPrint('Button 1 pressed'),
-                    onPressed2: () => debugPrint('Button 2 pressed'),
-                    onPressed3: () => debugPrint('Button 3 pressed'),
+                    onPressed1: (_) => debugPrint('Button 1 pressed'),
+                    onPressed2: (_) => debugPrint('Button 2 pressed'),
+                    onPressed3: (_) => debugPrint('Button 3 pressed'),
                     buttonText1: 'Button 1',
                     buttonText2: 'Button 2',
                     buttonText3: 'Button 3',

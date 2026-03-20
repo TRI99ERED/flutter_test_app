@@ -1639,6 +1639,132 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Ukrainian'**
   String get ukrainianLabel;
+
+  /// No description provided for @copyMessageLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy message'**
+  String get copyMessageLabel;
+
+  /// No description provided for @messageCopiedLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Message copied'**
+  String get messageCopiedLabel;
+
+  /// No description provided for @dateSeparatorLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'{month} {day}, {year}'**
+  String dateSeparatorLabel(Object day, Object month, Object year);
+
+  /// No description provided for @ofJanuaryLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'January'**
+  String get ofJanuaryLabel;
+
+  /// No description provided for @ofFebruaryLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'February'**
+  String get ofFebruaryLabel;
+
+  /// No description provided for @ofMarchLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'March'**
+  String get ofMarchLabel;
+
+  /// No description provided for @ofAprilLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'April'**
+  String get ofAprilLabel;
+
+  /// No description provided for @ofMayLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'May'**
+  String get ofMayLabel;
+
+  /// No description provided for @ofJuneLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'June'**
+  String get ofJuneLabel;
+
+  /// No description provided for @ofJulyLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'July'**
+  String get ofJulyLabel;
+
+  /// No description provided for @ofAugustLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'August'**
+  String get ofAugustLabel;
+
+  /// No description provided for @ofSeptemberLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'September'**
+  String get ofSeptemberLabel;
+
+  /// No description provided for @ofOctoberLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'October'**
+  String get ofOctoberLabel;
+
+  /// No description provided for @ofNovemberLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'November'**
+  String get ofNovemberLabel;
+
+  /// No description provided for @ofDecemberLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'December'**
+  String get ofDecemberLabel;
+
+  /// No description provided for @deleteChatLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete chat?'**
+  String get deleteChatLabel;
+
+  /// No description provided for @deleteChatConfirmationLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to delete this chat? This action cannot be undone.'**
+  String get deleteChatConfirmationLabel;
+
+  /// No description provided for @removeFriendLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove friend?'**
+  String get removeFriendLabel;
+
+  /// No description provided for @removeFriendConfirmationLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to remove {friend} from your friends? This action cannot be undone.'**
+  String removeFriendConfirmationLabel(Object friend);
+
+  /// No description provided for @deleteProjectLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete project?'**
+  String get deleteProjectLabel;
+
+  /// No description provided for @deleteProjectConfirmationLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to delete project {project}? This action cannot be undone.'**
+  String deleteProjectConfirmationLabel(Object project);
 }
 
 class _AppLocalizationsDelegate

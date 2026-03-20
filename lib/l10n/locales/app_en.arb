@@ -529,5 +529,61 @@
     "englishLabel": "English",
     "@englishLabel": {},
     "ukrainianLabel": "Ukrainian",
-    "@ukrainianLabel": {}
+    "@ukrainianLabel": {},
+    "copyMessageLabel": "Copy message",
+    "@copyMessageLabel": {},
+    "messageCopiedLabel": "Message copied",
+    "@messageCopiedLabel": {},
+    "dateSeparatorLabel": "{month} {day}, {year}",
+    "@dateSeparatorLabel": {
+        "placeholders": {
+            "day": {},
+            "month": {},
+            "year": {}
+        }
+    },
+    "ofJanuaryLabel": "January",
+    "@ofJanuaryLabel": {},
+    "ofFebruaryLabel": "February",
+    "@ofFebruaryLabel": {},
+    "ofMarchLabel": "March",
+    "@ofMarchLabel": {},
+    "ofAprilLabel": "April",
+    "@ofAprilLabel": {},
+    "ofMayLabel": "May",
+    "@ofMayLabel": {},
+    "ofJuneLabel": "June",
+    "@ofJuneLabel": {},
+    "ofJulyLabel": "July",
+    "@ofJulyLabel": {},
+    "ofAugustLabel": "August",
+    "@ofAugustLabel": {},
+    "ofSeptemberLabel": "September",
+    "@ofSeptemberLabel": {},
+    "ofOctoberLabel": "October",
+    "@ofOctoberLabel": {},
+    "ofNovemberLabel": "November",
+    "@ofNovemberLabel": {},
+    "ofDecemberLabel": "December",
+    "@ofDecemberLabel": {},
+    "deleteChatLabel": "Delete chat?",
+    "@deleteChatLabel": {},
+    "deleteChatConfirmationLabel": "Are you sure you want to delete this chat? This action cannot be undone.",
+    "@deleteChatConfirmationLabel": {},
+    "removeFriendLabel": "Remove friend?",
+    "@removeFriendLabel": {},
+    "removeFriendConfirmationLabel": "Are you sure you want to remove {friend} from your friends? This action cannot be undone.",
+    "@removeFriendConfirmationLabel": {
+        "placeholders": {
+            "friend": {}
+        }
+    },
+    "deleteProjectLabel": "Delete project?",
+    "@deleteProjectLabel": {},
+    "deleteProjectConfirmationLabel": "Are you sure you want to delete project {project}? This action cannot be undone.",
+    "@deleteProjectConfirmationLabel": {
+        "placeholders": {
+            "project": {}
+        }
+    }
 }
