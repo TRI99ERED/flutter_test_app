@@ -1984,61 +1984,16 @@ final class AppController extends BaseController<AppState> {
   });
 
   Future<void> updateCurrentRoute(String location) async {
-    setState(
-      AppState.processing(
-        message: 'Updating current route...',
-        user: state.user,
-      ),
-    );
     try {
       await _sharedPreferencesRepository.setString('currentRoute', location);
-      setState(
-        AppState.idle(
-          message: 'Current route updated successfully.',
-          user: state.user,
-        ),
-      );
-    } catch (error, stackTrace) {
-      setState(
-        AppState.failed(
-          message: 'Failed to update current route: ${error.toString()}',
-          user: state.user,
-          error: error,
-          stackTrace: stackTrace,
-        ),
-      );
-      return Future.error(error, stackTrace);
-    }
+    } catch (_) {}
   }
 
   Future<String?> loadCurrentRoute() async {
-    setState(
-      AppState.processing(
-        message: 'Retrieving current route...',
-        user: state.user,
-      ),
-    );
     try {
-      final location = await _sharedPreferencesRepository.getString(
-        'currentRoute',
-      );
-      setState(
-        AppState.idle(
-          message: 'Current route retrieved successfully: $location',
-          user: state.user,
-        ),
-      );
-      return location;
-    } catch (error, stackTrace) {
-      setState(
-        AppState.failed(
-          message: 'Failed to retrieve current route: ${error.toString()}',
-          user: state.user,
-          error: error,
-          stackTrace: stackTrace,
-        ),
-      );
-      return Future.error(error, stackTrace);
+      return await _sharedPreferencesRepository.getString('currentRoute');
+    } catch (_) {
+      return null;
     }
   }
 
