@@ -411,33 +411,48 @@ class _ChatScreenState extends State<ChatScreen> {
             if (index < messages.length - 1 &&
                 messages[index].timestamp.day !=
                     messages[index + 1].timestamp.day) {
-              return Text(
-                context.l10n.dateSeparatorLabel(
-                  messages[index].timestamp.day,
-                  switch (messages[index].timestamp.month) {
-                    1 => context.l10n.ofJanuaryLabel,
-                    2 => context.l10n.ofFebruaryLabel,
-                    3 => context.l10n.ofMarchLabel,
-                    4 => context.l10n.ofAprilLabel,
-                    5 => context.l10n.ofMayLabel,
-                    6 => context.l10n.ofJuneLabel,
-                    7 => context.l10n.ofJulyLabel,
-                    8 => context.l10n.ofAugustLabel,
-                    9 => context.l10n.ofSeptemberLabel,
-                    10 => context.l10n.ofOctoberLabel,
-                    11 => context.l10n.ofNovemberLabel,
-                    12 => context.l10n.ofDecemberLabel,
-                    _ => '',
-                  },
-                  messages[index].timestamp.year,
-                ),
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: cMSize,
-                  fontWeight: cMWeight,
-                  color: Theme.of(
-                    context,
-                  ).extension<AppTheme>()?.foregroundStrongestColor,
+              return Padding(
+                padding: const EdgeInsets.symmetric(vertical: spacing8),
+                child: Center(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Theme.of(context)
+                          .extension<AppTheme>()
+                          ?.backgroundStrongColor
+                          .withAlpha(192),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    padding: const EdgeInsets.all(spacing8),
+                    child: Text(
+                      context.l10n.dateSeparatorLabel(
+                        messages[index].timestamp.day,
+                        switch (messages[index].timestamp.month) {
+                          1 => context.l10n.ofJanuaryLabel,
+                          2 => context.l10n.ofFebruaryLabel,
+                          3 => context.l10n.ofMarchLabel,
+                          4 => context.l10n.ofAprilLabel,
+                          5 => context.l10n.ofMayLabel,
+                          6 => context.l10n.ofJuneLabel,
+                          7 => context.l10n.ofJulyLabel,
+                          8 => context.l10n.ofAugustLabel,
+                          9 => context.l10n.ofSeptemberLabel,
+                          10 => context.l10n.ofOctoberLabel,
+                          11 => context.l10n.ofNovemberLabel,
+                          12 => context.l10n.ofDecemberLabel,
+                          _ => '',
+                        },
+                        messages[index].timestamp.year,
+                      ),
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: cMSize,
+                        fontWeight: cMWeight,
+                        color: Theme.of(
+                          context,
+                        ).extension<AppTheme>()?.foregroundStrongestColor,
+                      ),
+                    ),
+                  ),
                 ),
               );
             }
@@ -481,33 +496,48 @@ class _ChatScreenState extends State<ChatScreen> {
             if (index == messages.length - 1) {
               return Column(
                 children: [
-                  Text(
-                    context.l10n.dateSeparatorLabel(
-                      message.timestamp.day,
-                      switch (message.timestamp.month) {
-                        1 => context.l10n.ofJanuaryLabel,
-                        2 => context.l10n.ofFebruaryLabel,
-                        3 => context.l10n.ofMarchLabel,
-                        4 => context.l10n.ofAprilLabel,
-                        5 => context.l10n.ofMayLabel,
-                        6 => context.l10n.ofJuneLabel,
-                        7 => context.l10n.ofJulyLabel,
-                        8 => context.l10n.ofAugustLabel,
-                        9 => context.l10n.ofSeptemberLabel,
-                        10 => context.l10n.ofOctoberLabel,
-                        11 => context.l10n.ofNovemberLabel,
-                        12 => context.l10n.ofDecemberLabel,
-                        _ => '',
-                      },
-                      message.timestamp.year,
-                    ),
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: cMSize,
-                      fontWeight: cMWeight,
-                      color: Theme.of(
-                        context,
-                      ).extension<AppTheme>()?.foregroundStrongestColor,
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: spacing8),
+                    child: Center(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Theme.of(context)
+                              .extension<AppTheme>()
+                              ?.backgroundStrongColor
+                              .withAlpha(192),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        padding: const EdgeInsets.all(spacing8),
+                        child: Text(
+                          context.l10n.dateSeparatorLabel(
+                            message.timestamp.day,
+                            switch (message.timestamp.month) {
+                              1 => context.l10n.ofJanuaryLabel,
+                              2 => context.l10n.ofFebruaryLabel,
+                              3 => context.l10n.ofMarchLabel,
+                              4 => context.l10n.ofAprilLabel,
+                              5 => context.l10n.ofMayLabel,
+                              6 => context.l10n.ofJuneLabel,
+                              7 => context.l10n.ofJulyLabel,
+                              8 => context.l10n.ofAugustLabel,
+                              9 => context.l10n.ofSeptemberLabel,
+                              10 => context.l10n.ofOctoberLabel,
+                              11 => context.l10n.ofNovemberLabel,
+                              12 => context.l10n.ofDecemberLabel,
+                              _ => '',
+                            },
+                            message.timestamp.year,
+                          ),
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: cMSize,
+                            fontWeight: cMWeight,
+                            color: Theme.of(
+                              context,
+                            ).extension<AppTheme>()?.foregroundStrongestColor,
+                          ),
+                        ),
+                      ),
                     ),
                   ),
                   AlignedMessageBubble(
