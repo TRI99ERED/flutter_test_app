@@ -11,7 +11,6 @@ import 'package:test_app/src/features/themes/app_theme.dart';
 import 'package:test_app/src/features/themes/styles.dart';
 import 'package:test_app/src/router/app_navigator.dart';
 import 'package:test_app/src/router/app_page.dart';
-import 'package:test_app/src/services/notification_service.dart';
 import 'package:test_app/src/widgets/common/app_tap_bar.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -33,28 +32,6 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   late final _selectedTabIndex = ValueNotifier<int>(widget.initialTab);
   final _editPressed = ValueNotifier<bool>(false);
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final navigator = AppNavigator.of(context);
-      if (NotificationService.pendingRoute != null) {
-        final page = AppPage.fromRoute(
-          NotificationService.pendingRoute!,
-          NotificationService.pendingTab ?? 0,
-          NotificationService.pendingFriendsSection ?? 0,
-          NotificationService.pendingProjectsSection ?? 0,
-        );
-        navigator.replaceAll(HomePage());
-        navigator.push(page);
-        NotificationService.pendingRoute = null;
-        NotificationService.pendingTab = null;
-        NotificationService.pendingFriendsSection = null;
-        NotificationService.pendingProjectsSection = null;
-      }
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
