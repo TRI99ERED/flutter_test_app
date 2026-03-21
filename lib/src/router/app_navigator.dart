@@ -42,6 +42,20 @@ class AppNavigator extends StatefulWidget {
     this.onStateChanged,
   }) : assert(pages.length > 0, 'pages must not be empty');
 
+  static final GlobalKey<AppNavigatorState> navigatorKey = GlobalKey<AppNavigatorState>();
+
+  /// Retrieve the nearest [AppNavigatorState] from the widget tree.
+  static AppNavigatorState of(BuildContext context) {
+    final state = context.findAncestorStateOfType<AppNavigatorState>();
+    assert(state != null, 'No AppNavigator found in the widget tree');
+    return state!;
+  }
+
+  /// Retrieve the nearest [AppNavigatorState], or `null` if absent.
+  static AppNavigatorState? maybeOf(BuildContext context) {
+    return context.findAncestorStateOfType<AppNavigatorState>();
+  }
+
   /// The initial pages for the navigator.
   ///
   /// In uncontrolled mode, these are the starting pages. In controlled mode,
@@ -337,13 +351,14 @@ class AppNavigatorState extends State<AppNavigator> {
   }
 
   void _handleDidRemovePage(Page<Object?> page) {
+    debugPrint('AppNavigator._handleDidRemovePage: ${page.name}');
     if (widget.onDidRemovePage != null) {
       widget.onDidRemovePage!(page);
       return;
     }
 
-    final idx = _state.indexWhere((p) => p.key == page.key);
-    if (idx < 0) {
+    final index = _state.indexWhere((p) => p.key == page.key);
+    if (index < 0) {
       NavLog.w('System removed unknown page: ${page.name}');
       return;
     }
@@ -353,8 +368,8 @@ class AppNavigatorState extends State<AppNavigator> {
       return;
     }
 
-    final removed = _state[idx];
-    _state = [..._state.sublist(0, idx), ..._state.sublist(idx + 1)];
+    final removed = _state[index];
+    _state = [..._state.sublist(0, index), ..._state.sublist(index + 1)];
 
     NavLog.d('Back: removed ${removed.name} -> ${_stackLabel(_state)}');
 

@@ -140,8 +140,8 @@ class SettingsTab extends StatelessWidget {
             child: AppListItem(
               title: context.l10n.logOutLabel,
               control: AppListItemControl.smallButton,
-              onPressed: () {
-                AppDialog2.show(
+              onPressed: () async {
+                final bool? result = await AppDialog2.show(
                   context: context,
                   title: context.l10n.logOutLabel,
                   description: context.l10n.areYouSureYouWantToLogOutLabel,
@@ -149,12 +149,15 @@ class SettingsTab extends StatelessWidget {
                   buttonText2: context.l10n.logOutLabel,
                   width: MediaQuery.sizeOf(context).width * 0.8,
                   height: MediaQuery.sizeOf(context).height * 0.2,
-                  onPressed1: (context) => Navigator.of(context).pop(),
-                  onPressed2: (context) {
-                    Navigator.of(context).pop();
-                    context.appController.logout();
-                  },
+                  onPressed1: (context) => Navigator.of(context).pop(false),
+                  onPressed2: (context) => Navigator.of(context).pop(true),
                 );
+                if (result == true) {
+                  if (!context.mounted) return;
+                  await context.appController.logout();
+                  if (!context.mounted) return;
+                  AppNavigator.of(context).replaceAll(const LoginPage());
+                }
               },
             ),
           ),

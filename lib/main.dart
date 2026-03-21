@@ -147,7 +147,7 @@ class _AppState extends State<App> {
   Widget build(BuildContext context) {
     return ValueListenableBuilder(
       valueListenable: _locale,
-      builder: (context, value, child) {
+      builder: (context, locale, child) {
         return ValueListenableBuilder(
           valueListenable: _themeMode,
           builder: (context, value, child) {
