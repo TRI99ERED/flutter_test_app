@@ -2,7 +2,8 @@ import 'dart:async';
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
+// TODO: Remove go_router dependency once migration is complete
+// import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:test_app/firebase_options.dart';
 import 'package:test_app/l10n/locales/app_localizations.dart';
@@ -12,9 +13,13 @@ import 'package:test_app/src/features/app/app_lifecycle_handler.dart';
 import 'package:test_app/src/features/app/app_scope.dart';
 import 'package:test_app/src/features/themes/app_theme.dart';
 import 'package:test_app/src/features/themes/styles.dart';
-import 'package:test_app/src/router/routes.dart';
+// TODO: Remove old router once migration is complete
+// import 'package:test_app/src/router/routes.dart';
+import 'package:test_app/src/router/app_navigator.dart';
+import 'package:test_app/src/router/app_page.dart';
 import 'package:test_app/src/services/notification_service.dart';
 
+// TODO: Remove rootNavigatorKey once migration is complete
 final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>();
 
 void main() {
@@ -47,7 +52,8 @@ class App extends StatefulWidget {
 
 class _AppState extends State<App> {
   late final AppController _appController;
-  late final GoRouter _router;
+  // TODO: Remove old GoRouter once migration is complete
+  // late final GoRouter _router;
   final ThemeData _lightTheme = ThemeData(
     brightness: Brightness.light,
     extensions: [appThemeLight],
@@ -88,7 +94,8 @@ class _AppState extends State<App> {
     super.initState();
     _appController = AppController();
     _appController.addListener(_rebuild);
-    _router = generateRouter(_appController, rootNavigatorKey);
+    // TODO: Remove old GoRouter once migration is complete
+    // _router = generateRouter(_appController, rootNavigatorKey);
   }
 
   void _rebuild() {
@@ -99,6 +106,76 @@ class _AppState extends State<App> {
     }
   }
 
+  // TODO: Remove old build method once migration is complete
+  // @override
+  // Widget build(BuildContext context) {
+  //   return ValueListenableBuilder(
+  //     valueListenable: _locale,
+  //     builder: (context, value, child) {
+  //       return ValueListenableBuilder(
+  //         valueListenable: _themeMode,
+  //         builder: (context, value, child) {
+  //           return MaterialApp.router(
+  //             title: 'Test App',
+  //             theme: _lightTheme,
+  //             darkTheme: _darkTheme,
+  //             themeMode: _themeMode.value,
+  //             locale: _locale.value,
+  //             localizationsDelegates: AppLocalizations.localizationsDelegates,
+  //             supportedLocales: AppLocalizations.supportedLocales,
+  //             routerConfig: _router,
+  //             builder: (context, child) => AppScope(
+  //               controller: _appController,
+  //               themeMode: _themeMode,
+  //               locale: _locale,
+  //               child: child == null
+  //                   ? const SizedBox.shrink()
+  //                   : AppLifecycleHandler(child: child),
+  //             ),
+  //           );
+  //         },
+  //       );
+  //     },
+  //   );
+  // }
+
+  /// Auth guard: redirects based on authorization state.
+  AppNavigationState _authGuard(BuildContext context, AppNavigationState state) {
+    final top = state.last;
+
+    // Stay on splash until the controller has received the first auth state.
+    if (top is SplashPage) {
+      if (!_appController.isInitialized) return state;
+      return _appController.state.isAuthorized
+          ? [HomePage()]
+          : [const OnboardingPage()];
+    }
+
+    final isAuthorized = _appController.state.isAuthorized;
+
+    // Pages accessible without auth.
+    const guestPages = {
+      OnboardingPage,
+      LoginPage,
+      RegisterPage,
+      EmailConfirmationPage,
+      ForgotPasswordPage,
+    };
+
+    // Pages that should force-redirect to home when already authorized.
+    const authOnlyPages = {OnboardingPage, LoginPage, RegisterPage};
+
+    if (!isAuthorized && !guestPages.contains(top.runtimeType)) {
+      return [const LoginPage()];
+    }
+
+    if (isAuthorized && authOnlyPages.contains(top.runtimeType)) {
+      return [HomePage()];
+    }
+
+    return state;
+  }
+
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder(
@@ -107,7 +184,7 @@ class _AppState extends State<App> {
         return ValueListenableBuilder(
           valueListenable: _themeMode,
           builder: (context, value, child) {
-            return MaterialApp.router(
+            return MaterialApp(
               title: 'Test App',
               theme: _lightTheme,
               darkTheme: _darkTheme,
@@ -115,14 +192,17 @@ class _AppState extends State<App> {
               locale: _locale.value,
               localizationsDelegates: AppLocalizations.localizationsDelegates,
               supportedLocales: AppLocalizations.supportedLocales,
-              routerConfig: _router,
               builder: (context, child) => AppScope(
                 controller: _appController,
                 themeMode: _themeMode,
                 locale: _locale,
-                child: child == null
-                    ? const SizedBox.shrink()
-                    : AppLifecycleHandler(child: child),
+                child: AppLifecycleHandler(
+                  child: AppNavigator(
+                    pages: const [SplashPage()],
+                    guards: [_authGuard],
+                    refreshListenable: _appController.authNotifier,
+                  ),
+                ),
               ),
             );
           },

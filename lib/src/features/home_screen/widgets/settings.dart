@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
+// TODO: Remove go_router once migration is complete
+// import 'package:go_router/go_router.dart';
 import 'package:test_app/l10n/locales/l10n.dart';
 import 'package:test_app/src/core/resources/app_icons.dart';
 import 'package:test_app/src/features/app/app_scope.dart';
 import 'package:test_app/src/features/app/data/models/user_model.dart';
 import 'package:test_app/src/features/themes/app_theme.dart';
-import 'package:test_app/src/router/routes.dart';
+// TODO: Remove old routes once migration is complete
+// import 'package:test_app/src/router/routes.dart';
+import 'package:test_app/src/router/app_navigator.dart';
+import 'package:test_app/src/router/app_page.dart';
 import 'package:test_app/src/widgets/common/app_avatar.dart';
 import 'package:test_app/src/widgets/common/app_dialog.dart';
 import 'package:test_app/src/widgets/common/app_divider.dart';
@@ -101,7 +105,7 @@ class Settings extends StatelessWidget {
               title: context.l10n.savedMessagesTitle,
               control: AppListItemControl.smallButton,
               onPressed: () {
-                context.push(savedMessagesPath);
+                AppNavigator.of(context).push(const SavedMessagesPage());
               },
             ),
           ),
@@ -111,7 +115,7 @@ class Settings extends StatelessWidget {
               title: context.l10n.notificationsTitle,
               control: AppListItemControl.smallButton,
               onPressed: () {
-                context.push(notificationsPath);
+                AppNavigator.of(context).push(const NotificationsPage());
               },
             ),
           ),
@@ -121,7 +125,7 @@ class Settings extends StatelessWidget {
               title: context.l10n.appearanceTitle,
               control: AppListItemControl.smallButton,
               onPressed: () {
-                context.push(appearancePath);
+                AppNavigator.of(context).push(const AppearancePage());
               },
             ),
           ),
@@ -131,7 +135,7 @@ class Settings extends StatelessWidget {
               title: context.l10n.languageTitle,
               control: AppListItemControl.smallButton,
               onPressed: () {
-                context.push(languagePath);
+                AppNavigator.of(context).push(const LanguagePage());
               },
             ),
           ),
@@ -149,9 +153,9 @@ class Settings extends StatelessWidget {
                   buttonText2: context.l10n.logOutLabel,
                   width: MediaQuery.sizeOf(context).width * 0.8,
                   height: MediaQuery.sizeOf(context).height * 0.2,
-                  onPressed1: (context) => context.pop(),
+                  onPressed1: (context) => Navigator.of(context).pop(),
                   onPressed2: (context) {
-                    context.pop();
+                    Navigator.of(context).pop();
                     context.appController.logout();
                   },
                 );

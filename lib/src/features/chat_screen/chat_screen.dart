@@ -1,6 +1,8 @@
 import 'package:async/async.dart';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
+// TODO: Remove go_router once migration is complete
+// import 'package:go_router/go_router.dart';
+import 'package:test_app/src/router/app_navigator.dart';
 import 'package:test_app/l10n/locales/l10n.dart';
 import 'package:test_app/src/core/resources/app_icons.dart';
 import 'package:test_app/src/core/widgets/controller_listener.dart';
@@ -116,7 +118,7 @@ class _ChatScreenState extends State<ChatScreen> {
             return AppNavBar(
               title: l10n.errorLabel,
               leftIcon: AppIcons.arrowLeft,
-              onPressedLeft: () => context.pop(),
+              onPressedLeft: () => AppNavigator.of(context).pop(),
               rightImage: null,
             );
           }
@@ -126,7 +128,7 @@ class _ChatScreenState extends State<ChatScreen> {
               title: l10n.userNotFoundLabel,
               leftIcon: AppIcons.arrowLeft,
               onPressedLeft: () {
-                context.pop();
+                AppNavigator.of(context).pop();
               },
             );
           }
@@ -138,7 +140,7 @@ class _ChatScreenState extends State<ChatScreen> {
               AvatarSize.small,
             ),
             onPressedLeft: () {
-              context.pop();
+              AppNavigator.of(context).pop();
             },
             onPressedRight: () {
               UserProfile.show(context, otherUser, mode: UserProfileMode.view);
@@ -153,7 +155,7 @@ class _ChatScreenState extends State<ChatScreen> {
         leftIcon: AppIcons.arrowLeft,
         rightImage: AppAvatar.groupAvatarOrPlaceholder(chat, AvatarSize.small),
         onPressedLeft: () {
-          context.pop();
+          AppNavigator.of(context).pop();
         },
         onPressedRight: () {
           ChatWizard.manageChat(
@@ -169,7 +171,7 @@ class _ChatScreenState extends State<ChatScreen> {
       leftIcon: AppIcons.arrowLeft,
       rightImage: const PlaceholderAvatar(size: AvatarSize.small),
       onPressedLeft: () {
-        context.pop();
+        AppNavigator.of(context).pop();
       },
       onPressedRight: () {},
     );
@@ -685,7 +687,7 @@ class _ChatScreenState extends State<ChatScreen> {
                     child: AppNavBar(
                       title: context.l10n.errorLabel,
                       leftIcon: AppIcons.arrowLeft,
-                      onPressedLeft: () => context.pop(),
+                      onPressedLeft: () => AppNavigator.of(context).pop(),
                     ),
                   ),
                 ),
@@ -751,7 +753,7 @@ class _ChatScreenState extends State<ChatScreen> {
                     child: AppNavBar(
                       title: context.l10n.errorLabel,
                       leftIcon: AppIcons.arrowLeft,
-                      onPressedLeft: () => context.pop(),
+                      onPressedLeft: () => AppNavigator.of(context).pop(),
                     ),
                   ),
                 ),

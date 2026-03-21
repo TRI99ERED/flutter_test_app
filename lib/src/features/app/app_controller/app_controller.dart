@@ -39,6 +39,21 @@ final class AppController extends BaseController<AppState> {
   StreamSubscription<AuthorizedUser?>? _userStreamSubscription;
   StreamSubscription<String>? _fcmTokenRefreshSubscription;
 
+  /// `true` after the first auth state callback has been received.
+  bool isInitialized = false;
+
+  /// Notifies only when the authorization status changes.
+  /// Use this as `refreshListenable` for navigation instead of the
+  /// whole controller, to avoid unnecessary guard evaluations.
+  final authNotifier = ValueNotifier<bool>(false);
+
+  void _updateAuthNotifier() {
+    final isAuthorized = state.isAuthorized;
+    if (authNotifier.value != isAuthorized) {
+      authNotifier.value = isAuthorized;
+    }
+  }
+
   AppController()
     : _authRepository = FirebaseAuthRepositoryImpl(),
       _firestoreRepository = FirebaseFirestoreRepositoryImpl(),
@@ -99,17 +114,20 @@ final class AppController extends BaseController<AppState> {
     }
     _userStreamSubscription = _userStream!.listen(
       (user) {
+        isInitialized = true;
         setState(
           AppState.idle(
             message: 'Auth state changed',
             user: user ?? const UnauthorizedUser(),
           ),
         );
+        _updateAuthNotifier();
         if (user is AuthorizedUser) {
           loadNotificationsSettings();
         }
       },
       onError: (error, stackTrace) {
+        isInitialized = true;
         setState(
           AppState.failed(
             message: 'Auth state listen failed: ${error.toString()}',
@@ -118,6 +136,7 @@ final class AppController extends BaseController<AppState> {
             stackTrace: stackTrace,
           ),
         );
+        _updateAuthNotifier();
       },
     );
   }
@@ -1571,7 +1590,7 @@ final class AppController extends BaseController<AppState> {
     }
   });
 
-  Future<AuthorizedUser?> signInWithGoogle() async {
+  Future<void> signInWithGoogle({void Function()? onNewUser}) async {
     setState(
       AppState.processing(
         message: 'Signing in with Google...',
@@ -1589,7 +1608,7 @@ final class AppController extends BaseController<AppState> {
             user: state.user,
           ),
         );
-        return null;
+        return;
       }
       final userExists = await _firestoreRepository.doesUserExist(
         updatedUser.id,
@@ -1606,16 +1625,16 @@ final class AppController extends BaseController<AppState> {
             user: existingUser ?? const UnauthorizedUser(),
           ),
         );
-        return existingUser;
+        return;
       }
       await _firestoreRepository.createUser(user: updatedUser);
+      onNewUser?.call();
       setState(
         AppState.idle(
           message: 'Signed in with Google successfully.',
           user: updatedUser,
         ),
       );
-      return updatedUser;
     } on GoogleSignInCanceledException catch (_) {
       setState(
         AppState.idle(
@@ -1623,7 +1642,6 @@ final class AppController extends BaseController<AppState> {
           user: state.user,
         ),
       );
-      return null;
     } catch (error, stackTrace) {
       setState(
         AppState.failed(
@@ -1984,61 +2002,16 @@ final class AppController extends BaseController<AppState> {
   });
 
   Future<void> updateCurrentRoute(String location) async {
-    setState(
-      AppState.processing(
-        message: 'Updating current route...',
-        user: state.user,
-      ),
-    );
     try {
       await _sharedPreferencesRepository.setString('currentRoute', location);
-      setState(
-        AppState.idle(
-          message: 'Current route updated successfully.',
-          user: state.user,
-        ),
-      );
-    } catch (error, stackTrace) {
-      setState(
-        AppState.failed(
-          message: 'Failed to update current route: ${error.toString()}',
-          user: state.user,
-          error: error,
-          stackTrace: stackTrace,
-        ),
-      );
-      return Future.error(error, stackTrace);
-    }
+    } catch (_) {}
   }
 
   Future<String?> loadCurrentRoute() async {
-    setState(
-      AppState.processing(
-        message: 'Retrieving current route...',
-        user: state.user,
-      ),
-    );
     try {
-      final location = await _sharedPreferencesRepository.getString(
-        'currentRoute',
-      );
-      setState(
-        AppState.idle(
-          message: 'Current route retrieved successfully: $location',
-          user: state.user,
-        ),
-      );
-      return location;
-    } catch (error, stackTrace) {
-      setState(
-        AppState.failed(
-          message: 'Failed to retrieve current route: ${error.toString()}',
-          user: state.user,
-          error: error,
-          stackTrace: stackTrace,
-        ),
-      );
-      return Future.error(error, stackTrace);
+      return await _sharedPreferencesRepository.getString('currentRoute');
+    } catch (_) {
+      return null;
     }
   }
 
@@ -2071,9 +2044,11 @@ final class AppController extends BaseController<AppState> {
   }
 
   @override
+  @override
   void dispose() {
-    super.dispose();
+    authNotifier.dispose();
     _userStreamSubscription?.cancel();
     _fcmTokenRefreshSubscription?.cancel();
+    super.dispose();
   }
 }

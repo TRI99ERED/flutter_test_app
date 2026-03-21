@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
+// TODO: Remove go_router once migration is complete
+// import 'package:go_router/go_router.dart';
 import 'package:test_app/l10n/locales/l10n.dart';
 import 'package:test_app/src/features/app/app_scope.dart';
 import 'package:test_app/src/features/app/data/models/project_model.dart';
@@ -78,7 +79,7 @@ class _ProjectWizardState extends State<ProjectWizard> {
             ? context.l10n.createAProjectTitle
             : context.l10n.editProjectTitle,
         leftText: context.l10n.cancelLabel,
-        onPressedLeft: () => context.pop(),
+        onPressedLeft: () => Navigator.of(context).pop(),
       ),
       body: Padding(
         padding: const EdgeInsets.all(spacing16),
@@ -96,7 +97,7 @@ class _ProjectWizardState extends State<ProjectWizard> {
             SizedBox(
               width: double.infinity,
               child: AppButtonPrimary(
-                onPressed: () => context.pop(),
+                onPressed: () => Navigator.of(context).pop(),
                 text: context.l10n.cancelLabel,
               ),
             ),
@@ -330,7 +331,7 @@ class _ProjectWizardState extends State<ProjectWizard> {
           deadline: _deadline.value,
         );
         if (!context.mounted) return;
-        context.pop(project);
+        Navigator.of(context).pop(project);
         break;
       case ProjectWizardMode.edit:
         final updatedProject = widget.projectToEdit!.copyWith(
@@ -343,7 +344,7 @@ class _ProjectWizardState extends State<ProjectWizard> {
         );
         await context.appController.updateProject(updatedProject);
         if (!context.mounted) return;
-        context.pop(updatedProject);
+        Navigator.of(context).pop(updatedProject);
         break;
     }
   }

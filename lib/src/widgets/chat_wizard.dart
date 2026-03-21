@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
+// TODO: Remove go_router once migration is complete
+// import 'package:go_router/go_router.dart';
 import 'package:test_app/l10n/locales/l10n.dart';
 import 'package:test_app/src/features/app/app_scope.dart';
 import 'package:test_app/src/features/app/data/models/chat_model.dart';
@@ -78,7 +79,7 @@ class _ChatWizardState extends State<ChatWizard> {
           ChatWizardMode.edit => context.l10n.editChatTitle,
         },
         leftText: context.l10n.cancelLabel,
-        onPressedLeft: () => context.pop(),
+        onPressedLeft: () => Navigator.of(context).pop(),
       ),
       body: Padding(
         padding: const EdgeInsets.all(spacing16),
@@ -260,7 +261,7 @@ class _ChatWizardState extends State<ChatWizard> {
                         chatName: chatName,
                       );
                       if (!context.mounted) return;
-                      context.pop(chat);
+                      Navigator.of(context).pop(chat);
                       return;
                     }
                     if (participants.length == 2) {
@@ -288,7 +289,7 @@ class _ChatWizardState extends State<ChatWizard> {
                       if (existingChat != null &&
                           existingChat.id.isNotEmpty &&
                           context.mounted) {
-                        context.pop(existingChat);
+                        Navigator.of(context).pop(existingChat);
                         return;
                       }
                       if (!context.mounted) return;
@@ -297,7 +298,7 @@ class _ChatWizardState extends State<ChatWizard> {
                         chatName: chatName,
                       );
                       if (!context.mounted) return;
-                      context.pop(chat);
+                      Navigator.of(context).pop(chat);
                     }
                   },
                   ChatWizardMode.edit => () async {
@@ -318,9 +319,9 @@ class _ChatWizardState extends State<ChatWizard> {
                       if (!context.mounted) return;
                       await context.appController.updateGroupChat(newGroupChat);
                       if (!context.mounted) return;
-                      context.pop(newGroupChat);
+                      Navigator.of(context).pop(newGroupChat);
                     } else {
-                      context.pop(chat);
+                      Navigator.of(context).pop(chat);
                     }
                   },
                 },
@@ -329,7 +330,7 @@ class _ChatWizardState extends State<ChatWizard> {
             SizedBox(
               width: double.infinity,
               child: AppButtonPrimary(
-                onPressed: () => context.pop(),
+                onPressed: () => Navigator.of(context).pop(),
                 text: context.l10n.cancelLabel,
               ),
             ),

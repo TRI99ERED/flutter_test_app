@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
+// TODO: Remove go_router once migration is complete
+// import 'package:go_router/go_router.dart';
+import 'package:test_app/src/router/app_navigator.dart';
+import 'package:test_app/src/router/app_page.dart';
 import 'package:test_app/l10n/locales/l10n.dart';
 import 'package:test_app/src/core/resources/app_icons.dart';
 import 'package:test_app/src/features/app/app_scope.dart';
@@ -402,7 +405,7 @@ class _ProjectsSectionState extends State<_ProjectsSection> {
                                           );
 
                                       if (project != null && context.mounted) {
-                                        context.push('/projects/${project.id}');
+                                        AppNavigator.of(context).push(ProjectPage(projectId: project.id));
                                         widget._editPressed.value = false;
                                       }
                                     },
@@ -476,10 +479,10 @@ class _ProjectsSectionState extends State<_ProjectsSection> {
                                                   buttonText2:
                                                       context.l10n.deleteLabel,
                                                   onPressed1: (context) {
-                                                    context.pop();
+                                                    Navigator.of(context).pop();
                                                   },
                                                   onPressed2: (context) async {
-                                                    context.pop();
+                                                    Navigator.of(context).pop();
                                                     await context.appController
                                                         .deleteProject(
                                                           project.id,
@@ -487,9 +490,7 @@ class _ProjectsSectionState extends State<_ProjectsSection> {
                                                   },
                                                 )
                                               : () {
-                                                  context.push(
-                                                    '/projects/${project.id}',
-                                                  );
+                                                  AppNavigator.of(context).push(ProjectPage(projectId: project.id));
                                                   widget._editPressed.value =
                                                       false;
                                                 },
@@ -555,7 +556,7 @@ class _ProjectsAppBarState extends State<ProjectsAppBar> {
                 ProjectWizardMode.create,
               ).then((project) {
                 if (project != null && context.mounted) {
-                  context.push('/projects/${project.id}');
+                  AppNavigator.of(context).push(ProjectPage(projectId: project.id));
                   widget.editPressed.value = false;
                 }
               });
