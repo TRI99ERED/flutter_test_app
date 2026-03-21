@@ -33,6 +33,4 @@ abstract interface class IFirebaseAuthRepository {
   });
 
   Future<AuthorizedUser> updateUserProfile({String? name, String? avatarUrl});
-
-  Stream<AuthorizedUser> watchAuthState();
 }

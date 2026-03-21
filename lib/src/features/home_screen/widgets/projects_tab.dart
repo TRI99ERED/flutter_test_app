@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-// TODO: Remove go_router once migration is complete
-// import 'package:go_router/go_router.dart';
 import 'package:test_app/src/router/app_navigator.dart';
 import 'package:test_app/src/router/app_page.dart';
 import 'package:test_app/l10n/locales/l10n.dart';
@@ -21,21 +19,21 @@ import 'package:test_app/src/widgets/common/empty_state.dart';
 import 'package:test_app/src/widgets/common/error_state.dart';
 import 'package:test_app/src/features/themes/styles.dart';
 
-class Projects extends StatefulWidget {
+class ProjectsTab extends StatefulWidget {
   final int initialSection;
   final ValueNotifier<bool> editPressed;
 
-  const Projects({
+  const ProjectsTab({
     super.key,
     this.initialSection = 0,
     required this.editPressed,
   });
 
   @override
-  State<Projects> createState() => _ProjectsState();
+  State<ProjectsTab> createState() => _ProjectsTabState();
 }
 
-class _ProjectsState extends State<Projects> {
+class _ProjectsTabState extends State<ProjectsTab> {
   late final _sectionIndex = ValueNotifier<int>(widget.initialSection);
   final _sortOption = ValueNotifier<String>('lastUpdated');
   final _sortOrder = ValueNotifier<SortOrder>(SortOrder.descending);
@@ -405,7 +403,9 @@ class _ProjectsSectionState extends State<_ProjectsSection> {
                                           );
 
                                       if (project != null && context.mounted) {
-                                        AppNavigator.of(context).push(ProjectPage(projectId: project.id));
+                                        AppNavigator.of(context).push(
+                                          ProjectPage(projectId: project.id),
+                                        );
                                         widget._editPressed.value = false;
                                       }
                                     },
@@ -490,7 +490,11 @@ class _ProjectsSectionState extends State<_ProjectsSection> {
                                                   },
                                                 )
                                               : () {
-                                                  AppNavigator.of(context).push(ProjectPage(projectId: project.id));
+                                                  AppNavigator.of(context).push(
+                                                    ProjectPage(
+                                                      projectId: project.id,
+                                                    ),
+                                                  );
                                                   widget._editPressed.value =
                                                       false;
                                                 },
@@ -556,7 +560,9 @@ class _ProjectsAppBarState extends State<ProjectsAppBar> {
                 ProjectWizardMode.create,
               ).then((project) {
                 if (project != null && context.mounted) {
-                  AppNavigator.of(context).push(ProjectPage(projectId: project.id));
+                  AppNavigator.of(
+                    context,
+                  ).push(ProjectPage(projectId: project.id));
                   widget.editPressed.value = false;
                 }
               });

@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-// TODO: Remove go_router once migration is complete
-// import 'package:go_router/go_router.dart';
 import 'package:test_app/l10n/locales/l10n.dart';
 import 'package:test_app/src/features/app/app_scope.dart';
 import 'package:test_app/src/features/app/data/models/chat_model.dart';

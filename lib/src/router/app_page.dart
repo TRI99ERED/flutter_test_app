@@ -35,6 +35,75 @@ abstract class AppPage extends MaterialPage<void> {
 
   @override
   String toString() => 'AppPage($name)';
+
+  static AppPage fromRoute(
+    String payload, [
+    int homeInitialTab = 0,
+    int homeInitialFriendsSection = 0,
+    int homeInitialProjectsSection = 0,
+  ]) {
+    switch (payload) {
+      case '/':
+        return HomePage(
+          initialTab: homeInitialTab,
+          initialFriendsSection: homeInitialFriendsSection,
+          initialProjectsSection: homeInitialProjectsSection,
+        );
+      case '/splash':
+        return const SplashPage();
+      case '/onboarding':
+        return const OnboardingPage();
+      case '/login':
+        return const LoginPage();
+      case '/register':
+        return const RegisterPage();
+      case '/email-confirmation':
+        return const EmailConfirmationPage();
+      case '/forgot-password':
+        return const ForgotPasswordPage();
+      case '/interests':
+        return const InterestsPage();
+      case final chatPath when chatPath.startsWith('/chats/'):
+        final segments = chatPath.split('/');
+        if (segments.length == 4) {
+          final chatTypeStr = segments[2];
+          final chatId = segments[3];
+          final chatType = ChatType.values.firstWhere(
+            (e) => e.name == chatTypeStr,
+            orElse: () => ChatType.direct,
+          );
+          return ChatPage(chatId: chatId, chatType: chatType);
+        }
+        break;
+      case final feedbackPath
+          when feedbackPath.startsWith('/projects/') &&
+              feedbackPath.endsWith('/feedback'):
+        final segments = feedbackPath.split('/');
+        if (segments.length == 4 && segments[3] == 'feedback') {
+          final projectId = segments[2];
+          return ProjectFeedbackPage(projectId: projectId);
+        }
+        break;
+      case final projectPath when projectPath.startsWith('/projects/'):
+        final segments = projectPath.split('/');
+        if (segments.length == 3) {
+          final projectId = segments[2];
+          return ProjectPage(projectId: projectId);
+        }
+        break;
+      case '/saved-messages':
+        return const SavedMessagesPage();
+      case '/notifications':
+        return const NotificationsPage();
+      case '/appearance':
+        return const AppearancePage();
+      case '/language':
+        return const LanguagePage();
+      default:
+        throw Exception('Unknown route: $payload');
+    }
+    throw Exception('Unknown route: $payload');
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -43,11 +112,11 @@ abstract class AppPage extends MaterialPage<void> {
 
 class SplashPage extends AppPage {
   const SplashPage()
-      : super(
-          key: const ValueKey('SplashPage'),
-          name: 'Splash',
-          child: const SplashScreen(),
-        );
+    : super(
+        key: const ValueKey('SplashPage'),
+        name: 'Splash',
+        child: const SplashScreen(),
+      );
 
   @override
   String get path => '/splash';
@@ -59,11 +128,11 @@ class SplashPage extends AppPage {
 
 class OnboardingPage extends AppPage {
   const OnboardingPage()
-      : super(
-          key: const ValueKey('OnboardingPage'),
-          name: 'Onboarding',
-          child: const OnboardingScreen(),
-        );
+    : super(
+        key: const ValueKey('OnboardingPage'),
+        name: 'Onboarding',
+        child: const OnboardingScreen(),
+      );
 
   @override
   String get path => '/onboarding';
@@ -71,11 +140,11 @@ class OnboardingPage extends AppPage {
 
 class LoginPage extends AppPage {
   const LoginPage()
-      : super(
-          key: const ValueKey('LoginPage'),
-          name: 'Login',
-          child: const LoginScreen(),
-        );
+    : super(
+        key: const ValueKey('LoginPage'),
+        name: 'Login',
+        child: const LoginScreen(),
+      );
 
   @override
   String get path => '/login';
@@ -83,11 +152,11 @@ class LoginPage extends AppPage {
 
 class RegisterPage extends AppPage {
   const RegisterPage()
-      : super(
-          key: const ValueKey('RegisterPage'),
-          name: 'Register',
-          child: const RegisterScreen(),
-        );
+    : super(
+        key: const ValueKey('RegisterPage'),
+        name: 'Register',
+        child: const RegisterScreen(),
+      );
 
   @override
   String get path => '/register';
@@ -95,11 +164,11 @@ class RegisterPage extends AppPage {
 
 class EmailConfirmationPage extends AppPage {
   const EmailConfirmationPage()
-      : super(
-          key: const ValueKey('EmailConfirmationPage'),
-          name: 'EmailConfirmation',
-          child: const EmailConfirmationScreen(),
-        );
+    : super(
+        key: const ValueKey('EmailConfirmationPage'),
+        name: 'EmailConfirmation',
+        child: const EmailConfirmationScreen(),
+      );
 
   @override
   String get path => '/email-confirmation';
@@ -107,31 +176,31 @@ class EmailConfirmationPage extends AppPage {
 
 class ForgotPasswordPage extends AppPage {
   const ForgotPasswordPage()
-      : super(
-          key: const ValueKey('ForgotPasswordPage'),
-          name: 'ForgotPassword',
-          child: const ForgotPasswordScreen(),
-        );
+    : super(
+        key: const ValueKey('ForgotPasswordPage'),
+        name: 'ForgotPassword',
+        child: const ForgotPasswordScreen(),
+      );
 
   @override
   String get path => '/forgot-password';
 }
 
+// ---------------------------------------------------------------------------
+// Main app pages
+// ---------------------------------------------------------------------------
+
 class InterestsPage extends AppPage {
   const InterestsPage()
-      : super(
-          key: const ValueKey('InterestsPage'),
-          name: 'Interests',
-          child: const InterestsScreen(),
-        );
+    : super(
+        key: const ValueKey('InterestsPage'),
+        name: 'Interests',
+        child: const InterestsScreen(),
+      );
 
   @override
   String get path => '/interests';
 }
-
-// ---------------------------------------------------------------------------
-// Main app pages
-// ---------------------------------------------------------------------------
 
 class HomePage extends AppPage {
   final int initialTab;
@@ -143,14 +212,14 @@ class HomePage extends AppPage {
     this.initialFriendsSection = 0,
     this.initialProjectsSection = 0,
   }) : super(
-          key: const ValueKey('HomePage'),
-          name: 'Home',
-          child: HomeScreen(
-            initialTab: initialTab,
-            initialFriendsSection: initialFriendsSection,
-            initialProjectsSection: initialProjectsSection,
-          ),
-        );
+         key: const ValueKey('HomePage'),
+         name: 'Home',
+         child: HomeScreen(
+           initialTab: initialTab,
+           initialFriendsSection: initialFriendsSection,
+           initialProjectsSection: initialProjectsSection,
+         ),
+       );
 
   @override
   String get path => '/';
@@ -164,8 +233,12 @@ class HomePage extends AppPage {
           initialProjectsSection == other.initialProjectsSection;
 
   @override
-  int get hashCode =>
-      Object.hash(runtimeType, initialTab, initialFriendsSection, initialProjectsSection);
+  int get hashCode => Object.hash(
+    runtimeType,
+    initialTab,
+    initialFriendsSection,
+    initialProjectsSection,
+  );
 }
 
 class ChatPage extends AppPage {
@@ -173,11 +246,11 @@ class ChatPage extends AppPage {
   final ChatType chatType;
 
   ChatPage({required this.chatId, required this.chatType})
-      : super(
-          key: ValueKey('ChatPage_${chatType.name}_$chatId'),
-          name: 'Chat',
-          child: ChatScreen(chatId: chatId, chatType: chatType),
-        );
+    : super(
+        key: ValueKey('ChatPage_${chatType.name}_$chatId'),
+        name: 'Chat',
+        child: ChatScreen(chatId: chatId, chatType: chatType),
+      );
 
   @override
   String get path => '/chats/${chatType.name}/$chatId';
@@ -195,11 +268,11 @@ class ProjectPage extends AppPage {
   final String projectId;
 
   ProjectPage({required this.projectId})
-      : super(
-          key: ValueKey('ProjectPage_$projectId'),
-          name: 'Project',
-          child: ProjectScreen(projectId: projectId),
-        );
+    : super(
+        key: ValueKey('ProjectPage_$projectId'),
+        name: 'Project',
+        child: ProjectScreen(projectId: projectId),
+      );
 
   @override
   String get path => '/projects/$projectId';
@@ -217,11 +290,11 @@ class ProjectFeedbackPage extends AppPage {
   final String projectId;
 
   ProjectFeedbackPage({required this.projectId})
-      : super(
-          key: ValueKey('ProjectFeedbackPage_$projectId'),
-          name: 'ProjectFeedback',
-          child: ProjectFeedbackScreen(projectId: projectId),
-        );
+    : super(
+        key: ValueKey('ProjectFeedbackPage_$projectId'),
+        name: 'ProjectFeedback',
+        child: ProjectFeedbackScreen(projectId: projectId),
+      );
 
   @override
   String get path => '/projects/$projectId/feedback';
@@ -237,11 +310,11 @@ class ProjectFeedbackPage extends AppPage {
 
 class SavedMessagesPage extends AppPage {
   const SavedMessagesPage()
-      : super(
-          key: const ValueKey('SavedMessagesPage'),
-          name: 'SavedMessages',
-          child: const SavedMessagesScreen(),
-        );
+    : super(
+        key: const ValueKey('SavedMessagesPage'),
+        name: 'SavedMessages',
+        child: const SavedMessagesScreen(),
+      );
 
   @override
   String get path => '/saved-messages';
@@ -249,11 +322,11 @@ class SavedMessagesPage extends AppPage {
 
 class NotificationsPage extends AppPage {
   const NotificationsPage()
-      : super(
-          key: const ValueKey('NotificationsPage'),
-          name: 'Notifications',
-          child: const NotificationsScreen(),
-        );
+    : super(
+        key: const ValueKey('NotificationsPage'),
+        name: 'Notifications',
+        child: const NotificationsScreen(),
+      );
 
   @override
   String get path => '/notifications';
@@ -261,11 +334,11 @@ class NotificationsPage extends AppPage {
 
 class AppearancePage extends AppPage {
   const AppearancePage()
-      : super(
-          key: const ValueKey('AppearancePage'),
-          name: 'Appearance',
-          child: const AppearanceScreen(),
-        );
+    : super(
+        key: const ValueKey('AppearancePage'),
+        name: 'Appearance',
+        child: const AppearanceScreen(),
+      );
 
   @override
   String get path => '/appearance';
@@ -273,11 +346,11 @@ class AppearancePage extends AppPage {
 
 class LanguagePage extends AppPage {
   const LanguagePage()
-      : super(
-          key: const ValueKey('LanguagePage'),
-          name: 'Language',
-          child: const LanguageScreen(),
-        );
+    : super(
+        key: const ValueKey('LanguagePage'),
+        name: 'Language',
+        child: const LanguageScreen(),
+      );
 
   @override
   String get path => '/language';

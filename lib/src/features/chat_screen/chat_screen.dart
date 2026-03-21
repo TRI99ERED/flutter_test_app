@@ -1,7 +1,5 @@
 import 'package:async/async.dart';
 import 'package:flutter/material.dart';
-// TODO: Remove go_router once migration is complete
-// import 'package:go_router/go_router.dart';
 import 'package:test_app/src/router/app_navigator.dart';
 import 'package:test_app/l10n/locales/l10n.dart';
 import 'package:test_app/src/core/resources/app_icons.dart';
@@ -46,7 +44,7 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       final user = context.appState.user;
       _appController = context.appController;
       if (user is AuthorizedUser) {
@@ -60,6 +58,25 @@ class _ChatScreenState extends State<ChatScreen> {
               );
               _lastDirectChatId = widget.chatId;
             }
+
+            final directChat = await _appController
+                ?.watchDirectChatWithId(widget.chatId)
+                .firstWhere((chat) => chat != null);
+            final lastMessage = await _appController
+                ?.watchMessagesForDirectChat(widget.chatId)
+                .first
+                .then((messages) => messages?.last);
+            final lastSenderId = lastMessage?.senderId;
+            final unreadCount = directChat?.unreadCount ?? 0;
+
+            if (lastSenderId != null &&
+                lastSenderId != user.id &&
+                unreadCount > 0) {
+              await _appController?.updateDirectChatUnreadCount(
+                chatId: widget.chatId,
+                unreadCount: 0,
+              );
+            }
             break;
           case ChatType.group:
             if (_lastGroupChatId != widget.chatId) {
@@ -68,6 +85,25 @@ class _ChatScreenState extends State<ChatScreen> {
                 currentGroupChatId: widget.chatId,
               );
               _lastGroupChatId = widget.chatId;
+            }
+
+            final groupChat = await _appController
+                ?.watchGroupChatWithId(widget.chatId)
+                .firstWhere((chat) => chat != null);
+            final lastMessage = await _appController
+                ?.watchMessagesForGroupChat(widget.chatId)
+                .first
+                .then((messages) => messages?.last);
+            final lastSenderId = lastMessage?.senderId;
+            final unreadCount = groupChat?.unreadCounts[user.id] ?? 0;
+
+            if (lastSenderId != null &&
+                lastSenderId != user.id &&
+                unreadCount > 0) {
+              await _appController?.updateGroupChatCurrentUserUnreadCount(
+                chatId: widget.chatId,
+                unreadCount: 0,
+              );
             }
             break;
         }
@@ -418,8 +454,9 @@ class _ChatScreenState extends State<ChatScreen> {
                 isRead = sentIndex >= lowestUnreadCount;
               }
             }
-            if (index == messages.length - 1 &&
-                messages[index].senderId != messages[index - 1].senderId) {
+            if (index == 0 ||
+                index == messages.length - 1 &&
+                    messages[index].senderId != messages[index - 1].senderId) {
               return Column(
                 children: [
                   Text(

@@ -1,13 +1,9 @@
 import 'package:flutter/material.dart';
-// TODO: Remove go_router once migration is complete
-// import 'package:go_router/go_router.dart';
 import 'package:test_app/l10n/locales/l10n.dart';
 import 'package:test_app/src/core/widgets/controller_listener.dart';
 import 'package:test_app/src/features/app/app_scope.dart';
 import 'package:test_app/src/features/app/data/models/user_model.dart';
 import 'package:test_app/src/features/themes/app_theme.dart';
-// TODO: Remove old routes once migration is complete
-// import 'package:test_app/src/router/routes.dart';
 import 'package:test_app/src/router/app_navigator.dart';
 import 'package:test_app/src/router/app_page.dart';
 import 'package:test_app/src/widgets/common/app_button.dart';

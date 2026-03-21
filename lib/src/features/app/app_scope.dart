@@ -36,13 +36,11 @@ class _AppScopeState extends State<AppScope> {
   }
 
   void _onStateChange() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        setState(() {
-          _state = _controller.state;
-        });
-      }
-    });
+    if (mounted) {
+      setState(() {
+        _state = _controller.state;
+      });
+    }
   }
 
   @override

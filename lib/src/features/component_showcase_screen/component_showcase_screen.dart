@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-// TODO: Remove go_router once migration is complete
-// import 'package:go_router/go_router.dart';
 import 'package:test_app/src/router/app_navigator.dart';
 import 'package:test_app/src/router/app_page.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -9,8 +7,6 @@ import 'package:test_app/src/core/widgets/controller_listener.dart';
 import 'package:test_app/src/features/app/app_scope.dart';
 import 'package:test_app/src/features/themes/app_theme.dart';
 import 'package:test_app/src/features/themes/styles.dart';
-// TODO: Remove old routes once migration is complete
-// import 'package:test_app/src/router/routes.dart';
 import 'package:test_app/src/widgets/common/app_accordion.dart';
 import 'package:test_app/src/widgets/common/app_action_sheet.dart';
 import 'package:test_app/src/widgets/common/app_avatar.dart';

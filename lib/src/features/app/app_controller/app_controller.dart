@@ -35,8 +35,8 @@ final class AppController extends BaseController<AppState> {
   final IFirebaseFunctionsRepository _functionsRepository;
   final ISharedPreferencesRepository _sharedPreferencesRepository;
   final IFirebaseMessagingRepository _messagingRepository;
-  Stream<AuthorizedUser?>? _userStream;
-  StreamSubscription<AuthorizedUser?>? _userStreamSubscription;
+  Stream<UserEntity>? _userStream;
+  StreamSubscription<UserEntity>? _userStreamSubscription;
   StreamSubscription<String>? _fcmTokenRefreshSubscription;
 
   /// `true` after the first auth state callback has been received.
@@ -102,31 +102,22 @@ final class AppController extends BaseController<AppState> {
 
   void _listenToAuthState() {
     _userStreamSubscription?.cancel();
-    _userStream = _authRepository.watchAuthState();
-    if (_userStream == null) {
-      setState(
-        const AppState.failed(
-          message: 'Failed to initialize auth state stream',
-          user: UnauthorizedUser(),
-        ),
-      );
-      return;
-    }
-    _userStreamSubscription = _userStream!.listen(
+    _userStream = _authRepository.authStateChanges;
+    _userStreamSubscription = _userStream?.listen(
       (user) {
+        final wasInitialized = isInitialized;
         isInitialized = true;
-        setState(
-          AppState.idle(
-            message: 'Auth state changed',
-            user: user ?? const UnauthorizedUser(),
-          ),
-        );
+        setState(AppState.idle(message: 'Auth state changed', user: user));
         _updateAuthNotifier();
+        if (!wasInitialized && isInitialized) {
+          authNotifier.notifyListeners();
+        }
         if (user is AuthorizedUser) {
           loadNotificationsSettings();
         }
       },
       onError: (error, stackTrace) {
+        final wasInitialized = isInitialized;
         isInitialized = true;
         setState(
           AppState.failed(
@@ -137,6 +128,9 @@ final class AppController extends BaseController<AppState> {
           ),
         );
         _updateAuthNotifier();
+        if (!wasInitialized && isInitialized) {
+          authNotifier.notifyListeners();
+        }
       },
     );
   }
@@ -2043,7 +2037,6 @@ final class AppController extends BaseController<AppState> {
     }
   }
 
-  @override
   @override
   void dispose() {
     authNotifier.dispose();

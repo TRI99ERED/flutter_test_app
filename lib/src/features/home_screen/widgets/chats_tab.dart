@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-// TODO: Remove go_router once migration is complete
-// import 'package:go_router/go_router.dart';
 import 'package:test_app/src/features/chat_screen/chat_screen.dart';
 import 'package:test_app/src/router/app_navigator.dart';
 import 'package:test_app/src/router/app_page.dart';
@@ -20,16 +18,16 @@ import 'package:test_app/src/widgets/common/app_nav_bar.dart';
 import 'package:test_app/src/widgets/common/app_search_bar.dart';
 import 'package:test_app/src/features/themes/styles.dart';
 
-class Chats extends StatefulWidget {
+class ChatsTab extends StatefulWidget {
   final ValueNotifier<bool> editPressed;
 
-  const Chats({super.key, required this.editPressed});
+  const ChatsTab({super.key, required this.editPressed});
 
   @override
-  State<Chats> createState() => _ChatsState();
+  State<ChatsTab> createState() => _ChatsTabState();
 }
 
-class _ChatsState extends State<Chats> {
+class _ChatsTabState extends State<ChatsTab> {
   final _searchQuery = ValueNotifier<String>('');
 
   @override
@@ -106,10 +104,14 @@ class _ChatsState extends State<Chats> {
                       final chat = await ChatWizard.manageChat(context);
                       if (!context.mounted || chat == null) return;
                       if (chat is DirectChat) {
-                        AppNavigator.of(context).push(ChatPage(chatId: chat.id, chatType: ChatType.direct));
+                        AppNavigator.of(context).push(
+                          ChatPage(chatId: chat.id, chatType: ChatType.direct),
+                        );
                         widget.editPressed.value = false;
                       } else if (chat is GroupChat) {
-                        AppNavigator.of(context).push(ChatPage(chatId: chat.id, chatType: ChatType.group));
+                        AppNavigator.of(context).push(
+                          ChatPage(chatId: chat.id, chatType: ChatType.group),
+                        );
                         widget.editPressed.value = false;
                       }
                     },
@@ -333,16 +335,12 @@ class _ChatListItem extends StatelessWidget {
                         )
                       : () async {
                           if (!mounted) return;
-                          AppNavigator.of(context).push(ChatPage(chatId: directChat.id, chatType: ChatType.direct));
-                          if (lastSenderId != null &&
-                              lastSenderId != user.id &&
-                              unreadCount > 0) {
-                            await context.appController
-                                .updateDirectChatUnreadCount(
-                                  chatId: directChat.id,
-                                  unreadCount: 0,
-                                );
-                          }
+                          AppNavigator.of(context).push(
+                            ChatPage(
+                              chatId: directChat.id,
+                              chatType: ChatType.direct,
+                            ),
+                          );
                           editPressed.value = false;
                         };
                   return Padding(
@@ -446,16 +444,12 @@ class _ChatListItem extends StatelessWidget {
                     )
                   : () async {
                       if (!mounted) return;
-                      AppNavigator.of(context).push(ChatPage(chatId: groupChat.id, chatType: ChatType.group));
-                      if (lastSenderId != null &&
-                          lastSenderId != user.id &&
-                          unreadCount > 0) {
-                        await context.appController
-                            .updateGroupChatCurrentUserUnreadCount(
-                              chatId: groupChat.id,
-                              unreadCount: 0,
-                            );
-                      }
+                      AppNavigator.of(context).push(
+                        ChatPage(
+                          chatId: groupChat.id,
+                          chatType: ChatType.group,
+                        ),
+                      );
                       editPressed.value = false;
                     };
               return Padding(
@@ -519,10 +513,14 @@ class _ChatsAppBarState extends State<ChatsAppBar> {
 
               if (context.mounted) {
                 if (chat is DirectChat) {
-                  AppNavigator.of(context).push(ChatPage(chatId: chat.id, chatType: ChatType.direct));
+                  AppNavigator.of(
+                    context,
+                  ).push(ChatPage(chatId: chat.id, chatType: ChatType.direct));
                   widget.editPressed.value = false;
                 } else if (chat is GroupChat) {
-                  AppNavigator.of(context).push(ChatPage(chatId: chat.id, chatType: ChatType.group));
+                  AppNavigator.of(
+                    context,
+                  ).push(ChatPage(chatId: chat.id, chatType: ChatType.group));
                   widget.editPressed.value = false;
                 }
               }

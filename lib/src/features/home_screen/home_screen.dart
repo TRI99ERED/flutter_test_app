@@ -1,20 +1,17 @@
 ﻿import 'package:flutter/material.dart';
-// TODO: Remove go_router once migration is complete
-// import 'package:go_router/go_router.dart';
 import 'package:test_app/l10n/locales/l10n.dart';
 import 'package:test_app/src/core/resources/app_icons.dart';
 import 'package:test_app/src/core/widgets/controller_listener.dart';
 import 'package:test_app/src/features/app/app_scope.dart';
-import 'package:test_app/src/features/home_screen/widgets/chats.dart';
-import 'package:test_app/src/features/home_screen/widgets/friends.dart';
-import 'package:test_app/src/features/home_screen/widgets/projects.dart';
-import 'package:test_app/src/features/home_screen/widgets/settings.dart';
+import 'package:test_app/src/features/home_screen/widgets/chats_tab.dart';
+import 'package:test_app/src/features/home_screen/widgets/friends_tab.dart';
+import 'package:test_app/src/features/home_screen/widgets/projects_tab.dart';
+import 'package:test_app/src/features/home_screen/widgets/settings_tab.dart';
 import 'package:test_app/src/features/themes/app_theme.dart';
 import 'package:test_app/src/features/themes/styles.dart';
-// TODO: Remove old routes once migration is complete
-// import 'package:test_app/src/router/routes.dart';
 import 'package:test_app/src/router/app_navigator.dart';
 import 'package:test_app/src/router/app_page.dart';
+import 'package:test_app/src/services/notification_service.dart';
 import 'package:test_app/src/widgets/common/app_tap_bar.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -36,6 +33,28 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   late final _selectedTabIndex = ValueNotifier<int>(widget.initialTab);
   final _editPressed = ValueNotifier<bool>(false);
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final navigator = AppNavigator.of(context);
+      if (NotificationService.pendingRoute != null) {
+        final page = AppPage.fromRoute(
+          NotificationService.pendingRoute!,
+          NotificationService.pendingTab ?? 0,
+          NotificationService.pendingFriendsSection ?? 0,
+          NotificationService.pendingProjectsSection ?? 0,
+        );
+        navigator.replaceAll(HomePage());
+        navigator.push(page);
+        NotificationService.pendingRoute = null;
+        NotificationService.pendingTab = null;
+        NotificationService.pendingFriendsSection = null;
+        NotificationService.pendingProjectsSection = null;
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -105,16 +124,16 @@ class _HomeScreenState extends State<HomeScreen> {
               },
             ),
             body: switch (index) {
-              0 => Chats(editPressed: _editPressed),
-              1 => Friends(
+              0 => ChatsTab(editPressed: _editPressed),
+              1 => FriendsTab(
                 editPressed: _editPressed,
                 initialSection: widget.initialFriendsSection,
               ),
-              2 => Projects(
+              2 => ProjectsTab(
                 editPressed: _editPressed,
                 initialSection: widget.initialProjectsSection,
               ),
-              3 => const Settings(),
+              3 => const SettingsTab(),
               _ => const SizedBox.shrink(),
             },
           );

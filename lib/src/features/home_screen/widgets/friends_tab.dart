@@ -1,12 +1,8 @@
 import 'package:flutter/material.dart';
-// TODO: Remove go_router once migration is complete
-// import 'package:go_router/go_router.dart';
 import 'package:test_app/l10n/locales/l10n.dart';
 import 'package:test_app/src/features/chat_screen/chat_screen.dart';
 import 'package:test_app/src/router/app_navigator.dart';
 import 'package:test_app/src/router/app_page.dart';
-// TODO: Remove main.dart import once rootNavigatorKey is fully removed
-// import 'package:test_app/main.dart';
 import 'package:test_app/src/core/resources/app_icons.dart';
 import 'package:test_app/src/features/app/app_scope.dart';
 import 'package:test_app/src/features/app/data/models/chat_model.dart';
@@ -24,23 +20,23 @@ import 'package:test_app/src/widgets/common/error_state.dart';
 import 'package:test_app/src/features/themes/styles.dart';
 import 'package:test_app/src/widgets/user_profile.dart';
 
-enum FriendsSectionType { friends, incomingRequests, outgoingRequests }
+enum FriendsTabSectionType { friends, incomingRequests, outgoingRequests }
 
-class Friends extends StatefulWidget {
+class FriendsTab extends StatefulWidget {
   final int initialSection;
   final ValueNotifier<bool> editPressed;
 
-  const Friends({
+  const FriendsTab({
     super.key,
     this.initialSection = 0,
     required this.editPressed,
   });
 
   @override
-  State<Friends> createState() => _FriendsState();
+  State<FriendsTab> createState() => _FriendsTabState();
 }
 
-class _FriendsState extends State<Friends> {
+class _FriendsTabState extends State<FriendsTab> {
   late final _sectionIndex = ValueNotifier<int>(widget.initialSection);
   final _searchQuery = ValueNotifier<String>('');
 
@@ -114,17 +110,17 @@ class _FriendsState extends State<Friends> {
               builder: (context, value, child) {
                 return switch (value) {
                   0 => _FriendsSection(
-                    sectionType: FriendsSectionType.friends,
+                    sectionType: FriendsTabSectionType.friends,
                     searchQuery: _searchQuery,
                     editPressed: widget.editPressed,
                   ),
                   1 => _FriendsSection(
-                    sectionType: FriendsSectionType.incomingRequests,
+                    sectionType: FriendsTabSectionType.incomingRequests,
                     searchQuery: _searchQuery,
                     editPressed: widget.editPressed,
                   ),
                   2 => _FriendsSection(
-                    sectionType: FriendsSectionType.outgoingRequests,
+                    sectionType: FriendsTabSectionType.outgoingRequests,
                     searchQuery: _searchQuery,
                     editPressed: widget.editPressed,
                   ),
@@ -150,12 +146,12 @@ class _FriendsState extends State<Friends> {
 }
 
 class _FriendsSection extends StatefulWidget {
-  final FriendsSectionType _sectionType;
+  final FriendsTabSectionType _sectionType;
   final ValueNotifier<String> _searchQuery;
   final ValueNotifier<bool> _editPressed;
 
   const _FriendsSection({
-    required FriendsSectionType sectionType,
+    required FriendsTabSectionType sectionType,
     required ValueNotifier<String> searchQuery,
     required ValueNotifier<bool> editPressed,
   }) : _editPressed = editPressed,
@@ -177,12 +173,11 @@ class _FriendsSectionState extends State<_FriendsSection> {
 
     return StreamBuilder(
       stream: switch (widget._sectionType) {
-        FriendsSectionType.friends => context.appController.watchFriendsForUser(
-          user.id,
-        ),
-        FriendsSectionType.incomingRequests =>
+        FriendsTabSectionType.friends =>
+          context.appController.watchFriendsForUser(user.id),
+        FriendsTabSectionType.incomingRequests =>
           context.appController.watchFriendIncomingRequestsForUser(user.id),
-        FriendsSectionType.outgoingRequests =>
+        FriendsTabSectionType.outgoingRequests =>
           context.appController.watchFriendOutgoingRequestsForUser(user.id),
       },
       builder: (context, snapshot) {
@@ -190,9 +185,9 @@ class _FriendsSectionState extends State<_FriendsSection> {
           return ErrorState(
             message:
                 '${switch (widget._sectionType) {
-                  FriendsSectionType.friends => context.l10n.errorLoadingFriendsMessage,
-                  FriendsSectionType.incomingRequests => context.l10n.errorLoadingIncomingRequestsMessage,
-                  FriendsSectionType.outgoingRequests => context.l10n.errorLoadingOutgoingRequestsMessage,
+                  FriendsTabSectionType.friends => context.l10n.errorLoadingFriendsMessage,
+                  FriendsTabSectionType.incomingRequests => context.l10n.errorLoadingIncomingRequestsMessage,
+                  FriendsTabSectionType.outgoingRequests => context.l10n.errorLoadingOutgoingRequestsMessage,
                 }}: ${snapshot.error}',
           );
         } else if (!snapshot.hasData || snapshot.data == null) {
@@ -205,21 +200,23 @@ class _FriendsSectionState extends State<_FriendsSection> {
           return EmptyState(
             title: context.l10n.nothingHereForNowLabel,
             body: switch (widget._sectionType) {
-              FriendsSectionType.friends =>
+              FriendsTabSectionType.friends =>
                 context.l10n.thisIsWhereYourFriendsWillAppearLabel,
-              FriendsSectionType.incomingRequests =>
+              FriendsTabSectionType.incomingRequests =>
                 context.l10n.thisIsWhereYourIncomingRequestsWillAppearLabel,
-              FriendsSectionType.outgoingRequests =>
+              FriendsTabSectionType.outgoingRequests =>
                 context.l10n.thisIsWhereYourOutgoingRequestsWillAppearLabel,
             },
             buttonText:
-                widget._sectionType == FriendsSectionType.friends ||
-                    widget._sectionType == FriendsSectionType.outgoingRequests
+                widget._sectionType == FriendsTabSectionType.friends ||
+                    widget._sectionType ==
+                        FriendsTabSectionType.outgoingRequests
                 ? context.l10n.sendFriendRequestLabel
                 : null,
             onButtonPressed:
-                widget._sectionType == FriendsSectionType.friends ||
-                    widget._sectionType == FriendsSectionType.outgoingRequests
+                widget._sectionType == FriendsTabSectionType.friends ||
+                    widget._sectionType ==
+                        FriendsTabSectionType.outgoingRequests
                 ? () async {
                     final user = context.appState.user as AuthorizedUser;
                     final appController = context.appController;
@@ -252,11 +249,11 @@ class _FriendsSectionState extends State<_FriendsSection> {
             if (filteredFriends.isEmpty) {
               return EmptyState(
                 title: switch (widget._sectionType) {
-                  FriendsSectionType.friends =>
+                  FriendsTabSectionType.friends =>
                     context.l10n.noFriendsFoundLabel,
-                  FriendsSectionType.incomingRequests =>
+                  FriendsTabSectionType.incomingRequests =>
                     context.l10n.noIncomingRequestsFoundLabel,
-                  FriendsSectionType.outgoingRequests =>
+                  FriendsTabSectionType.outgoingRequests =>
                     context.l10n.noOutgoingRequestsFoundLabel,
                 },
                 body: context.l10n.tryAdjustingYourSearchQueryLabel,
@@ -269,13 +266,13 @@ class _FriendsSectionState extends State<_FriendsSection> {
                 final friend = filteredFriends[index];
 
                 final stream = switch (widget._sectionType) {
-                  FriendsSectionType.friends =>
+                  FriendsTabSectionType.friends =>
                     context.appController.watchFriendsForUser(user.id),
-                  FriendsSectionType.incomingRequests =>
+                  FriendsTabSectionType.incomingRequests =>
                     context.appController.watchFriendIncomingRequestsForUser(
                       user.id,
                     ),
-                  FriendsSectionType.outgoingRequests =>
+                  FriendsTabSectionType.outgoingRequests =>
                     context.appController.watchFriendOutgoingRequestsForUser(
                       user.id,
                     ),
@@ -290,9 +287,9 @@ class _FriendsSectionState extends State<_FriendsSection> {
                       return ErrorState(
                         message:
                             '${switch (widget._sectionType) {
-                              FriendsSectionType.friends => context.l10n.errorLoadingFriend,
-                              FriendsSectionType.incomingRequests => context.l10n.errorLoadingIncomingRequest,
-                              FriendsSectionType.outgoingRequests => context.l10n.errorLoadingOutgoingRequest,
+                              FriendsTabSectionType.friends => context.l10n.errorLoadingFriend,
+                              FriendsTabSectionType.incomingRequests => context.l10n.errorLoadingIncomingRequest,
+                              FriendsTabSectionType.outgoingRequests => context.l10n.errorLoadingOutgoingRequest,
                             }}: ${snapshot.error}',
                       );
                     }
@@ -321,22 +318,22 @@ class _FriendsSectionState extends State<_FriendsSection> {
                                 );
                               },
                               leftButtonText: switch (widget._sectionType) {
-                                FriendsSectionType.incomingRequests =>
+                                FriendsTabSectionType.incomingRequests =>
                                   context.l10n.declineLabel,
                                 _ => null,
                               },
                               rightButtonText: switch (widget._sectionType) {
-                                FriendsSectionType.friends =>
+                                FriendsTabSectionType.friends =>
                                   editPressed
                                       ? context.l10n.removeLabel
                                       : context.l10n.messageLabel,
-                                FriendsSectionType.incomingRequests =>
+                                FriendsTabSectionType.incomingRequests =>
                                   context.l10n.acceptLabel,
-                                FriendsSectionType.outgoingRequests =>
+                                FriendsTabSectionType.outgoingRequests =>
                                   context.l10n.cancelLabel,
                               },
                               onPressedLeft: switch (widget._sectionType) {
-                                FriendsSectionType.incomingRequests =>
+                                FriendsTabSectionType.incomingRequests =>
                                   () async {
                                     final appController = context.appController;
                                     await appController.declineFriendRequest(
@@ -346,7 +343,7 @@ class _FriendsSectionState extends State<_FriendsSection> {
                                 _ => null,
                               },
                               onPressedRight: switch (widget._sectionType) {
-                                FriendsSectionType.friends =>
+                                FriendsTabSectionType.friends =>
                                   editPressed
                                       ? () async {
                                           final appController =
@@ -381,8 +378,9 @@ class _FriendsSectionState extends State<_FriendsSection> {
                                                   as AuthorizedUser;
                                           final appController =
                                               context.appController;
-                                          final navigator =
-                                              AppNavigator.of(context);
+                                          final navigator = AppNavigator.of(
+                                            context,
+                                          );
                                           final existingChat =
                                               await appController
                                                   .watchDirectChatsForUser(
@@ -410,7 +408,12 @@ class _FriendsSectionState extends State<_FriendsSection> {
                                           if (existingChat != null &&
                                               existingChat.id.isNotEmpty) {
                                             if (!context.mounted) return;
-                                            navigator.push(ChatPage(chatId: existingChat.id, chatType: ChatType.direct));
+                                            navigator.push(
+                                              ChatPage(
+                                                chatId: existingChat.id,
+                                                chatType: ChatType.direct,
+                                              ),
+                                            );
                                             return;
                                           }
 
@@ -426,16 +429,21 @@ class _FriendsSectionState extends State<_FriendsSection> {
                                               );
 
                                           if (!context.mounted) return;
-                                          navigator.push(ChatPage(chatId: chat.id, chatType: ChatType.direct));
+                                          navigator.push(
+                                            ChatPage(
+                                              chatId: chat.id,
+                                              chatType: ChatType.direct,
+                                            ),
+                                          );
                                         },
-                                FriendsSectionType.incomingRequests =>
+                                FriendsTabSectionType.incomingRequests =>
                                   () async {
                                     final appController = context.appController;
                                     await appController.acceptFriendRequest(
                                       friendUserId: friend.id,
                                     );
                                   },
-                                FriendsSectionType.outgoingRequests =>
+                                FriendsTabSectionType.outgoingRequests =>
                                   () async {
                                     final appController = context.appController;
                                     await appController.cancelFriendRequest(

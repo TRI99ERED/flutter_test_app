@@ -347,7 +347,9 @@ exports.sendFriendRequestNotification = functions.region(REGION).firestore
 		};
 		const data = {
 			type: 'friend_request',
-			route: `/friends/incoming`,
+			route: `/`,
+			tab: 1,
+			friendsSection: 1,
 			title: notification.title,
 			body: notification.body,
 		};

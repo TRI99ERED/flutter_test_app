@@ -2,19 +2,23 @@ import 'dart:async';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart'
     hide NotificationSettings;
-// TODO: Remove go_router once migration is complete
-// import 'package:flutter/widgets.dart';
-// import 'package:go_router/go_router.dart';
-// import 'package:test_app/main.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:test_app/main.dart';
 import 'package:test_app/src/features/app/data/models/notification_settings.dart';
+import 'package:test_app/src/router/app_page.dart';
 
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp();
 }
 
 class NotificationService {
+  static String? pendingRoute;
+  static int? pendingTab;
+  static int? pendingFriendsSection;
+  static int? pendingProjectsSection;
+
   static final StreamController<RemoteMessage> _inAppNotificationController =
       StreamController.broadcast();
 
@@ -36,35 +40,79 @@ class NotificationService {
         await _flutterLocalNotificationsPlugin.initialize(
           settings: initializationSettings,
           onDidReceiveNotificationResponse: (details) {
-            // TODO: Implement notification navigation via AppRouter
-            // final payload = details.payload;
-            // if (payload != null && payload.isNotEmpty) {
-            //   final context = rootNavigatorKey.currentContext;
-            //   if (context != null) {
-            //     GoRouter.of(context).go(payload);
-            //   }
-            // }
+            debugPrint('Notification clicked with payload: ${details.payload}');
+            final payload = details.payload;
+            if (payload != null && payload.isNotEmpty) {
+              handleNotificationNavigation(
+                payload,
+                tab: details.data['tab'] != null
+                    ? int.tryParse(details.data['tab']!) ?? 0
+                    : 0,
+                friendsSection: details.data['friendsSection'] != null
+                    ? int.tryParse(details.data['friendsSection']!) ?? 0
+                    : 0,
+                projectsSection: details.data['projectsSection'] != null
+                    ? int.tryParse(details.data['projectsSection']!) ?? 0
+                    : 0,
+              );
+            }
           },
         );
 
-        // TODO: Implement notification launch navigation via AppRouter
-        // final notificationAppLaunchDetails =
-        //     await _flutterLocalNotificationsPlugin
-        //         .getNotificationAppLaunchDetails();
-        // final didNotificationLaunchApp =
-        //     notificationAppLaunchDetails?.didNotificationLaunchApp ?? false;
-        // final launchPayload =
-        //     notificationAppLaunchDetails?.notificationResponse?.payload;
-        // if (didNotificationLaunchApp &&
-        //     launchPayload != null &&
-        //     launchPayload.isNotEmpty) {
-        //   WidgetsBinding.instance.addPostFrameCallback((_) {
-        //     final context = rootNavigatorKey.currentContext;
-        //     if (context != null) {
-        //       GoRouter.of(context).go(launchPayload);
-        //     }
-        //   });
-        // }
+        final notificationAppLaunchDetails =
+            await _flutterLocalNotificationsPlugin
+                .getNotificationAppLaunchDetails();
+        final didNotificationLaunchApp =
+            notificationAppLaunchDetails?.didNotificationLaunchApp ?? false;
+        final launchPayload =
+            notificationAppLaunchDetails?.notificationResponse?.payload;
+        if (didNotificationLaunchApp &&
+            launchPayload != null &&
+            launchPayload.isNotEmpty) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            debugPrint('Notification clicked with payload: $launchPayload');
+            handleNotificationNavigation(
+              launchPayload,
+              tab:
+                  notificationAppLaunchDetails
+                          ?.notificationResponse
+                          ?.data['tab'] !=
+                      null
+                  ? int.tryParse(
+                          notificationAppLaunchDetails!
+                              .notificationResponse!
+                              .data['tab']!,
+                        ) ??
+                        0
+                  : 0,
+              friendsSection:
+                  notificationAppLaunchDetails
+                          ?.notificationResponse
+                          ?.data['friendsSection'] !=
+                      null
+                  ? int.tryParse(
+                          notificationAppLaunchDetails!
+                              .notificationResponse!
+                              .data['friendsSection']!,
+                        ) ??
+                        0
+                  : 0,
+              projectsSection:
+                  notificationAppLaunchDetails
+                          ?.notificationResponse
+                          ?.data['projectsSection'] !=
+                      null
+                  ? int.tryParse(
+                          notificationAppLaunchDetails!
+                              .notificationResponse!
+                              .data['projectsSection']!,
+                        ) ??
+                        0
+                  : 0,
+            );
+            debugPrint('Navigating to route: $launchPayload');
+          });
+        }
 
         final androidPlugin = _flutterLocalNotificationsPlugin
             .resolvePlatformSpecificImplementation<
@@ -134,6 +182,37 @@ class NotificationService {
     _settings = settings;
   }
 
+  static void handleNotificationNavigation(
+    String route, {
+    int tab = 0,
+    int friendsSection = 0,
+    int projectsSection = 0,
+  }) {
+    debugPrint(
+      'Handling navigation to $route with tab: $tab, friendsSection: $friendsSection, projectsSection: $projectsSection',
+    );
+    final navigator = rootNavigatorKey.currentState;
+    if (navigator != null) {
+      final page = AppPage.fromRoute(
+        route,
+        tab,
+        friendsSection,
+        projectsSection,
+      );
+      navigator.pushAndRemoveUntil(
+        MaterialPageRoute(builder: (_) => page.child),
+        (route) => false,
+      );
+      debugPrint('Navigated immediately to $route');
+    } else {
+      pendingRoute = route;
+      pendingTab = tab;
+      pendingFriendsSection = friendsSection;
+      pendingProjectsSection = projectsSection;
+      debugPrint('Saved pending navigation to $route');
+    }
+  }
+
   static Future<void> _onMessageHandler(RemoteMessage message) async {
     final settings = _settings;
     if (settings == null || !settings.pushNotificationsEnabled) return;
@@ -190,13 +269,19 @@ class NotificationService {
   }
 
   static void _onMessageOpenedAppHandler(RemoteMessage message) {
-    // TODO: Implement notification opened navigation via AppRouter
-    // final data = message.data;
-    // if (data['route'] != null) {
-    //   final context = rootNavigatorKey.currentContext;
-    //   if (context != null) {
-    //     context.push(data['route']);
-    //   }
-    // }
+    debugPrint('Notification clicked with payload: ${message.data['route']}');
+    final data = message.data;
+    if (data['route'] != null) {
+      handleNotificationNavigation(
+        data['route'],
+        tab: data['tab'] != null ? int.tryParse(data['tab']) ?? 0 : 0,
+        friendsSection: data['friendsSection'] != null
+            ? int.tryParse(data['friendsSection']) ?? 0
+            : 0,
+        projectsSection: data['projectsSection'] != null
+            ? int.tryParse(data['projectsSection']) ?? 0
+            : 0,
+      );
+    }
   }
 }

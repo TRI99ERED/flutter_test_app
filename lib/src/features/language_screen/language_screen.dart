@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-// TODO: Remove go_router once migration is complete
-// import 'package:go_router/go_router.dart';
 import 'package:test_app/src/router/app_navigator.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:test_app/l10n/locales/l10n.dart';

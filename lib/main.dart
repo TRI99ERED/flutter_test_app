@@ -2,8 +2,6 @@ import 'dart:async';
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-// TODO: Remove go_router dependency once migration is complete
-// import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:test_app/firebase_options.dart';
 import 'package:test_app/l10n/locales/app_localizations.dart';
@@ -13,13 +11,10 @@ import 'package:test_app/src/features/app/app_lifecycle_handler.dart';
 import 'package:test_app/src/features/app/app_scope.dart';
 import 'package:test_app/src/features/themes/app_theme.dart';
 import 'package:test_app/src/features/themes/styles.dart';
-// TODO: Remove old router once migration is complete
-// import 'package:test_app/src/router/routes.dart';
 import 'package:test_app/src/router/app_navigator.dart';
 import 'package:test_app/src/router/app_page.dart';
 import 'package:test_app/src/services/notification_service.dart';
 
-// TODO: Remove rootNavigatorKey once migration is complete
 final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>();
 
 void main() {
@@ -52,8 +47,6 @@ class App extends StatefulWidget {
 
 class _AppState extends State<App> {
   late final AppController _appController;
-  // TODO: Remove old GoRouter once migration is complete
-  // late final GoRouter _router;
   final ThemeData _lightTheme = ThemeData(
     brightness: Brightness.light,
     extensions: [appThemeLight],
@@ -94,53 +87,40 @@ class _AppState extends State<App> {
     super.initState();
     _appController = AppController();
     _appController.addListener(_rebuild);
-    // TODO: Remove old GoRouter once migration is complete
-    // _router = generateRouter(_appController, rootNavigatorKey);
   }
 
   void _rebuild() {
-    if (mounted) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) setState(() {});
-      });
-    }
+    if (mounted) setState(() {});
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_appController.state.isAuthorized &&
+          NotificationService.pendingRoute != null) {
+        final navigator = rootNavigatorKey.currentState;
+        if (navigator != null) {
+          final page = AppPage.fromRoute(
+            NotificationService.pendingRoute!,
+            NotificationService.pendingTab ?? 0,
+            NotificationService.pendingFriendsSection ?? 0,
+            NotificationService.pendingProjectsSection ?? 0,
+          );
+          navigator.pushAndRemoveUntil(
+            MaterialPageRoute(builder: (_) => page.child),
+            (route) => false,
+          );
+          NotificationService.pendingRoute = null;
+          NotificationService.pendingTab = null;
+          NotificationService.pendingFriendsSection = null;
+          NotificationService.pendingProjectsSection = null;
+          debugPrint('Processed pending navigation (from _rebuild)');
+        }
+      }
+    });
   }
 
-  // TODO: Remove old build method once migration is complete
-  // @override
-  // Widget build(BuildContext context) {
-  //   return ValueListenableBuilder(
-  //     valueListenable: _locale,
-  //     builder: (context, value, child) {
-  //       return ValueListenableBuilder(
-  //         valueListenable: _themeMode,
-  //         builder: (context, value, child) {
-  //           return MaterialApp.router(
-  //             title: 'Test App',
-  //             theme: _lightTheme,
-  //             darkTheme: _darkTheme,
-  //             themeMode: _themeMode.value,
-  //             locale: _locale.value,
-  //             localizationsDelegates: AppLocalizations.localizationsDelegates,
-  //             supportedLocales: AppLocalizations.supportedLocales,
-  //             routerConfig: _router,
-  //             builder: (context, child) => AppScope(
-  //               controller: _appController,
-  //               themeMode: _themeMode,
-  //               locale: _locale,
-  //               child: child == null
-  //                   ? const SizedBox.shrink()
-  //                   : AppLifecycleHandler(child: child),
-  //             ),
-  //           );
-  //         },
-  //       );
-  //     },
-  //   );
-  // }
-
   /// Auth guard: redirects based on authorization state.
-  AppNavigationState _authGuard(BuildContext context, AppNavigationState state) {
+  AppNavigationState _authGuard(
+    BuildContext context,
+    AppNavigationState state,
+  ) {
     final top = state.last;
 
     // Stay on splash until the controller has received the first auth state.
@@ -198,6 +178,7 @@ class _AppState extends State<App> {
                 locale: _locale,
                 child: AppLifecycleHandler(
                   child: AppNavigator(
+                    key: rootNavigatorKey,
                     pages: const [SplashPage()],
                     guards: [_authGuard],
                     refreshListenable: _appController.authNotifier,

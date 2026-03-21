@@ -1,13 +1,9 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-// TODO: Remove go_router once migration is complete
-// import 'package:go_router/go_router.dart';
 import 'package:test_app/l10n/locales/l10n.dart';
 import 'package:test_app/src/core/resources/app_icons.dart';
 import 'package:test_app/src/features/app/app_scope.dart';
 import 'package:test_app/src/features/themes/app_theme.dart';
-// TODO: Remove old routes once migration is complete
-// import 'package:test_app/src/router/routes.dart';
 import 'package:test_app/src/router/app_navigator.dart';
 import 'package:test_app/src/router/app_page.dart';
 import 'package:test_app/src/widgets/common/app_button.dart';
@@ -128,7 +124,9 @@ class _LoginScreenState extends State<LoginScreen> {
                         onChanged: (_) => _validateForm(),
                       ),
                       AppButtonTertiary(
-                        onPressed: () => AppNavigator.of(context).replaceAll(const ForgotPasswordPage()),
+                        onPressed: () => AppNavigator.of(
+                          context,
+                        ).replaceAll(const ForgotPasswordPage()),
                         text: context.l10n.forgotPasswordLabel,
                       ),
                       SizedBox(
@@ -166,7 +164,9 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                           ),
                           AppButtonTertiary(
-                            onPressed: () => AppNavigator.of(context).replaceAll(const RegisterPage()),
+                            onPressed: () => AppNavigator.of(
+                              context,
+                            ).replaceAll(const RegisterPage()),
                             text: context.l10n.registerNowLabel,
                           ),
                         ],
@@ -214,7 +214,8 @@ class _LoginScreenState extends State<LoginScreen> {
                               }
                               final navigator = AppNavigator.of(context);
                               await context.appController.signInWithGoogle(
-                                onNewUser: () => navigator.push(const InterestsPage()),
+                                onNewUser: () =>
+                                    navigator.push(const InterestsPage()),
                               );
                             },
                             style: IconButton.styleFrom(

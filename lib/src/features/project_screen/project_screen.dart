@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-// TODO: Remove go_router once migration is complete
-// import 'package:go_router/go_router.dart';
 import 'package:test_app/src/features/chat_screen/chat_screen.dart';
 import 'package:test_app/src/router/app_navigator.dart';
 import 'package:test_app/src/router/app_page.dart';
@@ -188,7 +186,9 @@ class ProjectScreen extends StatelessWidget {
               AppButtonPrimary(
                 text: context.l10n.provideFeedbackLabel,
                 onPressed: () {
-                  AppNavigator.of(context).push(ProjectFeedbackPage(projectId: projectId));
+                  AppNavigator.of(
+                    context,
+                  ).push(ProjectFeedbackPage(projectId: projectId));
                 },
               ),
             ],
@@ -375,11 +375,15 @@ class ProjectScreen extends StatelessWidget {
                   chatName: participantNames.join(', '),
                 );
                 if (!context.mounted) return;
-                AppNavigator.of(context).push(ChatPage(chatId: newChat.id, chatType: ChatType.direct));
+                AppNavigator.of(
+                  context,
+                ).push(ChatPage(chatId: newChat.id, chatType: ChatType.direct));
                 return;
               }
               if (!context.mounted) return;
-              AppNavigator.of(context).push(ChatPage(chatId: chat.id, chatType: ChatType.direct));
+              AppNavigator.of(
+                context,
+              ).push(ChatPage(chatId: chat.id, chatType: ChatType.direct));
             });
       };
     } else if (project.participants.length > 2 &&
@@ -395,7 +399,9 @@ class ProjectScreen extends StatelessWidget {
           }
           if (matchingChat != null) {
             if (!context.mounted) return;
-            AppNavigator.of(context).push(ChatPage(chatId: matchingChat.id, chatType: ChatType.group));
+            AppNavigator.of(
+              context,
+            ).push(ChatPage(chatId: matchingChat.id, chatType: ChatType.group));
             return;
           }
           if (!context.mounted) return;
@@ -429,7 +435,9 @@ class ProjectScreen extends StatelessWidget {
           }
           if (matchingChat != null) {
             if (!context.mounted) return;
-            AppNavigator.of(context).push(ChatPage(chatId: matchingChat.id, chatType: ChatType.group));
+            AppNavigator.of(
+              context,
+            ).push(ChatPage(chatId: matchingChat.id, chatType: ChatType.group));
             return;
           }
           if (!context.mounted) return;
@@ -441,7 +449,9 @@ class ProjectScreen extends StatelessWidget {
             project.copyWith(groupChatId: chat.id),
           );
           if (!context.mounted) return;
-          AppNavigator.of(context).push(ChatPage(chatId: chat.id, chatType: ChatType.group));
+          AppNavigator.of(
+            context,
+          ).push(ChatPage(chatId: chat.id, chatType: ChatType.group));
         });
       };
     }

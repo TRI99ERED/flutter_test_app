@@ -6,8 +6,8 @@ import 'package:test_app/src/router/app_page.dart';
 import 'package:test_app/src/router/nav_log.dart';
 
 /// Type alias for guard functions used by [AppNavigator].
-typedef AppNavigationGuard = AppNavigationState Function(
-    BuildContext context, AppNavigationState state);
+typedef AppNavigationGuard =
+    AppNavigationState Function(BuildContext context, AppNavigationState state);
 
 /// A declarative navigator driven by a list of [AppPage] instances.
 ///
@@ -121,7 +121,9 @@ class AppNavigatorState extends State<AppNavigator> {
     // (e.g. SplashPage when auth state is already known).
     final guarded = _applyGuards(context, _state.toList());
     if (guarded.isNotEmpty && !listEquals(guarded, _state)) {
-      NavLog.d('Guard redirected ${_stackLabel(_state)} -> ${_stackLabel(guarded)}');
+      NavLog.d(
+        'Guard redirected ${_stackLabel(_state)} -> ${_stackLabel(guarded)}',
+      );
       _state = guarded;
     }
   }
