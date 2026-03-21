@@ -33,13 +33,6 @@ class _EmailConfirmationScreenState extends State<EmailConfirmationScreen> {
     });
   }
 
-  void _onCodeChanged(String code) {
-    final isValid = code.length == 4;
-    if (isValid != _isFormValid.value) {
-      _isFormValid.value = isValid;
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -127,7 +120,12 @@ class _EmailConfirmationScreenState extends State<EmailConfirmationScreen> {
                         focusNode: _codeFocusNode,
                         length: 4,
                         boxSpacing: spacing8,
-                        onChanged: _onCodeChanged,
+                        onChanged: (code) {
+                          final isValid = code.length == 4;
+                          if (isValid != _isFormValid.value) {
+                            _isFormValid.value = isValid;
+                          }
+                        },
                       ),
                     ],
                   ),

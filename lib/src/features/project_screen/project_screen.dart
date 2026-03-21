@@ -30,7 +30,9 @@ class ProjectScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return ControllerListener(
       controller: context.appController,
-      listenWhen: (previous, current) => !previous.isFailed && current.isFailed,
+      listenWhen: (previous, current) {
+        return !previous.isFailed && current.isFailed;
+      },
       listener: (context, previous, current) {
         if (current.isFailed) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -52,258 +54,241 @@ class ProjectScreen extends StatelessWidget {
           );
         }
       },
-      child: Scaffold(
-        appBar: PreferredSize(
-          preferredSize: const Size.fromHeight(kToolbarHeight),
-          child: _buildAppBar(context),
-        ),
-        body: SafeArea(
-          child: Padding(
-            padding: EdgeInsets.all(spacing16),
-            child: _buildBody(context),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildAppBar(BuildContext context) {
-    return StreamBuilder(
-      stream: context.projectController!.watchProjectWithId(projectId),
-      builder: (context, snapshot) {
-        final project = snapshot.data;
-        if (project == null) {
-          return AppNavBar(
-            title: context.l10n.projectNotFoundLabel,
-            leftIcon: AppIcons.arrowLeft,
-            onPressedLeft: () => AppNavigator.of(context).pop(),
-          );
-        }
-        return AppNavBar(
-          title: project.name,
-          leftIcon: AppIcons.arrowLeft,
-          onPressedLeft: () => AppNavigator.of(context).pop(),
-        );
-      },
-    );
-  }
-
-  Widget _buildBody(BuildContext context) {
-    return StreamBuilder(
-      stream: context.projectController!.watchProjectWithId(projectId),
-      builder: (context, snapshot) {
-        if (snapshot.hasError) {
-          return Center(
-            child: ErrorState(
-              message:
-                  '${context.l10n.errorLoadingProjectMessage}: ${snapshot.error}',
-            ),
-          );
-        } else if (!snapshot.hasData || snapshot.data == null) {
-          return const Center(child: AppLoader());
-        }
-        final project = snapshot.data!;
-
-        return ListView(
-          children: [
-            Text(
-              project.name,
-              style: TextStyle(
-                fontSize: h1Size,
-                fontWeight: h1Weight,
-                color: Theme.of(
-                  context,
-                ).extension<AppTheme>()?.foregroundStrongestColor,
+      child: StreamBuilder(
+        stream: context.projectController!.watchProjectWithId(projectId),
+        builder: (context, asyncSnapshot) {
+          if (asyncSnapshot.hasError) {
+            return Scaffold(
+              appBar: AppNavBar(
+                title: context.l10n.projectNotFoundLabel,
+                leftIcon: AppIcons.arrowLeft,
+                onPressedLeft: () => AppNavigator.of(context).pop(),
               ),
-            ),
-            _buildOwnerRow(context, project),
-            const SizedBox(height: spacing16),
-            Text(
-              '${context.l10n.statusLabel}: ${project.status.displayName(context)}',
-              style: TextStyle(
-                fontSize: bMSize,
-                fontWeight: bMWeight,
-                color: Theme.of(
-                  context,
-                ).extension<AppTheme>()?.foregroundStrongColor,
-              ),
-            ),
-            const SizedBox(height: spacing24),
-            Text(
-              context.l10n.descriptionLabel,
-              style: TextStyle(
-                fontSize: h3Size,
-                fontWeight: h3Weight,
-                color: Theme.of(
-                  context,
-                ).extension<AppTheme>()?.foregroundStrongestColor,
-              ),
-            ),
-            Text(
-              project.description.isEmpty
-                  ? context.l10n.noDescriptionProvidedLabel
-                  : project.description,
-              style: TextStyle(
-                fontSize: bMSize,
-                fontWeight: bMWeight,
-                color: Theme.of(
-                  context,
-                ).extension<AppTheme>()?.foregroundWeakColor,
-              ),
-            ),
-            const SizedBox(height: spacing24),
-            _buildParticipantsRow(context, project),
-            const SizedBox(height: spacing8),
-            _buildParticipantsList(context, project),
-            const SizedBox(height: spacing24),
-            Text(
-              context.l10n.deadlineLabel,
-              style: TextStyle(
-                fontSize: h3Size,
-                fontWeight: h3Weight,
-                color: Theme.of(
-                  context,
-                ).extension<AppTheme>()?.foregroundStrongestColor,
-              ),
-            ),
-            const SizedBox(height: spacing8),
-            _buildDeadlineCalendar(context, project),
-            if (project.status == ProjectStatus.finished) ...[
-              const SizedBox(height: spacing24),
-              const AppDivider(),
-              const SizedBox(height: spacing24),
-              Text(
-                context.l10n.projectCompletedLabel,
-                style: TextStyle(
-                  fontSize: h2Size,
-                  fontWeight: h2Weight,
-                  color: Theme.of(
-                    context,
-                  ).extension<AppTheme>()?.foregroundStrongestColor,
+              body: Center(
+                child: ErrorState(
+                  message:
+                      '${context.l10n.errorLoadingProjectMessage}: ${asyncSnapshot.error}',
                 ),
               ),
-              const SizedBox(height: spacing16),
-              AppButtonPrimary(
-                text: context.l10n.provideFeedbackLabel,
-                onPressed: () {
-                  AppNavigator.of(
-                    context,
-                  ).push(ProjectFeedbackPage(projectId: projectId));
-                },
+            );
+          } else if (!asyncSnapshot.hasData || asyncSnapshot.data == null) {
+            return Scaffold(
+              appBar: AppNavBar(
+                title: context.l10n.projectNotFoundLabel,
+                leftIcon: AppIcons.arrowLeft,
+                onPressedLeft: () => AppNavigator.of(context).pop(),
               ),
-            ],
-          ],
-        );
-      },
-    );
-  }
+              body: const Center(child: AppLoader()),
+            );
+          }
 
-  Widget _buildOwnerRow(BuildContext context, Project project) {
-    return StreamBuilder(
-      stream: context.appController.watchUserWithId(project.ownerId),
-      builder: (context, asyncSnapshot) {
-        final owner = asyncSnapshot.data;
-        if (owner == null) {
-          return Text(
-            context.l10n.createdByUnknownLabel,
-            style: TextStyle(
-              fontSize: bMSize,
-              fontWeight: bMWeight,
-              color: Theme.of(
-                context,
-              ).extension<AppTheme>()?.foregroundWeakColor,
+          final project = asyncSnapshot.data!;
+
+          return Scaffold(
+            appBar: AppNavBar(
+              title: project.name,
+              leftIcon: AppIcons.arrowLeft,
+              onPressedLeft: () => AppNavigator.of(context).pop(),
+            ),
+            body: SafeArea(
+              child: Padding(
+                padding: EdgeInsets.all(spacing16),
+                child: ListView(
+                  children: [
+                    Text(
+                      project.name,
+                      style: TextStyle(
+                        fontSize: h1Size,
+                        fontWeight: h1Weight,
+                        color: Theme.of(
+                          context,
+                        ).extension<AppTheme>()?.foregroundStrongestColor,
+                      ),
+                    ),
+                    _ProjectScreenOwnerRow(project: project),
+                    const SizedBox(height: spacing16),
+                    Text(
+                      '${context.l10n.statusLabel}: ${project.status.displayName(context)}',
+                      style: TextStyle(
+                        fontSize: bMSize,
+                        fontWeight: bMWeight,
+                        color: Theme.of(
+                          context,
+                        ).extension<AppTheme>()?.foregroundStrongColor,
+                      ),
+                    ),
+                    const SizedBox(height: spacing24),
+                    Text(
+                      context.l10n.descriptionLabel,
+                      style: TextStyle(
+                        fontSize: h3Size,
+                        fontWeight: h3Weight,
+                        color: Theme.of(
+                          context,
+                        ).extension<AppTheme>()?.foregroundStrongestColor,
+                      ),
+                    ),
+                    Text(
+                      project.description.isEmpty
+                          ? context.l10n.noDescriptionProvidedLabel
+                          : project.description,
+                      style: TextStyle(
+                        fontSize: bMSize,
+                        fontWeight: bMWeight,
+                        color: Theme.of(
+                          context,
+                        ).extension<AppTheme>()?.foregroundWeakColor,
+                      ),
+                    ),
+                    const SizedBox(height: spacing24),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          '${context.l10n.participantsLabel}:',
+                          style: TextStyle(
+                            fontSize: h3Size,
+                            fontWeight: h3Weight,
+                            color: Theme.of(
+                              context,
+                            ).extension<AppTheme>()?.foregroundStrongestColor,
+                          ),
+                        ),
+                        StreamBuilder(
+                          stream: context.chatController!
+                              .watchGroupChatsForUser(
+                                (context.appState.user as AuthorizedUser).id,
+                              ),
+                          builder: (context, asyncSnapshot) {
+                            if (asyncSnapshot.hasError) {
+                              return ErrorState(
+                                message:
+                                    '${context.l10n.errorLoadingChatsMessage}: ${asyncSnapshot.error}',
+                              );
+                            } else if (!asyncSnapshot.hasData ||
+                                asyncSnapshot.data == null) {
+                              return AppButtonPrimary(
+                                text: context.l10n.chatLabel,
+                                onPressed: null,
+                              );
+                            }
+
+                            final chats = asyncSnapshot.data!;
+                            final doesGroupChatExistForProject = chats.any(
+                              (c) => c.id == project.groupChatId,
+                            );
+                            return AppButtonPrimary(
+                              text:
+                                  doesGroupChatExistForProject ||
+                                      project.participants.length == 2
+                                  ? context.l10n.chatLabel
+                                  : context.l10n.createChatLabel,
+                              onPressed: _getChatButtonOnPressed(
+                                context,
+                                project,
+                                doesGroupChatExistForProject,
+                              ),
+                            );
+                          },
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: spacing8),
+                    StreamBuilder(
+                      stream: context.projectController!
+                          .watchProjectParticipants(project.id),
+                      builder: (context, asyncSnapshot) {
+                        if (asyncSnapshot.hasError) {
+                          return Center(
+                            child: ErrorState(
+                              message:
+                                  '${context.l10n.errorLoadingParticipantsMessage}: ${asyncSnapshot.error}',
+                            ),
+                          );
+                        } else if (!asyncSnapshot.hasData ||
+                            asyncSnapshot.data == null) {
+                          return const SizedBox.shrink();
+                        }
+
+                        final users = asyncSnapshot.data!;
+                        if (users.isEmpty) {
+                          return Center(
+                            child: ErrorState(
+                              message: context.l10n.noParticipantsFoundMessage,
+                            ),
+                          );
+                        }
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          spacing: spacing16,
+                          children: users.map((user) {
+                            return AppListItem(
+                              title: user.name,
+                              description: user.handle.isNotEmpty
+                                  ? '@${user.handle}'
+                                  : null,
+                              avatar: AppAvatar.avatarOrPlaceholder(
+                                user,
+                                AvatarSize.small,
+                              ),
+                            );
+                          }).toList(),
+                        );
+                      },
+                    ),
+                    const SizedBox(height: spacing24),
+                    Text(
+                      context.l10n.deadlineLabel,
+                      style: TextStyle(
+                        fontSize: h3Size,
+                        fontWeight: h3Weight,
+                        color: Theme.of(
+                          context,
+                        ).extension<AppTheme>()?.foregroundStrongestColor,
+                      ),
+                    ),
+                    const SizedBox(height: spacing8),
+                    AppCalendarMonthly(
+                      initialDate: project.deadline,
+                      immutable: true,
+                      onDateSelected: (date) async {
+                        final updatedProject = project.copyWith(deadline: date);
+                        await context.projectController!.updateProject(
+                          updatedProject,
+                        );
+                      },
+                    ),
+                    if (project.status == ProjectStatus.finished) ...[
+                      const SizedBox(height: spacing24),
+                      const AppDivider(),
+                      const SizedBox(height: spacing24),
+                      Text(
+                        context.l10n.projectCompletedLabel,
+                        style: TextStyle(
+                          fontSize: h2Size,
+                          fontWeight: h2Weight,
+                          color: Theme.of(
+                            context,
+                          ).extension<AppTheme>()?.foregroundStrongestColor,
+                        ),
+                      ),
+                      const SizedBox(height: spacing16),
+                      AppButtonPrimary(
+                        text: context.l10n.provideFeedbackLabel,
+                        onPressed: () {
+                          AppNavigator.of(
+                            context,
+                          ).push(ProjectFeedbackPage(projectId: project.id));
+                        },
+                      ),
+                    ],
+                  ],
+                ),
+              ),
             ),
           );
-        }
-        final user = context.appState.user as AuthorizedUser;
-        return Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              '${context.l10n.createdByLabel(owner.handle.isEmpty ? owner.name : '@${owner.handle}')}\n'
-              '${context.l10n.atLabel(project.createdAt.toLocal().toString().split('.').first)}\n'
-              '${context.l10n.lastUpdatedAtLabel(project.lastUpdated.toLocal().toString().split('.').first)}',
-              style: TextStyle(
-                fontSize: bMSize,
-                fontWeight: bMWeight,
-                color: Theme.of(
-                  context,
-                ).extension<AppTheme>()?.foregroundWeakColor,
-              ),
-            ),
-            AppButtonPrimary(
-              text: 'Edit',
-              onPressed: user.id == owner.id
-                  ? () async {
-                      final p = await ProjectWizard.manageProject(
-                        context,
-                        ProjectWizardMode.edit,
-                        project,
-                      );
-                      if (p != null) {
-                        // Handle the updated project
-                      }
-                    }
-                  : null,
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  Widget _buildParticipantsRow(BuildContext context, Project project) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          '${context.l10n.participantsLabel}:',
-          style: TextStyle(
-            fontSize: h3Size,
-            fontWeight: h3Weight,
-            color: Theme.of(
-              context,
-            ).extension<AppTheme>()?.foregroundStrongestColor,
-          ),
-        ),
-        _buildChatButton(context, project),
-      ],
-    );
-  }
-
-  Widget _buildChatButton(BuildContext context, Project project) {
-    return StreamBuilder(
-      stream: context.chatController!.watchGroupChatsForUser(
-        (context.appState.user as AuthorizedUser).id,
+        },
       ),
-      builder: (context, asyncSnapshot) {
-        if (asyncSnapshot.hasError) {
-          return ErrorState(
-            message:
-                '${context.l10n.errorLoadingChatsMessage}: ${asyncSnapshot.error}',
-          );
-        } else if (!asyncSnapshot.hasData || asyncSnapshot.data == null) {
-          return AppButtonPrimary(
-            text: context.l10n.chatLabel,
-            onPressed: null,
-          );
-        }
-
-        final chats = asyncSnapshot.data!;
-        final doesGroupChatExistForProject = chats.any(
-          (c) => c.id == project.groupChatId,
-        );
-        return AppButtonPrimary(
-          text: doesGroupChatExistForProject || project.participants.length == 2
-              ? context.l10n.chatLabel
-              : context.l10n.createChatLabel,
-          onPressed: _getChatButtonOnPressed(
-            context,
-            project,
-            doesGroupChatExistForProject,
-          ),
-        );
-      },
     );
   }
 
@@ -463,50 +448,64 @@ class ProjectScreen extends StatelessWidget {
     }
     return null;
   }
+}
 
-  Widget _buildParticipantsList(BuildContext context, Project project) {
+class _ProjectScreenOwnerRow extends StatelessWidget {
+  final Project project;
+
+  const _ProjectScreenOwnerRow({required this.project});
+
+  @override
+  Widget build(BuildContext context) {
     return StreamBuilder(
-      stream: context.projectController!.watchProjectParticipants(project.id),
+      stream: context.appController.watchUserWithId(project.ownerId),
       builder: (context, asyncSnapshot) {
-        if (asyncSnapshot.hasError) {
-          return Center(
-            child: ErrorState(
-              message:
-                  '${context.l10n.errorLoadingParticipantsMessage}: ${asyncSnapshot.error}',
+        final owner = asyncSnapshot.data;
+        if (owner == null) {
+          return Text(
+            context.l10n.createdByUnknownLabel,
+            style: TextStyle(
+              fontSize: bMSize,
+              fontWeight: bMWeight,
+              color: Theme.of(
+                context,
+              ).extension<AppTheme>()?.foregroundWeakColor,
             ),
           );
-        } else if (!asyncSnapshot.hasData || asyncSnapshot.data == null) {
-          return const SizedBox.shrink();
         }
-
-        final users = asyncSnapshot.data!;
-        if (users.isEmpty) {
-          return Center(
-            child: ErrorState(message: context.l10n.noParticipantsFoundMessage),
-          );
-        }
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          spacing: spacing16,
-          children: users.map((user) {
-            return AppListItem(
-              title: user.name,
-              description: user.handle.isNotEmpty ? '@${user.handle}' : null,
-              avatar: AppAvatar.avatarOrPlaceholder(user, AvatarSize.small),
-            );
-          }).toList(),
+        final user = context.appState.user as AuthorizedUser;
+        return Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              '${context.l10n.createdByLabel(owner.handle.isEmpty ? owner.name : '@${owner.handle}')}\n'
+              '${context.l10n.atLabel(project.createdAt.toLocal().toString().split('.').first)}\n'
+              '${context.l10n.lastUpdatedAtLabel(project.lastUpdated.toLocal().toString().split('.').first)}',
+              style: TextStyle(
+                fontSize: bMSize,
+                fontWeight: bMWeight,
+                color: Theme.of(
+                  context,
+                ).extension<AppTheme>()?.foregroundWeakColor,
+              ),
+            ),
+            AppButtonPrimary(
+              text: 'Edit',
+              onPressed: user.id == owner.id
+                  ? () async {
+                      final p = await ProjectWizard.manageProject(
+                        context,
+                        ProjectWizardMode.edit,
+                        project,
+                      );
+                      if (p != null) {
+                        // Handle the updated project
+                      }
+                    }
+                  : null,
+            ),
+          ],
         );
-      },
-    );
-  }
-
-  Widget _buildDeadlineCalendar(BuildContext context, Project project) {
-    return AppCalendarMonthly(
-      initialDate: project.deadline,
-      immutable: true,
-      onDateSelected: (date) async {
-        final updatedProject = project.copyWith(deadline: date);
-        await context.projectController!.updateProject(updatedProject);
       },
     );
   }

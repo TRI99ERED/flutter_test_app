@@ -189,7 +189,7 @@ class _ChatScreenState extends State<ChatScreen> {
             final directChat = directSnapshot.data!;
 
             return Scaffold(
-              appBar: ChatScreenNavBar(chat: directChat),
+              appBar: _ChatScreenNavBar(chat: directChat),
               body: SafeArea(
                 child: Padding(
                   padding: const EdgeInsets.all(spacing8),
@@ -198,10 +198,10 @@ class _ChatScreenState extends State<ChatScreen> {
                       Expanded(
                         child: Padding(
                           padding: const EdgeInsets.all(spacing8),
-                          child: ChatScreenMessageList(chat: directChat),
+                          child: _ChatScreenMessageList(chat: directChat),
                         ),
                       ),
-                      ChatScreenMessageInput(chat: directChat),
+                      _ChatScreenMessageInput(chat: directChat),
                     ],
                   ),
                 ),
@@ -239,7 +239,7 @@ class _ChatScreenState extends State<ChatScreen> {
             final groupChat = groupSnapshot.data!;
 
             return Scaffold(
-              appBar: ChatScreenNavBar(chat: groupChat),
+              appBar: _ChatScreenNavBar(chat: groupChat),
               body: SafeArea(
                 child: Padding(
                   padding: const EdgeInsets.all(spacing8),
@@ -248,10 +248,10 @@ class _ChatScreenState extends State<ChatScreen> {
                       Expanded(
                         child: Padding(
                           padding: const EdgeInsets.all(spacing8),
-                          child: ChatScreenMessageList(chat: groupChat),
+                          child: _ChatScreenMessageList(chat: groupChat),
                         ),
                       ),
-                      ChatScreenMessageInput(chat: groupChat),
+                      _ChatScreenMessageInput(chat: groupChat),
                     ],
                   ),
                 ),
@@ -287,10 +287,10 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 }
 
-class ChatScreenNavBar extends StatelessWidget implements PreferredSizeWidget {
+class _ChatScreenNavBar extends StatelessWidget implements PreferredSizeWidget {
   final Chat chat;
 
-  const ChatScreenNavBar({super.key, required this.chat});
+  const _ChatScreenNavBar({required this.chat});
 
   @override
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
@@ -413,10 +413,10 @@ class ChatScreenNavBar extends StatelessWidget implements PreferredSizeWidget {
   }
 }
 
-class ChatScreenMessageInput extends StatelessWidget {
+class _ChatScreenMessageInput extends StatelessWidget {
   final Chat chat;
 
-  const ChatScreenMessageInput({super.key, required this.chat});
+  const _ChatScreenMessageInput({required this.chat});
 
   @override
   Widget build(BuildContext context) {
@@ -546,10 +546,10 @@ class ChatScreenMessageInput extends StatelessWidget {
   }
 }
 
-class ChatScreenMessageList extends StatelessWidget {
+class _ChatScreenMessageList extends StatelessWidget {
   final Chat chat;
 
-  const ChatScreenMessageList({super.key, required this.chat});
+  const _ChatScreenMessageList({required this.chat});
 
   @override
   Widget build(BuildContext context) {
