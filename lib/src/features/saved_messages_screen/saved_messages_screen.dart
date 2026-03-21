@@ -179,10 +179,13 @@ class _SavedMessagesScreenState extends State<SavedMessagesScreen> {
                   },
                 ),
               ),
-              AppMessageInput(
-                onSendPressed: (value) {
-                  context.chatController!.createSavedMessage(value);
-                },
+              Padding(
+                padding: const EdgeInsets.all(spacing8),
+                child: AppMessageInput(
+                  onSendPressed: (value) {
+                    context.chatController!.createSavedMessage(value);
+                  },
+                ),
               ),
             ],
           ),
