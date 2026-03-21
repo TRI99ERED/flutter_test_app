@@ -11,10 +11,11 @@ import 'package:test_app/src/features/app/app_lifecycle_handler.dart';
 import 'package:test_app/src/features/app/app_scope.dart';
 import 'package:test_app/src/features/themes/app_theme.dart';
 import 'package:test_app/src/features/themes/styles.dart';
-import 'package:test_app/src/router/app_navigator.dart';
 import 'package:test_app/src/router/app_page.dart';
+import 'package:test_app/src/router/app_router.dart';
 import 'package:test_app/src/services/notification_service.dart';
 
+// TODO: Remove once all references are cleaned up
 final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>();
 
 void main() {
@@ -47,6 +48,8 @@ class App extends StatefulWidget {
 
 class _AppState extends State<App> {
   late final AppController _appController;
+  late final AppRouterDelegate _routerDelegate;
+  static const _routeParser = AppRouteInformationParser();
   final ThemeData _lightTheme = ThemeData(
     brightness: Brightness.light,
     extensions: [appThemeLight],
@@ -87,33 +90,16 @@ class _AppState extends State<App> {
     super.initState();
     _appController = AppController();
     _appController.addListener(_rebuild);
+    _routerDelegate = AppRouterDelegate(
+      initialPages: const [SplashPage()],
+      guards: [_authGuard],
+      refreshListenable: _appController.authNotifier,
+    );
+    NotificationService.router = _routerDelegate;
   }
 
   void _rebuild() {
     if (mounted) setState(() {});
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (_appController.state.isAuthorized &&
-          NotificationService.pendingRoute != null) {
-        final navigator = rootNavigatorKey.currentState;
-        if (navigator != null) {
-          final page = AppPage.fromRoute(
-            NotificationService.pendingRoute!,
-            NotificationService.pendingTab ?? 0,
-            NotificationService.pendingFriendsSection ?? 0,
-            NotificationService.pendingProjectsSection ?? 0,
-          );
-          navigator.pushAndRemoveUntil(
-            MaterialPageRoute(builder: (_) => page.child),
-            (route) => false,
-          );
-          NotificationService.pendingRoute = null;
-          NotificationService.pendingTab = null;
-          NotificationService.pendingFriendsSection = null;
-          NotificationService.pendingProjectsSection = null;
-          debugPrint('Processed pending navigation (from _rebuild)');
-        }
-      }
-    });
   }
 
   /// Auth guard: redirects based on authorization state.
@@ -126,8 +112,9 @@ class _AppState extends State<App> {
     // Stay on splash until the controller has received the first auth state.
     if (top is SplashPage) {
       if (!_appController.isInitialized) return state;
-      return _appController.state.isAuthorized
-          ? [HomePage()]
+      if (_appController.state.isAuthorized) return [HomePage()];
+      return _appController.hasCompletedOnboarding
+          ? [const LoginPage()]
           : [const OnboardingPage()];
     }
 
@@ -164,7 +151,7 @@ class _AppState extends State<App> {
         return ValueListenableBuilder(
           valueListenable: _themeMode,
           builder: (context, value, child) {
-            return MaterialApp(
+            return MaterialApp.router(
               title: 'Test App',
               theme: _lightTheme,
               darkTheme: _darkTheme,
@@ -172,17 +159,14 @@ class _AppState extends State<App> {
               locale: _locale.value,
               localizationsDelegates: AppLocalizations.localizationsDelegates,
               supportedLocales: AppLocalizations.supportedLocales,
+              routerDelegate: _routerDelegate,
+              routeInformationParser: _routeParser,
               builder: (context, child) => AppScope(
                 controller: _appController,
                 themeMode: _themeMode,
                 locale: _locale,
                 child: AppLifecycleHandler(
-                  child: AppNavigator(
-                    key: rootNavigatorKey,
-                    pages: const [SplashPage()],
-                    guards: [_authGuard],
-                    refreshListenable: _appController.authNotifier,
-                  ),
+                  child: child ?? const SizedBox.shrink(),
                 ),
               ),
             );

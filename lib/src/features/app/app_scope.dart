@@ -46,11 +46,6 @@ class _AppScopeState extends State<AppScope> {
   @override
   Widget build(BuildContext context) {
     return InheritedScopeWidget(
-      key: ValueKey(switch (user) {
-        AuthorizedUser(:final id) => id,
-        UnauthorizedUser() => 'unauthorized',
-        _ => 'unknown',
-      }),
       controller: _controller,
       state: _state,
       themeMode: widget.themeMode,
