@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
+// TODO: Remove go_router once migration is complete
+// import 'package:go_router/go_router.dart';
+import 'package:test_app/src/features/chat_screen/chat_screen.dart';
+import 'package:test_app/src/router/app_navigator.dart';
+import 'package:test_app/src/router/app_page.dart';
 import 'package:test_app/l10n/locales/l10n.dart';
 import 'package:test_app/src/core/resources/app_icons.dart';
 import 'package:test_app/src/core/widgets/controller_listener.dart';
@@ -74,13 +78,13 @@ class ProjectScreen extends StatelessWidget {
           return AppNavBar(
             title: context.l10n.projectNotFoundLabel,
             leftIcon: AppIcons.arrowLeft,
-            onPressedLeft: () => context.pop(),
+            onPressedLeft: () => AppNavigator.of(context).pop(),
           );
         }
         return AppNavBar(
           title: project.name,
           leftIcon: AppIcons.arrowLeft,
-          onPressedLeft: () => context.pop(),
+          onPressedLeft: () => AppNavigator.of(context).pop(),
         );
       },
     );
@@ -184,7 +188,7 @@ class ProjectScreen extends StatelessWidget {
               AppButtonPrimary(
                 text: context.l10n.provideFeedbackLabel,
                 onPressed: () {
-                  context.push('/projects/$projectId/feedback');
+                  AppNavigator.of(context).push(ProjectFeedbackPage(projectId: projectId));
                 },
               ),
             ],
@@ -371,11 +375,11 @@ class ProjectScreen extends StatelessWidget {
                   chatName: participantNames.join(', '),
                 );
                 if (!context.mounted) return;
-                context.push('/chats/direct/${newChat.id}');
+                AppNavigator.of(context).push(ChatPage(chatId: newChat.id, chatType: ChatType.direct));
                 return;
               }
               if (!context.mounted) return;
-              context.push('/chats/direct/${chat.id}');
+              AppNavigator.of(context).push(ChatPage(chatId: chat.id, chatType: ChatType.direct));
             });
       };
     } else if (project.participants.length > 2 &&
@@ -391,7 +395,7 @@ class ProjectScreen extends StatelessWidget {
           }
           if (matchingChat != null) {
             if (!context.mounted) return;
-            context.push('/chats/group/${matchingChat.id}');
+            AppNavigator.of(context).push(ChatPage(chatId: matchingChat.id, chatType: ChatType.group));
             return;
           }
           if (!context.mounted) return;
@@ -425,7 +429,7 @@ class ProjectScreen extends StatelessWidget {
           }
           if (matchingChat != null) {
             if (!context.mounted) return;
-            context.push('/chats/group/${matchingChat.id}');
+            AppNavigator.of(context).push(ChatPage(chatId: matchingChat.id, chatType: ChatType.group));
             return;
           }
           if (!context.mounted) return;
@@ -437,7 +441,7 @@ class ProjectScreen extends StatelessWidget {
             project.copyWith(groupChatId: chat.id),
           );
           if (!context.mounted) return;
-          context.push('/chats/group/${chat.id}');
+          AppNavigator.of(context).push(ChatPage(chatId: chat.id, chatType: ChatType.group));
         });
       };
     }

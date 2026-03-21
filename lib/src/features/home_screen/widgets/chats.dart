@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
+// TODO: Remove go_router once migration is complete
+// import 'package:go_router/go_router.dart';
+import 'package:test_app/src/features/chat_screen/chat_screen.dart';
+import 'package:test_app/src/router/app_navigator.dart';
+import 'package:test_app/src/router/app_page.dart';
 import 'package:test_app/l10n/locales/l10n.dart';
 import 'package:test_app/src/core/resources/app_icons.dart';
 import 'package:test_app/src/features/app/app_scope.dart';
@@ -102,10 +106,10 @@ class _ChatsState extends State<Chats> {
                       final chat = await ChatWizard.manageChat(context);
                       if (!context.mounted || chat == null) return;
                       if (chat is DirectChat) {
-                        context.push('/chats/direct/${chat.id}');
+                        AppNavigator.of(context).push(ChatPage(chatId: chat.id, chatType: ChatType.direct));
                         widget.editPressed.value = false;
                       } else if (chat is GroupChat) {
-                        context.push('/chats/group/${chat.id}');
+                        AppNavigator.of(context).push(ChatPage(chatId: chat.id, chatType: ChatType.group));
                         widget.editPressed.value = false;
                       }
                     },
@@ -319,9 +323,9 @@ class _ChatListItem extends StatelessWidget {
                           description: context.l10n.deleteChatConfirmationLabel,
                           buttonText1: context.l10n.cancelLabel,
                           buttonText2: context.l10n.deleteLabel,
-                          onPressed1: (context) => context.pop(),
+                          onPressed1: (context) => Navigator.of(context).pop(),
                           onPressed2: (context) async {
-                            context.pop();
+                            Navigator.of(context).pop();
                             await context.appController.deleteDirectChat(
                               directChat.id,
                             );
@@ -329,7 +333,7 @@ class _ChatListItem extends StatelessWidget {
                         )
                       : () async {
                           if (!mounted) return;
-                          context.push('/chats/direct/${directChat.id}');
+                          AppNavigator.of(context).push(ChatPage(chatId: directChat.id, chatType: ChatType.direct));
                           if (lastSenderId != null &&
                               lastSenderId != user.id &&
                               unreadCount > 0) {
@@ -432,9 +436,9 @@ class _ChatListItem extends StatelessWidget {
                       description: context.l10n.deleteChatConfirmationLabel,
                       buttonText1: context.l10n.cancelLabel,
                       buttonText2: context.l10n.deleteLabel,
-                      onPressed1: (context) => context.pop(),
+                      onPressed1: (context) => Navigator.of(context).pop(),
                       onPressed2: (context) async {
-                        context.pop();
+                        Navigator.of(context).pop();
                         await context.appController.deleteGroupChat(
                           groupChat.id,
                         );
@@ -442,7 +446,7 @@ class _ChatListItem extends StatelessWidget {
                     )
                   : () async {
                       if (!mounted) return;
-                      context.push('/chats/group/${groupChat.id}');
+                      AppNavigator.of(context).push(ChatPage(chatId: groupChat.id, chatType: ChatType.group));
                       if (lastSenderId != null &&
                           lastSenderId != user.id &&
                           unreadCount > 0) {
@@ -515,10 +519,10 @@ class _ChatsAppBarState extends State<ChatsAppBar> {
 
               if (context.mounted) {
                 if (chat is DirectChat) {
-                  context.push('/chats/direct/${chat.id}');
+                  AppNavigator.of(context).push(ChatPage(chatId: chat.id, chatType: ChatType.direct));
                   widget.editPressed.value = false;
                 } else if (chat is GroupChat) {
-                  context.push('/chats/group/${chat.id}');
+                  AppNavigator.of(context).push(ChatPage(chatId: chat.id, chatType: ChatType.group));
                   widget.editPressed.value = false;
                 }
               }

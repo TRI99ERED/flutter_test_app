@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
+// TODO: Remove go_router once migration is complete
+// import 'package:go_router/go_router.dart';
+import 'package:test_app/src/router/app_navigator.dart';
 import 'package:test_app/l10n/locales/l10n.dart';
 import 'package:test_app/src/core/resources/app_icons.dart';
 import 'package:test_app/src/core/widgets/controller_listener.dart';
@@ -59,7 +61,7 @@ class _ProjectFeedbackScreenState extends State<ProjectFeedbackScreen> {
           title: context.l10n.feedbackTitle,
           leftIcon: AppIcons.arrowLeft,
           onPressedLeft: () {
-            context.pop();
+            AppNavigator.of(context).pop();
           },
         ),
         body: Padding(

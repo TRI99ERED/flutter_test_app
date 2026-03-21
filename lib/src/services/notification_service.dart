@@ -2,9 +2,10 @@ import 'dart:async';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart'
     hide NotificationSettings;
-import 'package:flutter/widgets.dart';
-import 'package:go_router/go_router.dart';
-import 'package:test_app/main.dart';
+// TODO: Remove go_router once migration is complete
+// import 'package:flutter/widgets.dart';
+// import 'package:go_router/go_router.dart';
+// import 'package:test_app/main.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:test_app/src/features/app/data/models/notification_settings.dart';
@@ -35,33 +36,35 @@ class NotificationService {
         await _flutterLocalNotificationsPlugin.initialize(
           settings: initializationSettings,
           onDidReceiveNotificationResponse: (details) {
-            final payload = details.payload;
-            if (payload != null && payload.isNotEmpty) {
-              final context = rootNavigatorKey.currentContext;
-              if (context != null) {
-                GoRouter.of(context).go(payload);
-              }
-            }
+            // TODO: Implement notification navigation via AppRouter
+            // final payload = details.payload;
+            // if (payload != null && payload.isNotEmpty) {
+            //   final context = rootNavigatorKey.currentContext;
+            //   if (context != null) {
+            //     GoRouter.of(context).go(payload);
+            //   }
+            // }
           },
         );
 
-        final notificationAppLaunchDetails =
-            await _flutterLocalNotificationsPlugin
-                .getNotificationAppLaunchDetails();
-        final didNotificationLaunchApp =
-            notificationAppLaunchDetails?.didNotificationLaunchApp ?? false;
-        final launchPayload =
-            notificationAppLaunchDetails?.notificationResponse?.payload;
-        if (didNotificationLaunchApp &&
-            launchPayload != null &&
-            launchPayload.isNotEmpty) {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            final context = rootNavigatorKey.currentContext;
-            if (context != null) {
-              GoRouter.of(context).go(launchPayload);
-            }
-          });
-        }
+        // TODO: Implement notification launch navigation via AppRouter
+        // final notificationAppLaunchDetails =
+        //     await _flutterLocalNotificationsPlugin
+        //         .getNotificationAppLaunchDetails();
+        // final didNotificationLaunchApp =
+        //     notificationAppLaunchDetails?.didNotificationLaunchApp ?? false;
+        // final launchPayload =
+        //     notificationAppLaunchDetails?.notificationResponse?.payload;
+        // if (didNotificationLaunchApp &&
+        //     launchPayload != null &&
+        //     launchPayload.isNotEmpty) {
+        //   WidgetsBinding.instance.addPostFrameCallback((_) {
+        //     final context = rootNavigatorKey.currentContext;
+        //     if (context != null) {
+        //       GoRouter.of(context).go(launchPayload);
+        //     }
+        //   });
+        // }
 
         final androidPlugin = _flutterLocalNotificationsPlugin
             .resolvePlatformSpecificImplementation<
@@ -187,12 +190,13 @@ class NotificationService {
   }
 
   static void _onMessageOpenedAppHandler(RemoteMessage message) {
-    final data = message.data;
-    if (data['route'] != null) {
-      final context = rootNavigatorKey.currentContext;
-      if (context != null) {
-        context.push(data['route']);
-      }
-    }
+    // TODO: Implement notification opened navigation via AppRouter
+    // final data = message.data;
+    // if (data['route'] != null) {
+    //   final context = rootNavigatorKey.currentContext;
+    //   if (context != null) {
+    //     context.push(data['route']);
+    //   }
+    // }
   }
 }

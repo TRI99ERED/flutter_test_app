@@ -1,13 +1,16 @@
 import 'package:async/async.dart';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
+// TODO: Remove go_router once migration is complete
+// import 'package:go_router/go_router.dart';
+import 'package:test_app/src/features/chat_screen/chat_screen.dart';
+import 'package:test_app/src/router/app_navigator.dart';
+import 'package:test_app/src/router/app_page.dart';
 import 'package:test_app/l10n/locales/l10n.dart';
 import 'package:test_app/src/core/resources/app_icons.dart';
 import 'package:test_app/src/core/widgets/controller_listener.dart';
 import 'package:test_app/src/features/app/app_scope.dart';
 import 'package:test_app/src/features/app/data/models/message_model.dart';
 import 'package:test_app/src/features/app/data/models/user_model.dart';
-import 'package:test_app/src/features/chat_screen/chat_screen.dart';
 import 'package:test_app/src/features/chat_screen/widgets/aligned_message_bubble.dart';
 import 'package:test_app/src/features/themes/app_theme.dart';
 import 'package:test_app/src/widgets/common/app_list_item.dart';
@@ -17,6 +20,8 @@ import 'package:test_app/src/widgets/common/app_nav_bar.dart';
 import 'package:test_app/src/widgets/common/empty_state.dart';
 import 'package:test_app/src/widgets/common/error_state.dart';
 import 'package:test_app/src/features/themes/styles.dart';
+
+enum _MessageAction { goToDirectChat, goToGroupChat, delete }
 
 class SavedMessagesScreen extends StatefulWidget {
   const SavedMessagesScreen({super.key});
@@ -63,7 +68,7 @@ class _SavedMessagesScreenState extends State<SavedMessagesScreen> {
           title: context.l10n.savedMessagesTitle,
           leftIcon: AppIcons.arrowLeft,
           onPressedLeft: () {
-            context.pop();
+            AppNavigator.of(context).pop();
           },
         ),
         body: SafeArea(
@@ -188,8 +193,13 @@ class _SavedMessagesScreenState extends State<SavedMessagesScreen> {
     );
   }
 
-  void _handleMessageTap(BuildContext context, SavedMessage message) {
-    showModalBottomSheet(
+  Future<void> _handleMessageTap(
+    BuildContext context,
+    SavedMessage message,
+  ) async {
+    final navigator = AppNavigator.of(context);
+    final appController = context.appController;
+    final action = await showModalBottomSheet<_MessageAction>(
       context: context,
       backgroundColor: Theme.of(
         context,
@@ -209,29 +219,37 @@ class _SavedMessagesScreenState extends State<SavedMessagesScreen> {
               switch (message.chatType) {
                 ChatType.direct => AppListItem(
                   title: context.l10n.goToDirectChatLabel,
-                  onPressed: () {
-                    context.pop();
-                    context.push('/chats/direct/${message.chatId}');
-                  },
+                  onPressed: () =>
+                      Navigator.of(context).pop(_MessageAction.goToDirectChat),
                 ),
                 ChatType.group => AppListItem(
                   title: context.l10n.goToGroupChatLabel,
-                  onPressed: () {
-                    context.pop();
-                    context.push('/chats/group/${message.chatId}');
-                  },
+                  onPressed: () =>
+                      Navigator.of(context).pop(_MessageAction.goToGroupChat),
                 ),
               },
             AppListItem(
               title: context.l10n.deleteSavedMessageLabel,
-              onPressed: () {
-                context.appController.deleteSavedMessage(message.id);
-                context.pop();
-              },
+              onPressed: () => Navigator.of(context).pop(_MessageAction.delete),
             ),
           ],
         );
       },
     );
+
+    if (!mounted || action == null) return;
+
+    switch (action) {
+      case _MessageAction.goToDirectChat:
+        navigator.push(
+          ChatPage(chatId: message.chatId, chatType: ChatType.direct),
+        );
+      case _MessageAction.goToGroupChat:
+        navigator.push(
+          ChatPage(chatId: message.chatId, chatType: ChatType.group),
+        );
+      case _MessageAction.delete:
+        appController.deleteSavedMessage(message.id);
+    }
   }
 }
