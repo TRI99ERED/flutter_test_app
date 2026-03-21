@@ -69,7 +69,7 @@ class ProjectScreen extends StatelessWidget {
 
   Widget _buildAppBar(BuildContext context) {
     return StreamBuilder(
-      stream: context.appController.watchProjectWithId(projectId),
+      stream: context.projectController!.watchProjectWithId(projectId),
       builder: (context, snapshot) {
         final project = snapshot.data;
         if (project == null) {
@@ -90,7 +90,7 @@ class ProjectScreen extends StatelessWidget {
 
   Widget _buildBody(BuildContext context) {
     return StreamBuilder(
-      stream: context.appController.watchProjectWithId(projectId),
+      stream: context.projectController!.watchProjectWithId(projectId),
       builder: (context, snapshot) {
         if (snapshot.hasError) {
           return Center(
@@ -315,6 +315,7 @@ class ProjectScreen extends StatelessWidget {
     final user = context.appState.user as AuthorizedUser;
     final appController = context.appController;
     final chatController = context.chatController!;
+    final projectController = context.projectController!;
     if (project.participants.length == 2) {
       return () {
         appController
@@ -450,7 +451,7 @@ class ProjectScreen extends StatelessWidget {
             chatName: '${context.l10n.projectTitle} "${project.name}"',
             participants: project.participants,
           );
-          await appController.updateProject(
+          await projectController.updateProject(
             project.copyWith(groupChatId: chat.id),
           );
           if (!context.mounted) return;
@@ -465,7 +466,7 @@ class ProjectScreen extends StatelessWidget {
 
   Widget _buildParticipantsList(BuildContext context, Project project) {
     return StreamBuilder(
-      stream: context.appController.watchProjectParticipants(project.id),
+      stream: context.projectController!.watchProjectParticipants(project.id),
       builder: (context, asyncSnapshot) {
         if (asyncSnapshot.hasError) {
           return Center(
@@ -505,7 +506,7 @@ class ProjectScreen extends StatelessWidget {
       immutable: true,
       onDateSelected: (date) async {
         final updatedProject = project.copyWith(deadline: date);
-        await context.appController.updateProject(updatedProject);
+        await context.projectController!.updateProject(updatedProject);
       },
     );
   }

@@ -3,11 +3,9 @@ import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
-import 'package:rxdart/rxdart.dart';
 import 'package:test_app/src/core/controller/base_controller/base_controller.dart';
 import 'package:test_app/src/features/app/data/models/notification_settings.dart';
 import 'package:test_app/src/features/app/data/models/project_feedback_model.dart';
-import 'package:test_app/src/features/app/data/models/project_model.dart';
 import 'package:test_app/src/features/app/data/models/user_model.dart';
 import 'package:test_app/src/features/app/data/repositories/firebase/firebase_auth_repository/firebase_auth_repository_impl.dart';
 import 'package:test_app/src/features/app/data/repositories/firebase/firebase_auth_repository/ifirebase_auth_repository.dart';
@@ -509,138 +507,6 @@ final class AppController extends BaseController<AppState> {
     }
   });
 
-  Stream<List<Project>?> watchToDoProjectsForUser(
-    String userId, [
-    String orderBy = 'lastUpdated',
-    bool descending = true,
-  ]) {
-    return _firestoreRepository
-        .watchProjectsForUser(userId, orderBy, descending)
-        .map((projects) {
-          return projects
-              ?.where((project) => project.status == ProjectStatus.todo)
-              .toList();
-        });
-  }
-
-  Stream<List<Project>?> watchInProgressProjectsForUser(
-    String userId, [
-    String orderBy = 'lastUpdated',
-    bool descending = true,
-  ]) {
-    return _firestoreRepository
-        .watchProjectsForUser(userId, orderBy, descending)
-        .map((projects) {
-          return projects
-              ?.where((project) => project.status == ProjectStatus.inProgress)
-              .toList();
-        });
-  }
-
-  Stream<List<Project>?> watchFinishedProjectsForUser(
-    String userId, [
-    String orderBy = 'lastUpdated',
-    bool descending = true,
-  ]) {
-    return _firestoreRepository
-        .watchProjectsForUser(userId, orderBy, descending)
-        .map((projects) {
-          return projects
-              ?.where((project) => project.status == ProjectStatus.finished)
-              .toList();
-        });
-  }
-
-  Future<Project> createProjectForUser({
-    required String projectName,
-    required String projectDescription,
-    required List<String> participants,
-    required DateTime deadline,
-  }) async => await serialExecutor.synchronized(() async {
-    setState(
-      AppState.processing(
-        message: 'Creating project "$projectName"...',
-        user: state.user,
-      ),
-    );
-    try {
-      final project = await _firestoreRepository.createProjectForUser(
-        state.user is AuthorizedUser ? (state.user as AuthorizedUser).id : '',
-        projectName,
-        projectDescription,
-        participants,
-        deadline,
-      );
-      setState(
-        AppState.idle(
-          message:
-              'Project "$projectName" created successfully, id: "${project.id}"',
-          user: state.user,
-        ),
-      );
-      return project;
-    } catch (error, stackTrace) {
-      setState(
-        AppState.failed(
-          message:
-              'Failed to create project "$projectName": ${error.toString()}',
-          user: state.user,
-          error: error,
-          stackTrace: stackTrace,
-        ),
-      );
-      return Future.error(error, stackTrace);
-    }
-  });
-
-  Future<void> updateProject(
-    Project project,
-  ) async => await serialExecutor.synchronized(() async {
-    setState(
-      AppState.processing(
-        message: 'Updating project "${project.name}"...',
-        user: state.user,
-      ),
-    );
-    try {
-      await _firestoreRepository.updateProject(project);
-      setState(
-        AppState.idle(
-          message: 'Project "${project.name}" updated successfully',
-          user: state.user,
-        ),
-      );
-    } catch (error, stackTrace) {
-      setState(
-        AppState.failed(
-          message:
-              'Failed to update project "${project.name}": ${error.toString()}',
-          user: state.user,
-          error: error,
-          stackTrace: stackTrace,
-        ),
-      );
-      return Future.error(error, stackTrace);
-    }
-  });
-
-  Stream<List<AuthorizedUser>?> watchProjectParticipants(String projectId) {
-    return Rx.combineLatest2(
-      _firestoreRepository.watchProjectWithId(projectId),
-      _firestoreRepository.watchAllUsers(),
-      (Project? project, List<AuthorizedUser>? users) {
-        final participantIds = project?.participants.toSet() ?? {};
-        return users
-            ?.where((user) => participantIds.contains(user.id))
-            .toList();
-      },
-    );
-  }
-
-  Stream<Project?> watchProjectWithId(String projectId) {
-    return _firestoreRepository.watchProjectWithId(projectId);
-  }
-
   Stream<AuthorizedUser?> watchUserWithId(String memberId) {
     return _firestoreRepository.watchAllUsers().map((users) {
       return users?.firstWhere((u) => u.id == memberId);
@@ -720,36 +586,6 @@ final class AppController extends BaseController<AppState> {
       return Future.error(error, stackTrace);
     }
   });
-
-  Future<void> deleteProject(String projectId) async =>
-      await serialExecutor.synchronized(() async {
-        setState(
-          AppState.processing(
-            message: 'Deleting project "$projectId"...',
-            user: state.user,
-          ),
-        );
-        try {
-          await _firestoreRepository.deleteProject(projectId);
-          setState(
-            AppState.idle(
-              message: 'Project "$projectId" deleted successfully.',
-              user: state.user,
-            ),
-          );
-        } catch (error, stackTrace) {
-          setState(
-            AppState.failed(
-              message:
-                  'Failed to delete project "$projectId": ${error.toString()}',
-              user: state.user,
-              error: error,
-              stackTrace: stackTrace,
-            ),
-          );
-          return Future.error(error, stackTrace);
-        }
-      });
 
   Future<void>
   uploadUserAvatar() async => await serialExecutor.synchronized(() async {

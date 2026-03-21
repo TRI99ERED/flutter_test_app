@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:test_app/l10n/locales/l10n.dart';
-import 'package:test_app/src/features/app/app_controller/app_controller.dart';
 import 'package:test_app/src/features/app/app_scope.dart';
 import 'package:test_app/src/features/app/data/models/user_model.dart';
 import 'package:test_app/src/widgets/common/app_button.dart';
@@ -47,7 +46,8 @@ class UserPicker extends StatefulWidget {
     if (!context.mounted) {
       return null;
     }
-    final AppController appController = context.appController;
+    final appController = context.appController;
+    final projectController = context.projectController!;
     List<AuthorizedUser>? users =
         (flags & UserPickerFlag.friendsOnly.value) != 0
         ? await appController.watchFriendsForUser(userId).first
@@ -70,7 +70,9 @@ class UserPicker extends StatefulWidget {
         return null;
       }
 
-      final project = await appController.watchProjectWithId(projectId).first;
+      final project = await projectController
+          .watchProjectWithId(projectId)
+          .first;
       final participantIds = project?.participants;
       users = users
           ?.where((u) => !(participantIds?.contains(u.id) ?? false))

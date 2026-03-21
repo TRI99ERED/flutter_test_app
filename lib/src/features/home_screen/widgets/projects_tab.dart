@@ -218,8 +218,9 @@ class _ProjectsSectionState extends State<_ProjectsSection> {
                 final creatorsFuture = switch (widget._sectionType) {
                   ProjectStatus.todo => () async {
                     final appController = context.appController;
+                    final projectController = context.projectController!;
                     final userId = (context.appState.user as AuthorizedUser).id;
-                    final projects = await appController
+                    final projects = await projectController
                         .watchToDoProjectsForUser(userId)
                         .first;
                     if (projects == null) return <AuthorizedUser>[];
@@ -239,8 +240,9 @@ class _ProjectsSectionState extends State<_ProjectsSection> {
                   }(),
                   ProjectStatus.inProgress => () async {
                     final appController = context.appController;
+                    final projectController = context.projectController!;
                     final userId = (context.appState.user as AuthorizedUser).id;
-                    final projects = await appController
+                    final projects = await projectController
                         .watchInProgressProjectsForUser(userId)
                         .first;
                     if (projects == null) return <AuthorizedUser>[];
@@ -260,8 +262,9 @@ class _ProjectsSectionState extends State<_ProjectsSection> {
                   }(),
                   ProjectStatus.finished => () async {
                     final appController = context.appController;
+                    final projectController = context.projectController!;
                     final userId = (context.appState.user as AuthorizedUser).id;
-                    final projects = await appController
+                    final projects = await projectController
                         .watchFinishedProjectsForUser(userId)
                         .first;
                     if (projects == null) return <AuthorizedUser>[];
@@ -332,20 +335,21 @@ class _ProjectsSectionState extends State<_ProjectsSection> {
                           return StreamBuilder(
                             stream: switch (widget._sectionType) {
                               ProjectStatus.todo =>
-                                context.appController.watchToDoProjectsForUser(
-                                  user.id,
-                                  sortOptionValue,
-                                  sortOrderValue == SortOrder.descending,
-                                ),
+                                context.projectController!
+                                    .watchToDoProjectsForUser(
+                                      user.id,
+                                      sortOptionValue,
+                                      sortOrderValue == SortOrder.descending,
+                                    ),
                               ProjectStatus.inProgress =>
-                                context.appController
+                                context.projectController!
                                     .watchInProgressProjectsForUser(
                                       user.id,
                                       sortOptionValue,
                                       sortOrderValue == SortOrder.descending,
                                     ),
                               ProjectStatus.finished =>
-                                context.appController
+                                context.projectController!
                                     .watchFinishedProjectsForUser(
                                       user.id,
                                       sortOptionValue,
@@ -483,7 +487,8 @@ class _ProjectsSectionState extends State<_ProjectsSection> {
                                                   },
                                                   onPressed2: (context) async {
                                                     Navigator.of(context).pop();
-                                                    await context.appController
+                                                    await context
+                                                        .projectController!
                                                         .deleteProject(
                                                           project.id,
                                                         );

@@ -322,7 +322,7 @@ class _ProjectWizardState extends State<ProjectWizard> {
     final user = context.appState.user as AuthorizedUser;
     switch (widget.mode) {
       case ProjectWizardMode.create:
-        final project = await context.appController.createProjectForUser(
+        final project = await context.projectController!.createProjectForUser(
           projectName: _nameController.text,
           projectDescription: _descriptionController.text,
           participants: {user.id, ..._participants.value}.toList(),
@@ -340,7 +340,7 @@ class _ProjectWizardState extends State<ProjectWizard> {
           deadline: _deadline.value,
           lastUpdated: DateTime.now(),
         );
-        await context.appController.updateProject(updatedProject);
+        await context.projectController!.updateProject(updatedProject);
         if (!context.mounted) return;
         Navigator.of(context).pop(updatedProject);
         break;

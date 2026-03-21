@@ -12,7 +12,7 @@ import 'package:test_app/src/features/app/data/repositories/firebase/firebase_fu
 
 part 'chat_state.dart';
 
-final class ChatController extends BaseController {
+final class ChatController extends BaseController<ChatState> {
   final AppController _appController;
   final IFirebaseFirestoreRepository _firestoreRepository;
   final IFirebaseFunctionsRepository _functionsRepository;

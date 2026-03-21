@@ -23,7 +23,7 @@ sealed class ChatState extends BaseState {
 
   @override
   Object? get error => switch (this) {
-    ChatStateFailed(:final error) => error,
+    ChatStateFailed(:final message) => message,
     _ => null,
   };
 
