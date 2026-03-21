@@ -6,7 +6,6 @@ import 'package:test_app/src/router/app_navigator.dart';
 import 'package:test_app/l10n/locales/l10n.dart';
 import 'package:test_app/src/core/resources/app_icons.dart';
 import 'package:test_app/src/core/widgets/controller_listener.dart';
-import 'package:test_app/src/features/app/app_controller/app_controller.dart';
 import 'package:test_app/src/features/app/app_scope.dart';
 import 'package:test_app/src/features/app/data/models/chat_model.dart';
 import 'package:test_app/src/features/app/data/models/message_model.dart';
@@ -38,7 +37,6 @@ class ChatScreen extends StatefulWidget {
 }
 
 class _ChatScreenState extends State<ChatScreen> {
-  late final AppController _appController;
   late final ChatController _chatController;
   String? _lastDirectChatId;
   String? _lastGroupChatId;
@@ -56,92 +54,252 @@ class _ChatScreenState extends State<ChatScreen> {
     if (!_initialized) {
       _initialized = true;
       _chatController = context.chatController!;
-      _appController = context.appController;
       _userId = (context.appState.user is AuthorizedUser)
           ? (context.appState.user as AuthorizedUser).id
           : null;
       WidgetsBinding.instance.addPostFrameCallback((_) async {
-        await _initializeChat();
+        if (_userId == null) return;
+        switch (widget.chatType) {
+          case ChatType.direct:
+            final directChat = await _chatController
+                .watchDirectChatWithId(widget.chatId)
+                .firstWhere((chat) => chat != null);
+            if (!mounted) return;
+            final lastMessage = await _chatController
+                .watchMessagesForDirectChat(widget.chatId)
+                .first
+                .timeout(const Duration(seconds: 10))
+                .then((messages) => messages?.first)
+                .catchError((_) => null);
+            if (!mounted) return;
+            final lastSenderId = lastMessage?.senderId;
+            final unreadCount = directChat?.unreadCount ?? 0;
+
+            if (lastSenderId != null &&
+                lastSenderId != _userId &&
+                unreadCount > 0) {
+              await _chatController.updateDirectChatUnreadCount(
+                chatId: widget.chatId,
+                unreadCount: 0,
+              );
+            }
+
+            if (_lastDirectChatId != widget.chatId) {
+              _chatController.updateUserCurrentDirectChatId(
+                userId: _userId!,
+                currentDirectChatId: widget.chatId,
+              );
+              _lastDirectChatId = widget.chatId;
+            }
+            break;
+          case ChatType.group:
+            final groupChat = await _chatController
+                .watchGroupChatWithId(widget.chatId)
+                .firstWhere((chat) => chat != null);
+            if (!mounted) return;
+            final lastMessage = await _chatController
+                .watchMessagesForGroupChat(widget.chatId)
+                .first
+                .timeout(const Duration(seconds: 10))
+                .then((messages) => messages?.first)
+                .catchError((_) => null);
+            if (!mounted) return;
+            final lastSenderId = lastMessage?.senderId;
+            final unreadCount = groupChat?.unreadCounts[_userId] ?? 0;
+
+            if (lastSenderId != null &&
+                lastSenderId != _userId &&
+                unreadCount > 0) {
+              await _chatController.updateGroupChatCurrentUserUnreadCount(
+                chatId: widget.chatId,
+                unreadCount: 0,
+              );
+            }
+
+            if (_lastGroupChatId != widget.chatId) {
+              _chatController.updateUserCurrentGroupChatId(
+                userId: _userId!,
+                currentGroupChatId: widget.chatId,
+              );
+              _lastGroupChatId = widget.chatId;
+            }
+            break;
+        }
       });
     }
   }
 
-  Future<void> _initializeChat() async {
-    if (_userId == null) return;
+  @override
+  Widget build(BuildContext context) {
+    return ControllerListener(
+      controller: context.appController,
+      listenWhen: (previous, current) {
+        if (!previous.isFailed && current.isFailed) {
+          return true;
+        }
+        return false;
+      },
+      listener: (context, previous, current) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            backgroundColor: Theme.of(
+              context,
+            ).extension<AppTheme>()?.backgroundStrongColor,
+            content: Text(
+              '${context.l10n.errorLabel}: ${current.message}',
+              style: TextStyle(
+                fontSize: cMSize,
+                fontWeight: cMWeight,
+                color: Theme.of(
+                  context,
+                ).extension<AppTheme>()?.foregroundStrongestColor,
+              ),
+            ),
+          ),
+        );
+      },
+      child: switch (widget.chatType) {
+        ChatType.direct => StreamBuilder(
+          stream: _chatController.watchDirectChatWithId(widget.chatId),
+          builder: (context, directSnapshot) {
+            if (directSnapshot.hasError) {
+              return Scaffold(
+                appBar: PreferredSize(
+                  preferredSize: const Size.fromHeight(kToolbarHeight),
+                  child: SafeArea(
+                    child: AppNavBar(
+                      title: context.l10n.errorLabel,
+                      leftIcon: AppIcons.arrowLeft,
+                      onPressedLeft: () => AppNavigator.of(context).pop(),
+                    ),
+                  ),
+                ),
+                body: SafeArea(
+                  child: Center(
+                    child: ErrorState(
+                      message:
+                          '${context.l10n.failedToLoadChatDataMessage}: ${directSnapshot.error}',
+                    ),
+                  ),
+                ),
+              );
+            } else if (!directSnapshot.hasData || directSnapshot.data == null) {
+              return const Scaffold(body: Center(child: AppLoader()));
+            }
+            final directChat = directSnapshot.data!;
+
+            return Scaffold(
+              appBar: ChatScreenNavBar(chat: directChat),
+              body: SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.all(spacing8),
+                  child: Column(
+                    children: [
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.all(spacing8),
+                          child: ChatScreenMessageList(chat: directChat),
+                        ),
+                      ),
+                      ChatScreenMessageInput(chat: directChat),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+        ),
+        ChatType.group => StreamBuilder(
+          stream: _chatController.watchGroupChatWithId(widget.chatId),
+          builder: (context, groupSnapshot) {
+            if (groupSnapshot.hasError) {
+              return Scaffold(
+                appBar: PreferredSize(
+                  preferredSize: const Size.fromHeight(kToolbarHeight),
+                  child: SafeArea(
+                    child: AppNavBar(
+                      title: context.l10n.errorLabel,
+                      leftIcon: AppIcons.arrowLeft,
+                      onPressedLeft: () => AppNavigator.of(context).pop(),
+                    ),
+                  ),
+                ),
+                body: SafeArea(
+                  child: Center(
+                    child: ErrorState(
+                      message:
+                          '${context.l10n.failedToLoadChatDataMessage}: ${groupSnapshot.error}',
+                    ),
+                  ),
+                ),
+              );
+            } else if (!groupSnapshot.hasData || groupSnapshot.data == null) {
+              return const Scaffold(body: Center(child: AppLoader()));
+            }
+            final groupChat = groupSnapshot.data!;
+
+            return Scaffold(
+              appBar: ChatScreenNavBar(chat: groupChat),
+              body: SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.all(spacing8),
+                  child: Column(
+                    children: [
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.all(spacing8),
+                          child: ChatScreenMessageList(chat: groupChat),
+                        ),
+                      ),
+                      ChatScreenMessageInput(chat: groupChat),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+        ),
+      },
+    );
+  }
+
+  @override
+  void dispose() {
     switch (widget.chatType) {
       case ChatType.direct:
-        final directChat = await _chatController
-            .watchDirectChatWithId(widget.chatId)
-            .firstWhere((chat) => chat != null);
-        if (!mounted) return;
-        final lastMessage = await _chatController
-            .watchMessagesForDirectChat(widget.chatId)
-            .first
-            .timeout(const Duration(seconds: 10))
-            .then((messages) => messages?.first)
-            .catchError((_) => null);
-        if (!mounted) return;
-        final lastSenderId = lastMessage?.senderId;
-        final unreadCount = directChat?.unreadCount ?? 0;
-
-        if (lastSenderId != null &&
-            lastSenderId != _userId &&
-            unreadCount > 0) {
-          await _chatController.updateDirectChatUnreadCount(
-            chatId: widget.chatId,
-            unreadCount: 0,
-          );
-        }
-
-        if (_lastDirectChatId != widget.chatId) {
+        if (_userId != null && _lastDirectChatId != null) {
           _chatController.updateUserCurrentDirectChatId(
             userId: _userId!,
-            currentDirectChatId: widget.chatId,
+            currentDirectChatId: '',
           );
-          _lastDirectChatId = widget.chatId;
         }
         break;
       case ChatType.group:
-        final groupChat = await _chatController
-            .watchGroupChatWithId(widget.chatId)
-            .firstWhere((chat) => chat != null);
-        if (!mounted) return;
-        final lastMessage = await _chatController
-            .watchMessagesForGroupChat(widget.chatId)
-            .first
-            .timeout(const Duration(seconds: 10))
-            .then((messages) => messages?.first)
-            .catchError((_) => null);
-        if (!mounted) return;
-        final lastSenderId = lastMessage?.senderId;
-        final unreadCount = groupChat?.unreadCounts[_userId] ?? 0;
-
-        if (lastSenderId != null &&
-            lastSenderId != _userId &&
-            unreadCount > 0) {
-          await _chatController.updateGroupChatCurrentUserUnreadCount(
-            chatId: widget.chatId,
-            unreadCount: 0,
-          );
-        }
-
-        if (_lastGroupChatId != widget.chatId) {
+        if (_userId != null && _lastGroupChatId != null) {
           _chatController.updateUserCurrentGroupChatId(
             userId: _userId!,
-            currentGroupChatId: widget.chatId,
+            currentGroupChatId: '',
           );
-          _lastGroupChatId = widget.chatId;
         }
         break;
     }
+    super.dispose();
   }
+}
 
-  Future<Widget> _buildNavBar(BuildContext context, Chat chat) async {
+class ChatScreenNavBar extends StatelessWidget implements PreferredSizeWidget {
+  final Chat chat;
+
+  const ChatScreenNavBar({super.key, required this.chat});
+
+  @override
+  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
+
+  @override
+  Widget build(BuildContext context) {
     final l10n = context.l10n;
     final appController = context.appController;
-    final resolvedChatName = await appController.watchAllUsers().first.then((
-      users,
-    ) {
+    final resolvedChatName = appController.watchAllUsers().first.then((users) {
       if (chat is DirectChat && chat.participants.length == 2) {
         final otherId = chat.participants.firstWhere(
           (id) => id != (context.appState.user as AuthorizedUser).id,
@@ -192,18 +350,27 @@ class _ChatScreenState extends State<ChatScreen> {
               },
             );
           }
-          return AppNavBar(
-            title: resolvedChatName,
-            leftIcon: AppIcons.arrowLeft,
-            rightImage: AppAvatar.avatarOrPlaceholder(
-              otherUser,
-              AvatarSize.small,
-            ),
-            onPressedLeft: () {
-              AppNavigator.of(context).pop();
-            },
-            onPressedRight: () {
-              UserProfile.show(context, otherUser, mode: UserProfileMode.view);
+          return FutureBuilder(
+            future: resolvedChatName,
+            builder: (context, asyncSnapshot) {
+              return AppNavBar(
+                title: asyncSnapshot.data ?? l10n.unknownChatterLabel,
+                leftIcon: AppIcons.arrowLeft,
+                rightImage: AppAvatar.avatarOrPlaceholder(
+                  otherUser,
+                  AvatarSize.small,
+                ),
+                onPressedLeft: () {
+                  AppNavigator.of(context).pop();
+                },
+                onPressedRight: () {
+                  UserProfile.show(
+                    context,
+                    otherUser,
+                    mode: UserProfileMode.view,
+                  );
+                },
+              );
             },
           );
         },
@@ -213,7 +380,10 @@ class _ChatScreenState extends State<ChatScreen> {
       return AppNavBar(
         title: chat.name,
         leftIcon: AppIcons.arrowLeft,
-        rightImage: AppAvatar.groupAvatarOrPlaceholder(chat, AvatarSize.small),
+        rightImage: AppAvatar.groupAvatarOrPlaceholder(
+          chat as GroupChat,
+          AvatarSize.small,
+        ),
         onPressedLeft: () {
           AppNavigator.of(context).pop();
         },
@@ -226,21 +396,35 @@ class _ChatScreenState extends State<ChatScreen> {
         },
       );
     }
-    return AppNavBar(
-      title: resolvedChatName,
-      leftIcon: AppIcons.arrowLeft,
-      rightImage: const PlaceholderAvatar(size: AvatarSize.small),
-      onPressedLeft: () {
-        AppNavigator.of(context).pop();
+    return FutureBuilder(
+      future: resolvedChatName,
+      builder: (context, asyncSnapshot) {
+        return AppNavBar(
+          title: asyncSnapshot.data ?? l10n.unknownChatterLabel,
+          leftIcon: AppIcons.arrowLeft,
+          rightImage: const PlaceholderAvatar(size: AvatarSize.small),
+          onPressedLeft: () {
+            AppNavigator.of(context).pop();
+          },
+          onPressedRight: () {},
+        );
       },
-      onPressedRight: () {},
     );
   }
+}
 
-  Widget _buildMessageInput(BuildContext context, Chat chat) {
+class ChatScreenMessageInput extends StatelessWidget {
+  final Chat chat;
+
+  const ChatScreenMessageInput({super.key, required this.chat});
+
+  @override
+  Widget build(BuildContext context) {
+    final chatController = context.chatController!;
+
     if (chat is DirectChat) {
       return StreamBuilder(
-        stream: _chatController.watchDirectChatUnreadCount(widget.chatId),
+        stream: chatController.watchDirectChatUnreadCount(chat.id),
         builder: (context, asyncSnapshot) {
           if (asyncSnapshot.hasError) {
             return ErrorState(
@@ -257,22 +441,20 @@ class _ChatScreenState extends State<ChatScreen> {
               }
               final user = context.appState.user as AuthorizedUser;
               final appController = context.appController;
-              await _chatController.createDirectChatMessage(
-                chatId: widget.chatId,
+              await chatController.createDirectChatMessage(
+                chatId: chat.id,
                 senderId: user.id,
                 senderName: user.name,
                 body: message,
               );
-              await _chatController.updateDirectChatLastMessage(
-                chatId: widget.chatId,
+              await chatController.updateDirectChatLastMessage(
+                chatId: chat.id,
                 lastMessage: message,
               );
-              final chatList = await _chatController
+              final chatList = await chatController
                   .watchDirectChatsForUser(user.id)
                   .first;
-              final currentChat = chatList?.firstWhere(
-                (c) => c.id == widget.chatId,
-              );
+              final currentChat = chatList?.firstWhere((c) => c.id == chat.id);
               final users = await appController.watchAllUsers().first;
               for (final participantId in currentChat?.participants ?? []) {
                 if (participantId != user.id) {
@@ -286,9 +468,9 @@ class _ChatScreenState extends State<ChatScreen> {
                       avatarUrl: '',
                     ),
                   );
-                  if (participant?.currentDirectChatId != widget.chatId) {
-                    await _chatController.updateDirectChatUnreadCount(
-                      chatId: widget.chatId,
+                  if (participant?.currentDirectChatId != chat.id) {
+                    await chatController.updateDirectChatUnreadCount(
+                      chatId: chat.id,
                       unreadCount: unreadCount + 1,
                     );
                   }
@@ -300,7 +482,7 @@ class _ChatScreenState extends State<ChatScreen> {
       );
     } else if (chat is GroupChat) {
       return StreamBuilder(
-        stream: _chatController.watchGroupChatUnreadCounts(widget.chatId),
+        stream: chatController.watchGroupChatUnreadCounts(chat.id),
         builder: (context, asyncSnapshot) {
           if (asyncSnapshot.hasError) {
             return ErrorState(
@@ -317,22 +499,20 @@ class _ChatScreenState extends State<ChatScreen> {
               }
               final user = context.appState.user as AuthorizedUser;
               final appController = context.appController;
-              await _chatController.createGroupChatMessage(
-                chatId: widget.chatId,
+              await chatController.createGroupChatMessage(
+                chatId: chat.id,
                 senderId: user.id,
                 senderName: user.name,
                 body: message,
               );
-              await _chatController.updateGroupChatLastMessage(
-                chatId: widget.chatId,
+              await chatController.updateGroupChatLastMessage(
+                chatId: chat.id,
                 lastMessage: message,
               );
-              final chatList = await _chatController
+              final chatList = await chatController
                   .watchGroupChatsForUser(user.id)
                   .first;
-              final currentChat = chatList?.firstWhere(
-                (c) => c.id == widget.chatId,
-              );
+              final currentChat = chatList?.firstWhere((c) => c.id == chat.id);
               final users = await appController.watchAllUsers().first;
               final updatedUnreadCounts = Map<String, int>.from(unreadCounts);
               for (final participantId in currentChat?.participants ?? []) {
@@ -347,14 +527,14 @@ class _ChatScreenState extends State<ChatScreen> {
                       avatarUrl: '',
                     ),
                   );
-                  if (participant?.currentGroupChatId != widget.chatId) {
+                  if (participant?.currentGroupChatId != chat.id) {
                     updatedUnreadCounts[participantId] =
                         (updatedUnreadCounts[participantId] ?? 0) + 1;
                   }
                 }
               }
-              await _chatController.updateGroupChatUnreadCounts(
-                chatId: widget.chatId,
+              await chatController.updateGroupChatUnreadCounts(
+                chatId: chat.id,
                 unreadCounts: updatedUnreadCounts,
               );
             },
@@ -364,12 +544,21 @@ class _ChatScreenState extends State<ChatScreen> {
     }
     return const SizedBox.shrink();
   }
+}
 
-  Widget _buildMessageList(BuildContext context, Chat chat) {
+class ChatScreenMessageList extends StatelessWidget {
+  final Chat chat;
+
+  const ChatScreenMessageList({super.key, required this.chat});
+
+  @override
+  Widget build(BuildContext context) {
+    final appController = context.appController;
+    final chatController = context.chatController!;
     final messageStream = chat is DirectChat
-        ? _chatController.watchMessagesForDirectChat(widget.chatId)
-        : _chatController.watchMessagesForGroupChat(widget.chatId);
-    final usersStream = _appController.watchAllUsers();
+        ? chatController.watchMessagesForDirectChat(chat.id)
+        : chatController.watchMessagesForGroupChat(chat.id);
+    final usersStream = appController.watchAllUsers();
     return StreamBuilder(
       stream: StreamZip([messageStream, usersStream]),
       builder: (context, snapshot) {
@@ -472,7 +661,7 @@ class _ChatScreenState extends State<ChatScreen> {
                     )
                     .toList();
                 final sentIndex = sentMessages.indexOf(message);
-                isRead = sentIndex >= chat.unreadCount;
+                isRead = sentIndex >= (chat as DirectChat).unreadCount;
               } else if (chat is GroupChat) {
                 final sentMessages = messages
                     .where(
@@ -482,8 +671,9 @@ class _ChatScreenState extends State<ChatScreen> {
                     )
                     .toList();
                 final sentIndex = sentMessages.indexOf(message);
-                final unreadCountsExcludingThisUser = chat.unreadCounts
-                  ..remove((context.appState.user as AuthorizedUser).id);
+                final unreadCountsExcludingThisUser =
+                    (chat as GroupChat).unreadCounts
+                      ..remove((context.appState.user as AuthorizedUser).id);
                 final lowestUnreadCount =
                     unreadCountsExcludingThisUser.values.isEmpty
                     ? 0
@@ -611,6 +801,7 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   void _handleMessageTap(BuildContext context, Message message) {
+    final chatController = context.chatController!;
     showModalBottomSheet(
       context: context,
       backgroundColor: Theme.of(
@@ -630,14 +821,16 @@ class _ChatScreenState extends State<ChatScreen> {
             AppListItem(
               title: context.l10n.saveMessageLabel,
               onPressed: () async {
-                await _chatController.saveMessage(
+                await chatController.saveMessage(
                   SavedMessage(
                     id: message.id,
                     senderId: message.senderId,
                     body: message.body,
                     timestamp: message.timestamp,
-                    chatId: widget.chatId,
-                    chatType: widget.chatType,
+                    chatId: chat.id,
+                    chatType: chat is DirectChat
+                        ? ChatType.direct
+                        : ChatType.group,
                   ),
                 );
                 if (!context.mounted) return;
@@ -688,194 +881,5 @@ class _ChatScreenState extends State<ChatScreen> {
         );
       },
     );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return ControllerListener(
-      controller: context.appController,
-      listenWhen: (previous, current) {
-        if (!previous.isFailed && current.isFailed) {
-          return true;
-        }
-        return false;
-      },
-      listener: (context, previous, current) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            backgroundColor: Theme.of(
-              context,
-            ).extension<AppTheme>()?.backgroundStrongColor,
-            content: Text(
-              '${context.l10n.errorLabel}: ${current.message}',
-              style: TextStyle(
-                fontSize: cMSize,
-                fontWeight: cMWeight,
-                color: Theme.of(
-                  context,
-                ).extension<AppTheme>()?.foregroundStrongestColor,
-              ),
-            ),
-          ),
-        );
-      },
-      child: switch (widget.chatType) {
-        ChatType.direct => StreamBuilder(
-          stream: _chatController.watchDirectChatWithId(widget.chatId),
-          builder: (context, directSnapshot) {
-            if (directSnapshot.hasError) {
-              return Scaffold(
-                appBar: PreferredSize(
-                  preferredSize: const Size.fromHeight(kToolbarHeight),
-                  child: SafeArea(
-                    child: AppNavBar(
-                      title: context.l10n.errorLabel,
-                      leftIcon: AppIcons.arrowLeft,
-                      onPressedLeft: () => AppNavigator.of(context).pop(),
-                    ),
-                  ),
-                ),
-                body: SafeArea(
-                  child: Center(
-                    child: ErrorState(
-                      message:
-                          '${context.l10n.failedToLoadChatDataMessage}: ${directSnapshot.error}',
-                    ),
-                  ),
-                ),
-              );
-            } else if (!directSnapshot.hasData || directSnapshot.data == null) {
-              return const Scaffold(body: Center(child: AppLoader()));
-            }
-            final directChat = directSnapshot.data!;
-
-            return Scaffold(
-              appBar: PreferredSize(
-                preferredSize: const Size.fromHeight(kToolbarHeight),
-                child: SafeArea(
-                  child: FutureBuilder<Widget>(
-                    future: _buildNavBar(context, directChat),
-                    builder: (context, snapshot) {
-                      if (snapshot.hasError) {
-                        return AppNavBar(title: context.l10n.errorLabel);
-                      } else if (!snapshot.hasData || snapshot.data == null) {
-                        return AppNavBar(title: context.l10n.loadingLabel);
-                      } else {
-                        return snapshot.data!;
-                      }
-                    },
-                  ),
-                ),
-              ),
-              body: SafeArea(
-                child: Padding(
-                  padding: const EdgeInsets.all(spacing8),
-                  child: Column(
-                    children: [
-                      Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.all(spacing8),
-                          child: _buildMessageList(context, directChat),
-                        ),
-                      ),
-                      _buildMessageInput(context, directChat),
-                    ],
-                  ),
-                ),
-              ),
-            );
-          },
-        ),
-        ChatType.group => StreamBuilder(
-          stream: _chatController.watchGroupChatWithId(widget.chatId),
-          builder: (context, groupSnapshot) {
-            if (groupSnapshot.hasError) {
-              return Scaffold(
-                appBar: PreferredSize(
-                  preferredSize: const Size.fromHeight(kToolbarHeight),
-                  child: SafeArea(
-                    child: AppNavBar(
-                      title: context.l10n.errorLabel,
-                      leftIcon: AppIcons.arrowLeft,
-                      onPressedLeft: () => AppNavigator.of(context).pop(),
-                    ),
-                  ),
-                ),
-                body: SafeArea(
-                  child: Center(
-                    child: ErrorState(
-                      message:
-                          '${context.l10n.failedToLoadChatDataMessage}: ${groupSnapshot.error}',
-                    ),
-                  ),
-                ),
-              );
-            } else if (!groupSnapshot.hasData || groupSnapshot.data == null) {
-              return const Scaffold(body: Center(child: AppLoader()));
-            }
-            final groupChat = groupSnapshot.data!;
-
-            return Scaffold(
-              appBar: PreferredSize(
-                preferredSize: const Size.fromHeight(kToolbarHeight),
-                child: SafeArea(
-                  child: FutureBuilder<Widget>(
-                    future: _buildNavBar(context, groupChat),
-                    builder: (context, snapshot) {
-                      if (snapshot.hasError) {
-                        return AppNavBar(title: context.l10n.errorLabel);
-                      } else if (!snapshot.hasData || snapshot.data == null) {
-                        return AppNavBar(title: context.l10n.loadingLabel);
-                      } else {
-                        return snapshot.data!;
-                      }
-                    },
-                  ),
-                ),
-              ),
-              body: SafeArea(
-                child: Padding(
-                  padding: const EdgeInsets.all(spacing8),
-                  child: Column(
-                    children: [
-                      Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.all(spacing8),
-                          child: _buildMessageList(context, groupChat),
-                        ),
-                      ),
-                      _buildMessageInput(context, groupChat),
-                    ],
-                  ),
-                ),
-              ),
-            );
-          },
-        ),
-      },
-    );
-  }
-
-  @override
-  void dispose() {
-    switch (widget.chatType) {
-      case ChatType.direct:
-        if (_userId != null && _lastDirectChatId != null) {
-          _chatController.updateUserCurrentDirectChatId(
-            userId: _userId!,
-            currentDirectChatId: '',
-          );
-        }
-        break;
-      case ChatType.group:
-        if (_userId != null && _lastGroupChatId != null) {
-          _chatController.updateUserCurrentGroupChatId(
-            userId: _userId!,
-            currentGroupChatId: '',
-          );
-        }
-        break;
-    }
-    super.dispose();
   }
 }
