@@ -308,205 +308,6 @@ final class AppController extends BaseController<AppState> {
     return _firestoreRepository.watchAllUsers();
   }
 
-  Stream<List<AuthorizedUser>?> watchFriendsForUser(String userId) {
-    return _firestoreRepository.watchFriendsForUser(userId: userId);
-  }
-
-  Future<void> sendFriendRequest(
-    String currentUserId,
-    String friendUserId,
-  ) async => await serialExecutor.synchronized(() async {
-    setState(
-      AppState.processing(
-        message: 'Sending friend request to "$friendUserId"...',
-        user: state.user,
-      ),
-    );
-    try {
-      await _firestoreRepository.sendFriendRequest(
-        currentUserId: currentUserId,
-        friendUserId: friendUserId,
-      );
-      setState(
-        AppState.idle(
-          message: 'Friend request sent to "$friendUserId" successfully',
-          user: state.user,
-        ),
-      );
-    } catch (error, stackTrace) {
-      setState(
-        AppState.failed(
-          message:
-              'Failed to send friend request to "$friendUserId": ${error.toString()}',
-          user: state.user,
-          error: error,
-          stackTrace: stackTrace,
-        ),
-      );
-      return Future.error(error, stackTrace);
-    }
-  });
-
-  Stream<List<AuthorizedUser>?> watchFriendIncomingRequestsForUser(
-    String userId,
-  ) {
-    return _firestoreRepository.watchFriendIncomingRequestsForUser(
-      userId: userId,
-    );
-  }
-
-  Stream<List<AuthorizedUser>?> watchFriendOutgoingRequestsForUser(
-    String userId,
-  ) {
-    return _firestoreRepository.watchFriendOutgoingRequestsForUser(
-      userId: userId,
-    );
-  }
-
-  Future<void> acceptFriendRequest({
-    required String friendUserId,
-  }) async => await serialExecutor.synchronized(() async {
-    setState(
-      AppState.processing(
-        message: 'Accepting friend request from "$friendUserId"...',
-        user: state.user,
-      ),
-    );
-    try {
-      await _firestoreRepository.acceptFriendRequest(
-        currentUserId: state.user is AuthorizedUser
-            ? (state.user as AuthorizedUser).id
-            : '',
-        friendUserId: friendUserId,
-      );
-      setState(
-        AppState.idle(
-          message: 'Friend request from "$friendUserId" accepted successfully',
-          user: state.user,
-        ),
-      );
-    } catch (error, stackTrace) {
-      setState(
-        AppState.failed(
-          message:
-              'Failed to accept friend request from "$friendUserId": ${error.toString()}',
-          user: state.user,
-          error: error,
-          stackTrace: stackTrace,
-        ),
-      );
-      return Future.error(error, stackTrace);
-    }
-  });
-
-  Future<void> declineFriendRequest({
-    required String friendUserId,
-  }) async => await serialExecutor.synchronized(() async {
-    setState(
-      AppState.processing(
-        message: 'Declining friend request from "$friendUserId"...',
-        user: state.user,
-      ),
-    );
-    try {
-      await _firestoreRepository.declineFriendRequest(
-        currentUserId: state.user is AuthorizedUser
-            ? (state.user as AuthorizedUser).id
-            : '',
-        friendUserId: friendUserId,
-      );
-      setState(
-        AppState.idle(
-          message: 'Friend request from "$friendUserId" declined successfully',
-          user: state.user,
-        ),
-      );
-    } catch (error, stackTrace) {
-      setState(
-        AppState.failed(
-          message:
-              'Failed to decline friend request from "$friendUserId": ${error.toString()}',
-          user: state.user,
-          error: error,
-          stackTrace: stackTrace,
-        ),
-      );
-      return Future.error(error, stackTrace);
-    }
-  });
-
-  Future<void> cancelFriendRequest({
-    required String friendUserId,
-  }) async => await serialExecutor.synchronized(() async {
-    setState(
-      AppState.processing(
-        message: 'Cancelling friend request to "$friendUserId"...',
-        user: state.user,
-      ),
-    );
-    try {
-      await _firestoreRepository.cancelFriendRequest(
-        currentUserId: state.user is AuthorizedUser
-            ? (state.user as AuthorizedUser).id
-            : '',
-        friendUserId: friendUserId,
-      );
-      setState(
-        AppState.idle(
-          message: 'Friend request to "$friendUserId" cancelled successfully',
-          user: state.user,
-        ),
-      );
-    } catch (error, stackTrace) {
-      setState(
-        AppState.failed(
-          message:
-              'Failed to cancel friend request to "$friendUserId": ${error.toString()}',
-          user: state.user,
-          error: error,
-          stackTrace: stackTrace,
-        ),
-      );
-      return Future.error(error, stackTrace);
-    }
-  });
-
-  Future<void> removeFriend({
-    required String friendUserId,
-  }) async => await serialExecutor.synchronized(() async {
-    setState(
-      AppState.processing(
-        message: 'Removing friend "$friendUserId"...',
-        user: state.user,
-      ),
-    );
-    try {
-      await _firestoreRepository.removeFriend(
-        currentUserId: state.user is AuthorizedUser
-            ? (state.user as AuthorizedUser).id
-            : '',
-        friendUserId: friendUserId,
-      );
-      setState(
-        AppState.idle(
-          message: 'Friend "$friendUserId" removed successfully',
-          user: state.user,
-        ),
-      );
-    } catch (error, stackTrace) {
-      setState(
-        AppState.failed(
-          message:
-              'Failed to remove friend "$friendUserId": ${error.toString()}',
-          user: state.user,
-          error: error,
-          stackTrace: stackTrace,
-        ),
-      );
-      return Future.error(error, stackTrace);
-    }
-  });
-
   Stream<AuthorizedUser?> watchUserWithId(String memberId) {
     return _firestoreRepository.watchAllUsers().map((users) {
       return users?.firstWhere((u) => u.id == memberId);
@@ -514,23 +315,22 @@ final class AppController extends BaseController<AppState> {
   }
 
   Future<bool> isFriend(
-    String userId,
-    String friendId,
+    String otherId,
   ) async => await serialExecutor.synchronized(() async {
     setState(
       AppState.processing(
-        message: 'Checking if user "$friendId" is a friend...',
+        message: 'Checking if user "$otherId" is a friend...',
         user: state.user,
       ),
     );
     try {
       final isFriend = await _firestoreRepository
-          .watchFriendsForUser(userId: userId)
-          .map((friends) => friends?.any((friend) => friend.id == friendId))
+          .watchFriendsForUser(userId: (state.user as AuthorizedUser).id)
+          .map((friends) => friends?.any((friend) => friend.id == otherId))
           .firstWhere((isFriend) => true, orElse: () => false);
       setState(
         AppState.idle(
-          message: 'Friend check for user "$friendId" completed: $isFriend',
+          message: 'Friend check for user "$otherId" completed: $isFriend',
           user: state.user,
         ),
       );
@@ -539,7 +339,7 @@ final class AppController extends BaseController<AppState> {
       setState(
         AppState.failed(
           message:
-              'Failed to check if user "$friendId" is a friend: ${error.toString()}',
+              'Failed to check if user "$otherId" is a friend: ${error.toString()}',
           user: state.user,
           error: error,
           stackTrace: stackTrace,
@@ -549,7 +349,7 @@ final class AppController extends BaseController<AppState> {
     }
   });
 
-  Future<bool> isUserProjectParticipant(
+  Future<bool> isProjectParticipant(
     String userId,
     String projectId,
   ) async => await serialExecutor.synchronized(() async {

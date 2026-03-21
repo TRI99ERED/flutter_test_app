@@ -47,10 +47,11 @@ class UserPicker extends StatefulWidget {
       return null;
     }
     final appController = context.appController;
+    final friendController = context.friendController!;
     final projectController = context.projectController!;
     List<AuthorizedUser>? users =
         (flags & UserPickerFlag.friendsOnly.value) != 0
-        ? await appController.watchFriendsForUser(userId).first
+        ? await friendController.watchFriendsForUser(userId).first
         : await appController.watchAllUsers().first;
 
     if (!context.mounted) {
@@ -58,7 +59,7 @@ class UserPicker extends StatefulWidget {
     }
 
     if ((flags & UserPickerFlag.excludeFriends.value) != 0) {
-      final friends = await appController.watchFriendsForUser(userId).first;
+      final friends = await friendController.watchFriendsForUser(userId).first;
       final friendIds = friends?.map((f) => f.id).toSet();
       users = users
           ?.where((u) => !(friendIds?.contains(u.id) ?? false))

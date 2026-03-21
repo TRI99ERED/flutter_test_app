@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:test_app/src/features/app/app_controller/app_controller.dart';
 import 'package:test_app/src/features/app/data/models/user_model.dart';
 import 'package:test_app/src/features/home_screen/controllers/chat_controller.dart';
+import 'package:test_app/src/features/home_screen/controllers/friends_controller.dart';
 import 'package:test_app/src/features/home_screen/controllers/project_controller.dart';
 
 class AppScope extends StatefulWidget {
@@ -26,6 +27,7 @@ class _AppScopeState extends State<AppScope> {
   late final AppController _appController;
   late AppState _appState;
   ChatController? _chatController;
+  FriendController? _friendController;
   ProjectController? _projectController;
 
   UserEntity get user => _appState.user;
@@ -39,12 +41,19 @@ class _AppScopeState extends State<AppScope> {
     _appController.addListener(_onStateChange);
 
     _maybeCreateChatController();
+    _maybeCreateFriendController();
     _maybeCreateProjectController();
   }
 
   void _maybeCreateChatController() {
     if (_appState.isAuthorized && _chatController == null) {
       _chatController = ChatController(appController: _appController);
+    }
+  }
+
+  void _maybeCreateFriendController() {
+    if (_appState.isAuthorized && _friendController == null) {
+      _friendController = FriendController(appController: _appController);
     }
   }
 
@@ -62,10 +71,13 @@ class _AppScopeState extends State<AppScope> {
       if (previousState.isAuthorized != _appState.isAuthorized) {
         if (_appState.isAuthorized) {
           _chatController = ChatController(appController: _appController);
+          _friendController = FriendController(appController: _appController);
           _projectController = ProjectController(appController: _appController);
         } else {
           _chatController?.dispose();
           _chatController = null;
+          _friendController?.dispose();
+          _friendController = null;
           _projectController?.dispose();
           _projectController = null;
         }
@@ -83,6 +95,7 @@ class _AppScopeState extends State<AppScope> {
       themeMode: widget.themeMode,
       locale: widget.locale,
       chatController: _chatController,
+      friendController: _friendController,
       projectController: _projectController,
       child: widget.child,
     );
@@ -102,6 +115,7 @@ class InheritedScopeWidget extends InheritedWidget {
   final ValueNotifier<ThemeMode> themeMode;
   final ValueNotifier<Locale?> locale;
   final ChatController? chatController;
+  final FriendController? friendController;
   final ProjectController? projectController;
 
   const InheritedScopeWidget({
@@ -111,6 +125,7 @@ class InheritedScopeWidget extends InheritedWidget {
     required this.themeMode,
     required this.locale,
     this.chatController,
+    this.friendController,
     this.projectController,
     required super.child,
   });
@@ -134,6 +149,7 @@ class InheritedScopeWidget extends InheritedWidget {
         themeMode != oldWidget.themeMode ||
         locale != oldWidget.locale ||
         chatController != oldWidget.chatController ||
+        friendController != oldWidget.friendController ||
         projectController != oldWidget.projectController;
   }
 }
@@ -150,6 +166,9 @@ extension AppScopeExtension on BuildContext {
   ChatController? get chatController =>
       dependOnInheritedWidgetOfExactType<InheritedScopeWidget>()!
           .chatController;
+  FriendController? get friendController =>
+      dependOnInheritedWidgetOfExactType<InheritedScopeWidget>()!
+          .friendController;
   ProjectController? get projectController =>
       dependOnInheritedWidgetOfExactType<InheritedScopeWidget>()!
           .projectController;

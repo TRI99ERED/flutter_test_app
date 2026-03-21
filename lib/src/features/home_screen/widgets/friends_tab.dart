@@ -174,11 +174,11 @@ class _FriendsSectionState extends State<_FriendsSection> {
     return StreamBuilder(
       stream: switch (widget._sectionType) {
         FriendsTabSectionType.friends =>
-          context.appController.watchFriendsForUser(user.id),
+          context.friendController!.watchFriendsForUser(user.id),
         FriendsTabSectionType.incomingRequests =>
-          context.appController.watchFriendIncomingRequestsForUser(user.id),
+          context.friendController!.watchFriendIncomingRequestsForUser(user.id),
         FriendsTabSectionType.outgoingRequests =>
-          context.appController.watchFriendOutgoingRequestsForUser(user.id),
+          context.friendController!.watchFriendOutgoingRequestsForUser(user.id),
       },
       builder: (context, snapshot) {
         if (snapshot.hasError) {
@@ -219,14 +219,14 @@ class _FriendsSectionState extends State<_FriendsSection> {
                         FriendsTabSectionType.outgoingRequests
                 ? () async {
                     final user = context.appState.user as AuthorizedUser;
-                    final appController = context.appController;
+                    final friendController = context.friendController!;
                     final selectedUser = await UserPicker.pickUser(
                       context,
                       UserPickerFlag.excludeFriends.value,
                     );
                     if (selectedUser == null) return;
 
-                    await appController.sendFriendRequest(
+                    await friendController.sendFriendRequest(
                       user.id,
                       selectedUser.id,
                     );
@@ -267,15 +267,13 @@ class _FriendsSectionState extends State<_FriendsSection> {
 
                 final stream = switch (widget._sectionType) {
                   FriendsTabSectionType.friends =>
-                    context.appController.watchFriendsForUser(user.id),
+                    context.friendController!.watchFriendsForUser(user.id),
                   FriendsTabSectionType.incomingRequests =>
-                    context.appController.watchFriendIncomingRequestsForUser(
-                      user.id,
-                    ),
+                    context.friendController!
+                        .watchFriendIncomingRequestsForUser(user.id),
                   FriendsTabSectionType.outgoingRequests =>
-                    context.appController.watchFriendOutgoingRequestsForUser(
-                      user.id,
-                    ),
+                    context.friendController!
+                        .watchFriendOutgoingRequestsForUser(user.id),
                 };
 
                 return StreamBuilder(
@@ -335,8 +333,9 @@ class _FriendsSectionState extends State<_FriendsSection> {
                               onPressedLeft: switch (widget._sectionType) {
                                 FriendsTabSectionType.incomingRequests =>
                                   () async {
-                                    final appController = context.appController;
-                                    await appController.declineFriendRequest(
+                                    final friendController =
+                                        context.friendController!;
+                                    await friendController.declineFriendRequest(
                                       friendUserId: friend.id,
                                     );
                                   },
@@ -346,8 +345,9 @@ class _FriendsSectionState extends State<_FriendsSection> {
                                 FriendsTabSectionType.friends =>
                                   editPressed
                                       ? () async {
-                                          final appController =
-                                              context.appController;
+                                          final friendController =
+                                              context.friendController!;
+                                          context.appController;
 
                                           AppDialog2.show(
                                             context: context,
@@ -366,9 +366,10 @@ class _FriendsSectionState extends State<_FriendsSection> {
                                             },
                                             onPressed2: (context) async {
                                               Navigator.of(context).pop();
-                                              await appController.removeFriend(
-                                                friendUserId: friend.id,
-                                              );
+                                              await friendController
+                                                  .removeFriend(
+                                                    friendUserId: friend.id,
+                                                  );
                                             },
                                           );
                                         }
@@ -438,15 +439,17 @@ class _FriendsSectionState extends State<_FriendsSection> {
                                         },
                                 FriendsTabSectionType.incomingRequests =>
                                   () async {
-                                    final appController = context.appController;
-                                    await appController.acceptFriendRequest(
+                                    final friendController =
+                                        context.friendController!;
+                                    await friendController.acceptFriendRequest(
                                       friendUserId: friend.id,
                                     );
                                   },
                                 FriendsTabSectionType.outgoingRequests =>
                                   () async {
-                                    final appController = context.appController;
-                                    await appController.cancelFriendRequest(
+                                    final friendController =
+                                        context.friendController!;
+                                    await friendController.cancelFriendRequest(
                                       friendUserId: friend.id,
                                     );
                                   },
@@ -497,14 +500,17 @@ class _FriendsAppBarState extends State<FriendsAppBar> {
             },
             onPressedRight: () async {
               final user = context.appState.user as AuthorizedUser;
-              final appController = context.appController;
+              final friendController = context.friendController!;
               final selectedUser = await UserPicker.pickUser(
                 context,
                 UserPickerFlag.excludeFriends.value,
               );
               if (selectedUser == null) return;
 
-              await appController.sendFriendRequest(user.id, selectedUser.id);
+              await friendController.sendFriendRequest(
+                user.id,
+                selectedUser.id,
+              );
             },
           );
         },
