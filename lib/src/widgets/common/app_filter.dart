@@ -100,7 +100,7 @@ class AppFilterMenu extends StatefulWidget {
   }) {
     showDialog(
       context: context,
-      barrierColor: Colors.black.withAlpha(216),
+      barrierColor: Colors.transparent,
       builder: (context) {
         return AppFilterMenu(
           filters: filters,

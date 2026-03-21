@@ -454,54 +454,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 isRead = sentIndex >= lowestUnreadCount;
               }
             }
-            if (index == 0 ||
-                index == messages.length - 1 &&
-                    messages[index].senderId != messages[index - 1].senderId) {
-              return Column(
-                children: [
-                  Text(
-                    context.l10n.dateSeparatorLabel(
-                      message.timestamp.day,
-                      switch (message.timestamp.month) {
-                        1 => context.l10n.ofJanuaryLabel,
-                        2 => context.l10n.ofFebruaryLabel,
-                        3 => context.l10n.ofMarchLabel,
-                        4 => context.l10n.ofAprilLabel,
-                        5 => context.l10n.ofMayLabel,
-                        6 => context.l10n.ofJuneLabel,
-                        7 => context.l10n.ofJulyLabel,
-                        8 => context.l10n.ofAugustLabel,
-                        9 => context.l10n.ofSeptemberLabel,
-                        10 => context.l10n.ofOctoberLabel,
-                        11 => context.l10n.ofNovemberLabel,
-                        12 => context.l10n.ofDecemberLabel,
-                        _ => '',
-                      },
-                      message.timestamp.year,
-                    ),
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: cMSize,
-                      fontWeight: cMWeight,
-                      color: Theme.of(
-                        context,
-                      ).extension<AppTheme>()?.foregroundStrongestColor,
-                    ),
-                  ),
-                  AlignedMessageBubble(
-                    messagesWithSenderNames: messagesWithSenderNames,
-                    index: index,
-                    isFirstInSequence: true,
-                    isLastInSequence: true,
-                    isRead: isRead,
-                    timestamp: message.timestamp,
-                    onTap: () {
-                      _handleMessageTap(context, message);
-                    },
-                  ),
-                ],
-              );
-            } else if (index == messages.length - 1) {
+            if (index == messages.length - 1) {
               return Column(
                 children: [
                   Text(

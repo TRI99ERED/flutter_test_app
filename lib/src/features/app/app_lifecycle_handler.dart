@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:test_app/src/features/app/app_scope.dart';
 import 'package:test_app/src/features/app/data/models/user_model.dart';
-import 'package:test_app/src/router/app_navigator.dart';
 
 class AppLifecycleHandler extends StatefulWidget {
   final Widget child;
@@ -24,16 +23,6 @@ class _AppLifecycleHandlerState extends State<AppLifecycleHandler>
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
-  }
-
-  @override
-  Future<bool> didPopRoute() async {
-    final navigatorState = AppNavigator.navigatorKey.currentState;
-    if (navigatorState != null && navigatorState.canPop) {
-      navigatorState.pop();
-      return true;
-    }
-    return true;
   }
 
   @override

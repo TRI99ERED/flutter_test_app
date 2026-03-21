@@ -195,6 +195,10 @@ class AppRouterDelegate extends RouterDelegate<AppNavigationState>
     final nav = _navigatorState;
     if (nav == null) return false;
     if (nav.canPop) {
+      final navigator = navigatorKey.currentState;
+      if (navigator != null) {
+        return navigator.maybePop();
+      }
       nav.pop();
       return true;
     }
@@ -205,6 +209,7 @@ class AppRouterDelegate extends RouterDelegate<AppNavigationState>
   Widget build(BuildContext context) {
     return AppNavigator(
       pages: initialPages,
+      navigatorKey: navigatorKey,
       guards: guards,
       refreshListenable: refreshListenable,
       observers: observers,

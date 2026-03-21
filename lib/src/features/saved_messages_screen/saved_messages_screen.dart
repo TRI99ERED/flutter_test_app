@@ -76,12 +76,12 @@ class _SavedMessagesScreenState extends State<SavedMessagesScreen> {
                 child: StreamBuilder(
                   stream: StreamZip([messageStream, usersStream]),
                   builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return const AppLoader();
-                    } else if (snapshot.hasError) {
+                    if (snapshot.hasError) {
                       return ErrorState(
                         message: context.l10n.failedToLoadSavedMessagesLabel,
                       );
+                    } else if (!snapshot.hasData || snapshot.data == null) {
+                      return const AppLoader();
                     } else if (snapshot.hasData) {
                       final messages =
                           (snapshot.data?[0] ?? []) as List<SavedMessage>;

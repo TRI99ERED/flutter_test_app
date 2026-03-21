@@ -302,7 +302,7 @@ class FirebaseAuthRepositoryImpl implements IFirebaseAuthRepository {
           'user_${user.uid.substring(0, 8)}',
       email: data['email'] ?? user.email ?? '',
       handle: data['handle'] ?? '',
-      avatarUrl: data['avatarUrl'] ?? user.photoURL ?? '',
+      avatarUrl: data['avatarUrl'] ?? '',
     );
   }
 }

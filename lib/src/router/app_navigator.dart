@@ -25,13 +25,18 @@ typedef AppNavigationGuard =
 /// Signature for a builder that wraps the navigator output.
 /// Receives the [AppNavigatorState] so callers (like [AppRouterDelegate])
 /// can capture a reference without global keys.
-typedef AppNavigatorBuilder = Widget Function(
-    BuildContext context, AppNavigatorState navigatorState, Widget child);
+typedef AppNavigatorBuilder =
+    Widget Function(
+      BuildContext context,
+      AppNavigatorState navigatorState,
+      Widget child,
+    );
 
 class AppNavigator extends StatefulWidget {
   const AppNavigator({
     super.key,
     required this.pages,
+    required this.navigatorKey,
     this.controller,
     this.guards = const [],
     this.observers = const [],
@@ -42,7 +47,7 @@ class AppNavigator extends StatefulWidget {
     this.onStateChanged,
   }) : assert(pages.length > 0, 'pages must not be empty');
 
-  static final GlobalKey<AppNavigatorState> navigatorKey = GlobalKey<AppNavigatorState>();
+  final GlobalKey<NavigatorState> navigatorKey;
 
   /// Retrieve the nearest [AppNavigatorState] from the widget tree.
   static AppNavigatorState of(BuildContext context) {
@@ -99,18 +104,6 @@ class AppNavigator extends StatefulWidget {
   /// Called whenever the page stack changes.
   /// Use this to notify external listeners (e.g. [RouterDelegate]).
   final VoidCallback? onStateChanged;
-
-  /// Retrieve the nearest [AppNavigatorState] from the widget tree.
-  static AppNavigatorState of(BuildContext context) {
-    final state = context.findAncestorStateOfType<AppNavigatorState>();
-    assert(state != null, 'No AppNavigator found in the widget tree');
-    return state!;
-  }
-
-  /// Retrieve the nearest [AppNavigatorState], or `null` if absent.
-  static AppNavigatorState? maybeOf(BuildContext context) {
-    return context.findAncestorStateOfType<AppNavigatorState>();
-  }
 
   @override
   State<AppNavigator> createState() => AppNavigatorState();
@@ -394,6 +387,7 @@ class AppNavigatorState extends State<AppNavigator> {
   @override
   Widget build(BuildContext context) {
     Widget child = Navigator(
+      key: widget.navigatorKey,
       pages: _state,
       onDidRemovePage: _handleDidRemovePage,
       transitionDelegate: widget.transitionDelegate,

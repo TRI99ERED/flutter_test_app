@@ -41,7 +41,7 @@ class ChatWizard extends StatefulWidget {
   }) async {
     return await showDialog<Chat?>(
       context: context,
-      barrierColor: Colors.black.withAlpha(216),
+      barrierColor: Colors.transparent,
       builder: (context) => ChatWizard(mode: mode, chatToEdit: chatToEdit),
     );
   }

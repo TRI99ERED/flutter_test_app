@@ -15,9 +15,6 @@ import 'package:test_app/src/router/app_page.dart';
 import 'package:test_app/src/router/app_router.dart';
 import 'package:test_app/src/services/notification_service.dart';
 
-// TODO: Remove once all references are cleaned up
-final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>();
-
 void main() {
   runZonedGuarded(
     () async {

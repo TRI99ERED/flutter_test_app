@@ -281,9 +281,7 @@ class _FriendsSectionState extends State<_FriendsSection> {
                 return StreamBuilder(
                   stream: stream,
                   builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return const SizedBox.shrink();
-                    } else if (snapshot.hasError) {
+                    if (snapshot.hasError) {
                       return ErrorState(
                         message:
                             '${switch (widget._sectionType) {
@@ -292,6 +290,8 @@ class _FriendsSectionState extends State<_FriendsSection> {
                               FriendsTabSectionType.outgoingRequests => context.l10n.errorLoadingOutgoingRequest,
                             }}: ${snapshot.error}',
                       );
+                    } else if (!snapshot.hasData || snapshot.data == null) {
+                      return const SizedBox.shrink();
                     }
 
                     return Padding(

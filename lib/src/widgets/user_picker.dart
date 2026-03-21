@@ -83,7 +83,7 @@ class UserPicker extends StatefulWidget {
 
     return await showDialog<AuthorizedUser>(
       context: context,
-      barrierColor: Colors.black.withAlpha(216),
+      barrierColor: Colors.transparent,
       builder: (context) {
         return UserPicker(
           users: users ?? [],

@@ -30,7 +30,7 @@ class UserProfile extends StatefulWidget {
   }) {
     showDialog(
       context: context,
-      barrierColor: Colors.black.withAlpha(216),
+      barrierColor: Colors.transparent,
       builder: (context) => UserProfile(user: user, mode: mode),
     );
   }
@@ -245,9 +245,6 @@ class _UserProfileState extends State<UserProfile> {
           StreamBuilder(
             stream: context.appController.watchAllUsers(),
             builder: (context, asyncSnapshot) {
-              if (asyncSnapshot.connectionState == ConnectionState.waiting) {
-                return const Center(child: AppLoader());
-              }
               if (asyncSnapshot.hasError) {
                 return Center(
                   child: ErrorState(
@@ -255,7 +252,10 @@ class _UserProfileState extends State<UserProfile> {
                         '${context.l10n.errorLoadingUsersMessage}: ${asyncSnapshot.error}',
                   ),
                 );
+              } else if (!asyncSnapshot.hasData || asyncSnapshot.data == null) {
+                return const Center(child: AppLoader());
               }
+
               final users = asyncSnapshot.data ?? [];
               return AppTextField(
                 placeholder: context.l10n.enterYourHandleLabel,

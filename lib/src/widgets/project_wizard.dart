@@ -34,7 +34,7 @@ class ProjectWizard extends StatefulWidget {
   ]) async {
     return await showDialog<Project?>(
       context: context,
-      barrierColor: Colors.black.withAlpha(216),
+      barrierColor: Colors.transparent,
       builder: (context) =>
           ProjectWizard(mode: mode, projectToEdit: projectToEdit),
     );
