@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:test_app/src/features/app/app_scope.dart';
 import 'package:test_app/src/features/app/data/models/user_model.dart';
+import 'package:test_app/src/router/app_navigator.dart';
 
 class AppLifecycleHandler extends StatefulWidget {
   final Widget child;
@@ -43,9 +44,9 @@ class _AppLifecycleHandlerState extends State<AppLifecycleHandler>
         );
         break;
       case AppLifecycleState.resumed:
-        final matchedLocation = await appController.loadCurrentRoute();
-        if (matchedLocation != null &&
-            matchedLocation.startsWith('{chatType: direct, chatId: ')) {
+        final matchedLocation = AppNavigator.of(context).current.path;
+        debugPrint('Current route: $matchedLocation');
+        if (matchedLocation.startsWith('{chatType: direct, chatId: ')) {
           final chatId = matchedLocation
               .split('{chatType: direct, chatId: ')
               .last
@@ -54,12 +55,14 @@ class _AppLifecycleHandlerState extends State<AppLifecycleHandler>
           appController.updateUser(
             user.copyWith(currentDirectChatId: chatId) as AuthorizedUser,
           );
-          appController.updateDirectChatUnreadCount(
-            chatId: chatId,
-            unreadCount: 0,
-          );
-        } else if (matchedLocation != null &&
-            matchedLocation.startsWith('{chatType: group, chatId: ')) {
+          final chatController = context.chatController;
+          if (chatController != null) {
+            chatController.updateDirectChatUnreadCount(
+              chatId: chatId,
+              unreadCount: 0,
+            );
+          }
+        } else if (matchedLocation.startsWith('{chatType: group, chatId: ')) {
           final chatId = matchedLocation
               .split('{chatType: group, chatId: ')
               .last
@@ -68,10 +71,13 @@ class _AppLifecycleHandlerState extends State<AppLifecycleHandler>
           appController.updateUser(
             user.copyWith(currentGroupChatId: chatId) as AuthorizedUser,
           );
-          appController.updateGroupChatCurrentUserUnreadCount(
-            chatId: chatId,
-            unreadCount: 0,
-          );
+          final chatController = context.chatController;
+          if (chatController != null) {
+            chatController.updateGroupChatCurrentUserUnreadCount(
+              chatId: chatId,
+              unreadCount: 0,
+            );
+          }
         }
         break;
     }

@@ -26,6 +26,9 @@ class NotificationService {
   static final FlutterLocalNotificationsPlugin
   _flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
 
+  static NotificationResponse? _pendingNotificationLaunchResponse;
+  static DateTime? _notificationLaunchHandledAt;
+
   static Future<void> initialize() async {
     try {
       if (!kIsWeb) {
@@ -38,7 +41,6 @@ class NotificationService {
         await _flutterLocalNotificationsPlugin.initialize(
           settings: initializationSettings,
           onDidReceiveNotificationResponse: (details) {
-            debugPrint('Notification clicked with payload: ${details.payload}');
             final payload = details.payload;
             if (payload != null && payload.isNotEmpty) {
               handleNotificationNavigation(
@@ -62,54 +64,14 @@ class NotificationService {
                 .getNotificationAppLaunchDetails();
         final didNotificationLaunchApp =
             notificationAppLaunchDetails?.didNotificationLaunchApp ?? false;
-        final launchPayload =
-            notificationAppLaunchDetails?.notificationResponse?.payload;
+        final lastHandled = _notificationLaunchHandledAt;
+        final isRecentHandling = lastHandled != null &&
+            DateTime.now().difference(lastHandled).inSeconds < 2;
         if (didNotificationLaunchApp &&
-            launchPayload != null &&
-            launchPayload.isNotEmpty) {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            debugPrint('Notification clicked with payload: $launchPayload');
-            handleNotificationNavigation(
-              launchPayload,
-              tab:
-                  notificationAppLaunchDetails
-                          ?.notificationResponse
-                          ?.data['tab'] !=
-                      null
-                  ? int.tryParse(
-                          notificationAppLaunchDetails!
-                              .notificationResponse!
-                              .data['tab']!,
-                        ) ??
-                        0
-                  : 0,
-              friendsSection:
-                  notificationAppLaunchDetails
-                          ?.notificationResponse
-                          ?.data['friendsSection'] !=
-                      null
-                  ? int.tryParse(
-                          notificationAppLaunchDetails!
-                              .notificationResponse!
-                              .data['friendsSection']!,
-                        ) ??
-                        0
-                  : 0,
-              projectsSection:
-                  notificationAppLaunchDetails
-                          ?.notificationResponse
-                          ?.data['projectsSection'] !=
-                      null
-                  ? int.tryParse(
-                          notificationAppLaunchDetails!
-                              .notificationResponse!
-                              .data['projectsSection']!,
-                        ) ??
-                        0
-                  : 0,
-            );
-            debugPrint('Navigating to route: $launchPayload');
-          });
+            notificationAppLaunchDetails?.notificationResponse != null &&
+            !isRecentHandling) {
+          _pendingNotificationLaunchResponse =
+              notificationAppLaunchDetails!.notificationResponse;
         }
 
         final androidPlugin = _flutterLocalNotificationsPlugin
@@ -180,15 +142,36 @@ class NotificationService {
     _settings = settings;
   }
 
+  static void handlePendingNotificationLaunch() {
+    final response = _pendingNotificationLaunchResponse;
+    if (response == null) return;
+    _pendingNotificationLaunchResponse = null;
+    _notificationLaunchHandledAt = DateTime.now();
+    final payload = response.payload;
+    if (payload != null && payload.isNotEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        handleNotificationNavigation(
+          payload,
+          tab: response.data['tab'] != null
+              ? int.tryParse(response.data['tab']!) ?? 0
+              : 0,
+          friendsSection: response.data['friendsSection'] != null
+              ? int.tryParse(response.data['friendsSection']!) ?? 0
+              : 0,
+          projectsSection: response.data['projectsSection'] != null
+              ? int.tryParse(response.data['projectsSection']!) ?? 0
+              : 0,
+        );
+      });
+    }
+  }
+
   static void handleNotificationNavigation(
     String route, {
     int tab = 0,
     int friendsSection = 0,
     int projectsSection = 0,
   }) {
-    debugPrint(
-      'Handling navigation to $route with tab: $tab, friendsSection: $friendsSection, projectsSection: $projectsSection',
-    );
     try {
       final page = AppPage.fromRoute(
         route,
@@ -258,7 +241,6 @@ class NotificationService {
   }
 
   static void _onMessageOpenedAppHandler(RemoteMessage message) {
-    debugPrint('Notification clicked with payload: ${message.data['route']}');
     final data = message.data;
     if (data['route'] != null) {
       handleNotificationNavigation(

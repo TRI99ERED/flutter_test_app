@@ -9,6 +9,7 @@ import 'package:test_app/l10n/locales/l10n.dart';
 import 'package:test_app/src/features/app/app_controller/app_controller.dart';
 import 'package:test_app/src/features/app/app_lifecycle_handler.dart';
 import 'package:test_app/src/features/app/app_scope.dart';
+import 'package:test_app/src/features/splash_screen/splash_screen.dart';
 import 'package:test_app/src/features/themes/app_theme.dart';
 import 'package:test_app/src/features/themes/styles.dart';
 import 'package:test_app/src/router/app_page.dart';
@@ -93,6 +94,7 @@ class _AppState extends State<App> {
       refreshListenable: _appController.authNotifier,
     );
     NotificationService.router = _routerDelegate;
+    NotificationService.handlePendingNotificationLaunch();
   }
 
   void _rebuild() {
@@ -159,11 +161,11 @@ class _AppState extends State<App> {
               routerDelegate: _routerDelegate,
               routeInformationParser: _routeParser,
               builder: (context, child) => AppScope(
-                controller: _appController,
+                appController: _appController,
                 themeMode: _themeMode,
                 locale: _locale,
                 child: AppLifecycleHandler(
-                  child: child ?? const SizedBox.shrink(),
+                  child: child ?? const SplashScreen(),
                 ),
               ),
             );

@@ -198,14 +198,14 @@ class _ChatWizardState extends State<ChatWizard> {
                             AppButtonPrimary(
                               text: context.l10n.pickAnAvatarLabel,
                               onPressed: () async {
-                                await context.appController
+                                await context.chatController!
                                     .uploadGroupChatAvatar(
                                       widget.chatToEdit!.id,
                                     );
                               },
                             ),
                             StreamBuilder(
-                              stream: context.appController
+                              stream: context.chatController!
                                   .watchGroupChatWithId(widget.chatToEdit!.id),
                               builder: (context, asyncSnapshot) {
                                 final chat = asyncSnapshot.data;
@@ -254,16 +254,17 @@ class _ChatWizardState extends State<ChatWizard> {
                     if (!context.mounted) return;
 
                     if (participants.length > 2) {
-                      final chat = await context.appController.createGroupChat(
-                        participants: participants,
-                        chatName: chatName,
-                      );
+                      final chat = await context.chatController!
+                          .createGroupChat(
+                            participants: participants,
+                            chatName: chatName,
+                          );
                       if (!context.mounted) return;
                       Navigator.of(context).pop(chat);
                       return;
                     }
                     if (participants.length == 2) {
-                      final existingChat = await context.appController
+                      final existingChat = await context.chatController!
                           .watchDirectChatsForUser(user.id)
                           .first
                           .then((chats) {
@@ -291,10 +292,11 @@ class _ChatWizardState extends State<ChatWizard> {
                         return;
                       }
                       if (!context.mounted) return;
-                      final chat = await context.appController.createDirectChat(
-                        participants: participants,
-                        chatName: chatName,
-                      );
+                      final chat = await context.chatController!
+                          .createDirectChat(
+                            participants: participants,
+                            chatName: chatName,
+                          );
                       if (!context.mounted) return;
                       Navigator.of(context).pop(chat);
                     }
@@ -308,14 +310,16 @@ class _ChatWizardState extends State<ChatWizard> {
                             ? _nameController.text
                             : chat.name,
                         participants: _participants.value,
-                        avatarUrl: await context.appController
+                        avatarUrl: await context.chatController!
                             .watchGroupChatWithId(chat.id)
                             .first
                             .then((chat) => chat?.avatarUrl),
                         lastUpdated: DateTime.now(),
                       );
                       if (!context.mounted) return;
-                      await context.appController.updateGroupChat(newGroupChat);
+                      await context.chatController!.updateGroupChat(
+                        newGroupChat,
+                      );
                       if (!context.mounted) return;
                       Navigator.of(context).pop(newGroupChat);
                     } else {

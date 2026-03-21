@@ -273,7 +273,7 @@ class ProjectScreen extends StatelessWidget {
 
   Widget _buildChatButton(BuildContext context, Project project) {
     return StreamBuilder(
-      stream: context.appController.watchGroupChatsForUser(
+      stream: context.chatController!.watchGroupChatsForUser(
         (context.appState.user as AuthorizedUser).id,
       ),
       builder: (context, asyncSnapshot) {
@@ -314,6 +314,7 @@ class ProjectScreen extends StatelessWidget {
   ) {
     final user = context.appState.user as AuthorizedUser;
     final appController = context.appController;
+    final chatController = context.chatController!;
     if (project.participants.length == 2) {
       return () {
         appController
@@ -350,7 +351,7 @@ class ProjectScreen extends StatelessWidget {
                 (u) => project.participants.contains(u.id) && u.id != user.id,
               );
               final chat =
-                  (await appController
+                  (await chatController
                           .watchDirectChatsForUser(user.id)
                           .firstWhere((chats) {
                             if (chats == null || chats.isEmpty) return false;
@@ -370,7 +371,7 @@ class ProjectScreen extends StatelessWidget {
               if (chat == null) {
                 final participants = [otherUser.id, user.id];
                 final participantNames = [otherUser.name, user.name];
-                final newChat = await appController.createDirectChat(
+                final newChat = await chatController.createDirectChat(
                   participants: participants,
                   chatName: participantNames.join(', '),
                 );
@@ -390,7 +391,9 @@ class ProjectScreen extends StatelessWidget {
         project.ownerId != user.id &&
         doesGroupChatExistForProject) {
       return () {
-        appController.watchGroupChatsForUser(user.id).first.then((chats) async {
+        chatController.watchGroupChatsForUser(user.id).first.then((
+          chats,
+        ) async {
           Chat? matchingChat;
           if (project.groupChatId.isNotEmpty &&
               chats != null &&
@@ -426,7 +429,9 @@ class ProjectScreen extends StatelessWidget {
       };
     } else if (project.participants.length > 2 && project.ownerId == user.id) {
       return () {
-        appController.watchGroupChatsForUser(user.id).first.then((chats) async {
+        chatController.watchGroupChatsForUser(user.id).first.then((
+          chats,
+        ) async {
           Chat? matchingChat;
           if (project.groupChatId.isNotEmpty &&
               chats != null &&
@@ -441,7 +446,7 @@ class ProjectScreen extends StatelessWidget {
             return;
           }
           if (!context.mounted) return;
-          final chat = await appController.createGroupChat(
+          final chat = await chatController.createGroupChat(
             chatName: '${context.l10n.projectTitle} "${project.name}"',
             participants: project.participants,
           );

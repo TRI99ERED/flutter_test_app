@@ -376,13 +376,13 @@ class _FriendsSectionState extends State<_FriendsSection> {
                                           final user =
                                               context.appState.user
                                                   as AuthorizedUser;
-                                          final appController =
-                                              context.appController;
+                                          final chatController =
+                                              context.chatController!;
                                           final navigator = AppNavigator.of(
                                             context,
                                           );
                                           final existingChat =
-                                              await appController
+                                              await chatController
                                                   .watchDirectChatsForUser(
                                                     user.id,
                                                   )
@@ -418,7 +418,7 @@ class _FriendsSectionState extends State<_FriendsSection> {
                                           }
 
                                           if (!context.mounted) return;
-                                          final chat = await appController
+                                          final chat = await chatController
                                               .createDirectChat(
                                                 participants: [
                                                   user.id,

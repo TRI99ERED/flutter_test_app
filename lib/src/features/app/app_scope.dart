@@ -1,17 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:test_app/src/features/app/app_controller/app_controller.dart';
 import 'package:test_app/src/features/app/data/models/user_model.dart';
+import 'package:test_app/src/features/home_screen/controllers/chat_controller.dart';
 
 class AppScope extends StatefulWidget {
   final Widget child;
-  final AppController controller;
+  final AppController appController;
   final ValueNotifier<ThemeMode> themeMode;
   final ValueNotifier<Locale?> locale;
 
   const AppScope({
     super.key,
     required this.child,
-    required this.controller,
+    required this.appController,
     required this.themeMode,
     required this.locale,
   });
@@ -21,58 +22,81 @@ class AppScope extends StatefulWidget {
 }
 
 class _AppScopeState extends State<AppScope> {
-  late final AppController _controller;
-  late AppState _state;
+  late final AppController _appController;
+  late AppState _appState;
+  ChatController? _chatController;
 
-  UserEntity get user => _state.user;
+  UserEntity get user => _appState.user;
 
   @override
   void initState() {
     super.initState();
-    _controller = widget.controller;
-    _state = _controller.state;
+    _appController = widget.appController;
+    _appState = _appController.state;
 
-    _controller.addListener(_onStateChange);
+    _appController.addListener(_onStateChange);
+
+    _maybeCreateChatController();
+  }
+
+  void _maybeCreateChatController() {
+    if (_appState.isAuthorized && _chatController == null) {
+      _chatController = ChatController(appController: _appController);
+    }
   }
 
   void _onStateChange() {
     if (mounted) {
-      setState(() {
-        _state = _controller.state;
-      });
+      final previousState = _appState;
+      _appState = _appController.state;
+
+      if (previousState.isAuthorized != _appState.isAuthorized) {
+        if (_appState.isAuthorized) {
+          _chatController = ChatController(appController: _appController);
+        } else {
+          _chatController?.dispose();
+          _chatController = null;
+        }
+      }
+
+      setState(() {});
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return InheritedScopeWidget(
-      controller: _controller,
-      state: _state,
+      appController: _appController,
+      appState: _appState,
       themeMode: widget.themeMode,
       locale: widget.locale,
+      chatController: _chatController,
       child: widget.child,
     );
   }
 
   @override
   void dispose() {
-    _controller.removeListener(_onStateChange);
+    _appController.removeListener(_onStateChange);
+    _chatController?.dispose();
     super.dispose();
   }
 }
 
 class InheritedScopeWidget extends InheritedWidget {
-  final AppController controller;
-  final AppState state;
+  final AppController appController;
+  final AppState appState;
   final ValueNotifier<ThemeMode> themeMode;
   final ValueNotifier<Locale?> locale;
+  final ChatController? chatController;
 
   const InheritedScopeWidget({
     super.key,
-    required this.controller,
-    required this.state,
+    required this.appController,
+    required this.appState,
     required this.themeMode,
     required this.locale,
+    this.chatController,
     required super.child,
   });
 
@@ -91,19 +115,23 @@ class InheritedScopeWidget extends InheritedWidget {
 
   @override
   bool updateShouldNotify(InheritedScopeWidget oldWidget) {
-    return state != oldWidget.state ||
+    return appState != oldWidget.appState ||
         themeMode != oldWidget.themeMode ||
-        locale != oldWidget.locale;
+        locale != oldWidget.locale ||
+        chatController != oldWidget.chatController;
   }
 }
 
 extension AppScopeExtension on BuildContext {
   AppState get appState =>
-      dependOnInheritedWidgetOfExactType<InheritedScopeWidget>()!.state;
+      dependOnInheritedWidgetOfExactType<InheritedScopeWidget>()!.appState;
   AppController get appController =>
-      dependOnInheritedWidgetOfExactType<InheritedScopeWidget>()!.controller;
+      dependOnInheritedWidgetOfExactType<InheritedScopeWidget>()!.appController;
   ValueNotifier<ThemeMode> get themeMode =>
       dependOnInheritedWidgetOfExactType<InheritedScopeWidget>()!.themeMode;
   ValueNotifier<Locale?> get locale =>
       dependOnInheritedWidgetOfExactType<InheritedScopeWidget>()!.locale;
+  ChatController? get chatController =>
+      dependOnInheritedWidgetOfExactType<InheritedScopeWidget>()!
+          .chatController;
 }

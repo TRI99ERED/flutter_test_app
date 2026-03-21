@@ -82,7 +82,7 @@ class _ChatsTabState extends State<ChatsTab> {
           ),
           Expanded(
             child: StreamBuilder(
-              stream: context.appController.watchAllChatsForUser(user.id),
+              stream: context.chatController!.watchAllChatsForUser(user.id),
               builder: (context, snapshot) {
                 if (snapshot.hasError) {
                   return ErrorState(
@@ -197,7 +197,7 @@ class _FilteredChatsList extends StatelessWidget {
             final chat = filteredChats[index];
             if (chat is DirectChat) {
               return StreamBuilder(
-                stream: context.appController.watchDirectChatWithId(chat.id),
+                stream: context.chatController!.watchDirectChatWithId(chat.id),
                 builder: (context, asyncSnapshot) {
                   final chat = asyncSnapshot.data;
                   if (chat == null) {
@@ -216,7 +216,7 @@ class _FilteredChatsList extends StatelessWidget {
               );
             } else if (chat is GroupChat) {
               return StreamBuilder(
-                stream: context.appController.watchGroupChatWithId(chat.id),
+                stream: context.chatController!.watchGroupChatWithId(chat.id),
                 builder: (context, asyncSnapshot) {
                   final chat = asyncSnapshot.data;
                   if (chat == null) {
@@ -264,7 +264,7 @@ class _ChatListItem extends StatelessWidget {
   Widget build(BuildContext context) {
     if (chat is DirectChat) {
       return StreamBuilder(
-        stream: context.appController.watchDirectChatWithId(chat.id),
+        stream: context.chatController!.watchDirectChatWithId(chat.id),
         builder: (context, chatSnapshot) {
           final directChat = chatSnapshot.data;
           if (directChat == null) {
@@ -289,7 +289,7 @@ class _ChatListItem extends StatelessWidget {
             builder: (context, nameSnapshot) {
               final resolvedChatName = nameSnapshot.data ?? '';
               return StreamBuilder(
-                stream: context.appController.watchMessagesForDirectChat(
+                stream: context.chatController!.watchMessagesForDirectChat(
                   directChat.id,
                 ),
                 builder: (context, msgSnapshot) {
@@ -328,7 +328,7 @@ class _ChatListItem extends StatelessWidget {
                           onPressed1: (context) => Navigator.of(context).pop(),
                           onPressed2: (context) async {
                             Navigator.of(context).pop();
-                            await context.appController.deleteDirectChat(
+                            await context.chatController!.deleteDirectChat(
                               directChat.id,
                             );
                           },
@@ -390,14 +390,14 @@ class _ChatListItem extends StatelessWidget {
       );
     } else if (chat is GroupChat) {
       return StreamBuilder(
-        stream: context.appController.watchGroupChatWithId(chat.id),
+        stream: context.chatController!.watchGroupChatWithId(chat.id),
         builder: (context, chatSnapshot) {
           final groupChat = chatSnapshot.data;
           if (groupChat == null) {
             return const SizedBox.shrink();
           }
           return StreamBuilder(
-            stream: context.appController.watchMessagesForGroupChat(
+            stream: context.chatController!.watchMessagesForGroupChat(
               groupChat.id,
             ),
             builder: (context, msgSnapshot) {
@@ -437,7 +437,7 @@ class _ChatListItem extends StatelessWidget {
                       onPressed1: (context) => Navigator.of(context).pop(),
                       onPressed2: (context) async {
                         Navigator.of(context).pop();
-                        await context.appController.deleteGroupChat(
+                        await context.chatController!.deleteGroupChat(
                           groupChat.id,
                         );
                       },

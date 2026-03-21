@@ -31,7 +31,7 @@ class SavedMessagesScreen extends StatefulWidget {
 class _SavedMessagesScreenState extends State<SavedMessagesScreen> {
   @override
   Widget build(BuildContext context) {
-    final messageStream = context.appController.watchSavedMessages();
+    final messageStream = context.chatController!.watchSavedMessages();
     final usersStream = context.appController.watchAllUsers();
 
     return ControllerListener(
@@ -76,12 +76,12 @@ class _SavedMessagesScreenState extends State<SavedMessagesScreen> {
                 child: StreamBuilder(
                   stream: StreamZip([messageStream, usersStream]),
                   builder: (context, snapshot) {
-                    if (snapshot.hasError) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const AppLoader();
+                    } else if (snapshot.hasError) {
                       return ErrorState(
                         message: context.l10n.failedToLoadSavedMessagesLabel,
                       );
-                    } else if (!snapshot.hasData || snapshot.data == null) {
-                      return const AppLoader();
                     } else if (snapshot.hasData) {
                       final messages =
                           (snapshot.data?[0] ?? []) as List<SavedMessage>;
@@ -181,7 +181,7 @@ class _SavedMessagesScreenState extends State<SavedMessagesScreen> {
               ),
               AppMessageInput(
                 onSendPressed: (value) {
-                  context.appController.createSavedMessage(value);
+                  context.chatController!.createSavedMessage(value);
                 },
               ),
             ],
@@ -196,7 +196,7 @@ class _SavedMessagesScreenState extends State<SavedMessagesScreen> {
     SavedMessage message,
   ) async {
     final navigator = AppNavigator.of(context);
-    final appController = context.appController;
+    final chatController = context.chatController!;
     final action = await showModalBottomSheet<_MessageAction>(
       context: context,
       backgroundColor: Theme.of(
@@ -247,7 +247,7 @@ class _SavedMessagesScreenState extends State<SavedMessagesScreen> {
           ChatPage(chatId: message.chatId, chatType: ChatType.group),
         );
       case _MessageAction.delete:
-        appController.deleteSavedMessage(message.id);
+        chatController.deleteSavedMessage(message.id);
     }
   }
 }

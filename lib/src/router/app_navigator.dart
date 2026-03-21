@@ -344,7 +344,6 @@ class AppNavigatorState extends State<AppNavigator> {
   }
 
   void _handleDidRemovePage(Page<Object?> page) {
-    debugPrint('AppNavigator._handleDidRemovePage: ${page.name}');
     if (widget.onDidRemovePage != null) {
       widget.onDidRemovePage!(page);
       return;
