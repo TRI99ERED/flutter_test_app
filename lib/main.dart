@@ -15,8 +15,6 @@ import 'package:test_app/src/router/app_navigator.dart';
 import 'package:test_app/src/router/app_page.dart';
 import 'package:test_app/src/services/notification_service.dart';
 
-final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>();
-
 void main() {
   runZonedGuarded(
     () async {
@@ -91,29 +89,6 @@ class _AppState extends State<App> {
 
   void _rebuild() {
     if (mounted) setState(() {});
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (_appController.state.isAuthorized &&
-          NotificationService.pendingRoute != null) {
-        final navigator = rootNavigatorKey.currentState;
-        if (navigator != null) {
-          final page = AppPage.fromRoute(
-            NotificationService.pendingRoute!,
-            NotificationService.pendingTab ?? 0,
-            NotificationService.pendingFriendsSection ?? 0,
-            NotificationService.pendingProjectsSection ?? 0,
-          );
-          navigator.pushAndRemoveUntil(
-            MaterialPageRoute(builder: (_) => page.child),
-            (route) => false,
-          );
-          NotificationService.pendingRoute = null;
-          NotificationService.pendingTab = null;
-          NotificationService.pendingFriendsSection = null;
-          NotificationService.pendingProjectsSection = null;
-          debugPrint('Processed pending navigation (from _rebuild)');
-        }
-      }
-    });
   }
 
   /// Auth guard: redirects based on authorization state.
@@ -160,25 +135,27 @@ class _AppState extends State<App> {
   Widget build(BuildContext context) {
     return ValueListenableBuilder(
       valueListenable: _locale,
-      builder: (context, value, child) {
+      builder: (context, locale, child) {
         return ValueListenableBuilder(
           valueListenable: _themeMode,
-          builder: (context, value, child) {
-            return MaterialApp(
-              title: 'Test App',
-              theme: _lightTheme,
-              darkTheme: _darkTheme,
-              themeMode: _themeMode.value,
-              locale: _locale.value,
-              localizationsDelegates: AppLocalizations.localizationsDelegates,
-              supportedLocales: AppLocalizations.supportedLocales,
-              builder: (context, child) => AppScope(
-                controller: _appController,
-                themeMode: _themeMode,
-                locale: _locale,
-                child: AppLifecycleHandler(
-                  child: AppNavigator(
-                    key: rootNavigatorKey,
+          builder: (context, themeMode, child) {
+            return AppScope(
+              controller: _appController,
+              themeMode: _themeMode,
+              locale: _locale,
+              child: AppLifecycleHandler(
+                child: MaterialApp(
+                  title: 'Test App',
+                  theme: _lightTheme,
+                  darkTheme: _darkTheme,
+                  themeMode: _themeMode.value,
+                  locale: _locale.value,
+                  localizationsDelegates:
+                      AppLocalizations.localizationsDelegates,
+                  supportedLocales: AppLocalizations.supportedLocales,
+                  debugShowCheckedModeBanner: false,
+                  home: AppNavigator(
+                    key: AppNavigator.navigatorKey,
                     pages: const [SplashPage()],
                     guards: [_authGuard],
                     refreshListenable: _appController.authNotifier,

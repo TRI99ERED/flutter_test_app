@@ -135,6 +135,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           valueListenable: _isFormValid,
                           builder: (context, isValid, _) {
                             return AppButtonPrimary(
+                              text: context.l10n.loginLabel,
                               onPressed: isValid
                                   ? () async {
                                       final email = _emailController.text;
@@ -143,9 +144,12 @@ class _LoginScreenState extends State<LoginScreen> {
                                         email,
                                         password,
                                       );
+                                      if (!context.mounted) return;
+                                      AppNavigator.of(
+                                        context,
+                                      ).replaceAll(HomePage());
                                     }
                                   : null,
-                              text: context.l10n.loginLabel,
                             );
                           },
                         ),

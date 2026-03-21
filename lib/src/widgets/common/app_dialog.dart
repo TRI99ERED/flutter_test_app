@@ -31,7 +31,7 @@ class AppDialog2 extends StatelessWidget {
          'buttonText2 and onPressed2 must both be provided or both be null',
        );
 
-  static void show({
+  static Future<T?> show<T>({
     required BuildContext context,
     String? title,
     String? description,
@@ -42,7 +42,7 @@ class AppDialog2 extends StatelessWidget {
     ValueChanged<BuildContext>? onPressed1,
     ValueChanged<BuildContext>? onPressed2,
   }) {
-    showDialog(
+    return showDialog<T>(
       context: context,
       barrierColor: Colors.black.withAlpha(216),
       builder: (context) => Theme(
@@ -171,7 +171,7 @@ class AppDialog3 extends StatelessWidget {
          'buttonText3 and onPressed3 must both be provided or both be null',
        );
 
-  static void show({
+  static Future<T?> show<T>({
     required BuildContext context,
     String? title,
     String? description,
@@ -184,7 +184,7 @@ class AppDialog3 extends StatelessWidget {
     ValueChanged<BuildContext>? onPressed2,
     ValueChanged<BuildContext>? onPressed3,
   }) {
-    showDialog(
+    return showDialog<T>(
       context: context,
       barrierColor: Colors.black.withAlpha(216),
       builder: (context) => Theme(

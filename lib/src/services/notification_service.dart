@@ -5,8 +5,8 @@ import 'package:firebase_messaging/firebase_messaging.dart'
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:test_app/main.dart';
 import 'package:test_app/src/features/app/data/models/notification_settings.dart';
+import 'package:test_app/src/router/app_navigator.dart';
 import 'package:test_app/src/router/app_page.dart';
 
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
@@ -191,7 +191,7 @@ class NotificationService {
     debugPrint(
       'Handling navigation to $route with tab: $tab, friendsSection: $friendsSection, projectsSection: $projectsSection',
     );
-    final navigator = rootNavigatorKey.currentState;
+    final navigator = AppNavigator.navigatorKey.currentState;
     if (navigator != null) {
       final page = AppPage.fromRoute(
         route,
@@ -199,10 +199,7 @@ class NotificationService {
         friendsSection,
         projectsSection,
       );
-      navigator.pushAndRemoveUntil(
-        MaterialPageRoute(builder: (_) => page.child),
-        (route) => false,
-      );
+      navigator.push(page);
       debugPrint('Navigated immediately to $route');
     } else {
       pendingRoute = route;
