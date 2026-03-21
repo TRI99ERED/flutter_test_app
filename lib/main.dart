@@ -11,9 +11,12 @@ import 'package:test_app/src/features/app/app_lifecycle_handler.dart';
 import 'package:test_app/src/features/app/app_scope.dart';
 import 'package:test_app/src/features/themes/app_theme.dart';
 import 'package:test_app/src/features/themes/styles.dart';
-import 'package:test_app/src/router/app_navigator.dart';
 import 'package:test_app/src/router/app_page.dart';
+import 'package:test_app/src/router/app_router.dart';
 import 'package:test_app/src/services/notification_service.dart';
+
+// TODO: Remove once all references are cleaned up
+final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>();
 
 void main() {
   runZonedGuarded(
@@ -45,6 +48,8 @@ class App extends StatefulWidget {
 
 class _AppState extends State<App> {
   late final AppController _appController;
+  late final AppRouterDelegate _routerDelegate;
+  static const _routeParser = AppRouteInformationParser();
   final ThemeData _lightTheme = ThemeData(
     brightness: Brightness.light,
     extensions: [appThemeLight],
@@ -85,6 +90,12 @@ class _AppState extends State<App> {
     super.initState();
     _appController = AppController();
     _appController.addListener(_rebuild);
+    _routerDelegate = AppRouterDelegate(
+      initialPages: const [SplashPage()],
+      guards: [_authGuard],
+      refreshListenable: _appController.authNotifier,
+    );
+    NotificationService.router = _routerDelegate;
   }
 
   void _rebuild() {
@@ -101,8 +112,9 @@ class _AppState extends State<App> {
     // Stay on splash until the controller has received the first auth state.
     if (top is SplashPage) {
       if (!_appController.isInitialized) return state;
-      return _appController.state.isAuthorized
-          ? [HomePage()]
+      if (_appController.state.isAuthorized) return [HomePage()];
+      return _appController.hasCompletedOnboarding
+          ? [const LoginPage()]
           : [const OnboardingPage()];
     }
 
@@ -138,28 +150,23 @@ class _AppState extends State<App> {
       builder: (context, locale, child) {
         return ValueListenableBuilder(
           valueListenable: _themeMode,
-          builder: (context, themeMode, child) {
-            return AppScope(
-              controller: _appController,
-              themeMode: _themeMode,
-              locale: _locale,
-              child: AppLifecycleHandler(
-                child: MaterialApp(
-                  title: 'Test App',
-                  theme: _lightTheme,
-                  darkTheme: _darkTheme,
-                  themeMode: _themeMode.value,
-                  locale: _locale.value,
-                  localizationsDelegates:
-                      AppLocalizations.localizationsDelegates,
-                  supportedLocales: AppLocalizations.supportedLocales,
-                  debugShowCheckedModeBanner: false,
-                  home: AppNavigator(
-                    key: AppNavigator.navigatorKey,
-                    pages: const [SplashPage()],
-                    guards: [_authGuard],
-                    refreshListenable: _appController.authNotifier,
-                  ),
+          builder: (context, value, child) {
+            return MaterialApp.router(
+              title: 'Test App',
+              theme: _lightTheme,
+              darkTheme: _darkTheme,
+              themeMode: _themeMode.value,
+              locale: _locale.value,
+              localizationsDelegates: AppLocalizations.localizationsDelegates,
+              supportedLocales: AppLocalizations.supportedLocales,
+              routerDelegate: _routerDelegate,
+              routeInformationParser: _routeParser,
+              builder: (context, child) => AppScope(
+                controller: _appController,
+                themeMode: _themeMode,
+                locale: _locale,
+                child: AppLifecycleHandler(
+                  child: child ?? const SizedBox.shrink(),
                 ),
               ),
             );

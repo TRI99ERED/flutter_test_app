@@ -22,6 +22,12 @@ typedef AppNavigationGuard =
 ///
 /// In both modes, [guards] are applied in order on every state change and can
 /// rewrite or reject the proposed stack.
+/// Signature for a builder that wraps the navigator output.
+/// Receives the [AppNavigatorState] so callers (like [AppRouterDelegate])
+/// can capture a reference without global keys.
+typedef AppNavigatorBuilder = Widget Function(
+    BuildContext context, AppNavigatorState navigatorState, Widget child);
+
 class AppNavigator extends StatefulWidget {
   const AppNavigator({
     super.key,
@@ -32,6 +38,8 @@ class AppNavigator extends StatefulWidget {
     this.transitionDelegate = const DefaultTransitionDelegate<Object?>(),
     this.refreshListenable,
     this.onDidRemovePage,
+    this.builder,
+    this.onStateChanged,
   }) : assert(pages.length > 0, 'pages must not be empty');
 
   static final GlobalKey<AppNavigatorState> navigatorKey = GlobalKey<AppNavigatorState>();
@@ -83,6 +91,26 @@ class AppNavigator extends StatefulWidget {
   ///
   /// If not provided, the default behavior removes the page from the stack.
   final void Function(Page<Object?> page)? onDidRemovePage;
+
+  /// Optional builder that wraps the navigator output.
+  /// Use this to capture the [AppNavigatorState] reference.
+  final AppNavigatorBuilder? builder;
+
+  /// Called whenever the page stack changes.
+  /// Use this to notify external listeners (e.g. [RouterDelegate]).
+  final VoidCallback? onStateChanged;
+
+  /// Retrieve the nearest [AppNavigatorState] from the widget tree.
+  static AppNavigatorState of(BuildContext context) {
+    final state = context.findAncestorStateOfType<AppNavigatorState>();
+    assert(state != null, 'No AppNavigator found in the widget tree');
+    return state!;
+  }
+
+  /// Retrieve the nearest [AppNavigatorState], or `null` if absent.
+  static AppNavigatorState? maybeOf(BuildContext context) {
+    return context.findAncestorStateOfType<AppNavigatorState>();
+  }
 
   @override
   State<AppNavigator> createState() => AppNavigatorState();
@@ -193,6 +221,7 @@ class AppNavigatorState extends State<AppNavigator> {
 
     _state = next;
     _syncToController();
+    widget.onStateChanged?.call();
     setState(() {});
   }
 
@@ -278,6 +307,7 @@ class AppNavigatorState extends State<AppNavigator> {
     NavLog.d('Refresh: ${_stackLabel(_state)} -> ${_stackLabel(next)}');
     _state = next;
     _syncToController();
+    widget.onStateChanged?.call();
     setState(() {});
   }
 
@@ -344,6 +374,8 @@ class AppNavigatorState extends State<AppNavigator> {
     NavLog.d('Back: removed ${removed.name} -> ${_stackLabel(_state)}');
 
     _syncToController();
+    widget.onStateChanged?.call();
+    widget.onDidRemovePage?.call(page);
     setState(() {});
   }
 
@@ -361,11 +393,29 @@ class AppNavigatorState extends State<AppNavigator> {
 
   @override
   Widget build(BuildContext context) {
-    return Navigator(
+    Widget child = Navigator(
       pages: _state,
       onDidRemovePage: _handleDidRemovePage,
       transitionDelegate: widget.transitionDelegate,
       observers: widget.observers,
     );
+
+    if (widget.builder != null) {
+      child = widget.builder!(context, this, child);
+    }
+
+    // PopScope fallback for when AppNavigator is used without a Router.
+    // When used inside Router, popRoute() handles back navigation instead.
+    if (Router.maybeOf(context) == null) {
+      child = PopScope(
+        canPop: !canPop,
+        onPopInvokedWithResult: (didPop, _) {
+          if (!didPop) pop();
+        },
+        child: child,
+      );
+    }
+
+    return child;
   }
 }

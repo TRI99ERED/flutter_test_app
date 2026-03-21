@@ -42,6 +42,10 @@ final class AppController extends BaseController<AppState> {
   /// `true` after the first auth state callback has been received.
   bool isInitialized = false;
 
+  /// Cached onboarding flag, loaded eagerly in constructor.
+  /// Used by the auth guard to skip onboarding without async.
+  bool hasCompletedOnboarding = false;
+
   /// Notifies only when the authorization status changes.
   /// Use this as `refreshListenable` for navigation instead of the
   /// whole controller, to avoid unnecessary guard evaluations.
@@ -68,8 +72,18 @@ final class AppController extends BaseController<AppState> {
         ),
         name: 'AppController',
       ) {
+    _loadOnboardingFlag();
     _listenToAuthState();
     _listentoFcmTokenRefresh();
+  }
+
+  Future<void> _loadOnboardingFlag() async {
+    try {
+      hasCompletedOnboarding =
+          await _sharedPreferencesRepository.getBool('hasSeenOnboarding') ?? false;
+    } catch (_) {
+      hasCompletedOnboarding = false;
+    }
   }
 
   void _listentoFcmTokenRefresh() {

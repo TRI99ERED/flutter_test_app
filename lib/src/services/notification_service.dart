@@ -8,16 +8,15 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:test_app/src/features/app/data/models/notification_settings.dart';
 import 'package:test_app/src/router/app_navigator.dart';
 import 'package:test_app/src/router/app_page.dart';
+import 'package:test_app/src/router/app_router.dart';
 
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp();
 }
 
 class NotificationService {
-  static String? pendingRoute;
-  static int? pendingTab;
-  static int? pendingFriendsSection;
-  static int? pendingProjectsSection;
+  /// Set by the app on startup. Used for context-free navigation.
+  static AppRouterDelegate? router;
 
   static final StreamController<RemoteMessage> _inAppNotificationController =
       StreamController.broadcast();
@@ -191,22 +190,16 @@ class NotificationService {
     debugPrint(
       'Handling navigation to $route with tab: $tab, friendsSection: $friendsSection, projectsSection: $projectsSection',
     );
-    final navigator = AppNavigator.navigatorKey.currentState;
-    if (navigator != null) {
+    try {
       final page = AppPage.fromRoute(
         route,
         tab,
         friendsSection,
         projectsSection,
       );
-      navigator.push(page);
-      debugPrint('Navigated immediately to $route');
-    } else {
-      pendingRoute = route;
-      pendingTab = tab;
-      pendingFriendsSection = friendsSection;
-      pendingProjectsSection = projectsSection;
-      debugPrint('Saved pending navigation to $route');
+      router?.navigateTo(page);
+    } catch (e) {
+      debugPrint('Failed to navigate from notification: $e');
     }
   }
 
