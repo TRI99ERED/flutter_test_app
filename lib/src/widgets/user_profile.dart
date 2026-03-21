@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
+// TODO: Remove go_router once migration is complete
+// import 'package:go_router/go_router.dart';
 import 'package:test_app/l10n/locales/l10n.dart';
 import 'package:test_app/src/features/app/app_scope.dart';
 import 'package:test_app/src/features/app/data/models/user_model.dart';
@@ -70,7 +71,7 @@ class _UserProfileState extends State<UserProfile> {
             ? context.l10n.userProfileTitle
             : context.l10n.editProfileTitle,
         leftText: context.l10n.closeLabel,
-        onPressedLeft: () => context.pop(),
+        onPressedLeft: () => Navigator.of(context).pop(),
       ),
       body: Padding(
         padding: const EdgeInsets.all(spacing16),
@@ -101,7 +102,7 @@ class _UserProfileState extends State<UserProfile> {
                                     as AuthorizedUser,
                               );
                               if (!context.mounted) return;
-                              context.pop();
+                              Navigator.of(context).pop();
                             }
                           : null,
                     ),
@@ -113,7 +114,7 @@ class _UserProfileState extends State<UserProfile> {
               child: AppButtonPrimary(
                 text: context.l10n.closeLabel,
                 onPressed: () {
-                  context.pop();
+                  Navigator.of(context).pop();
                 },
               ),
             ),

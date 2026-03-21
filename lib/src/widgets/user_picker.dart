@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
+// TODO: Remove go_router once migration is complete
+// import 'package:go_router/go_router.dart';
 import 'package:test_app/l10n/locales/l10n.dart';
 import 'package:test_app/src/features/app/app_controller/app_controller.dart';
 import 'package:test_app/src/features/app/app_scope.dart';
@@ -121,7 +122,7 @@ class _UserPickerState extends State<UserPicker> {
       appBar: AppNavBar(
         title: _title,
         leftText: context.l10n.cancelLabel,
-        onPressedLeft: () => context.pop(),
+        onPressedLeft: () => Navigator.of(context).pop(),
       ),
       body: Padding(
         padding: const EdgeInsets.all(spacing16),
@@ -166,7 +167,7 @@ class _UserPickerState extends State<UserPicker> {
                         description: user.handle.isNotEmpty
                             ? '@${user.handle}'
                             : null,
-                        onPressed: () => context.pop(user),
+                        onPressed: () => Navigator.of(context).pop(user),
                       );
                     },
                   );
@@ -176,7 +177,7 @@ class _UserPickerState extends State<UserPicker> {
             SizedBox(
               width: double.infinity,
               child: AppButtonPrimary(
-                onPressed: () => context.pop(),
+                onPressed: () => Navigator.of(context).pop(),
                 text: context.l10n.cancelLabel,
               ),
             ),

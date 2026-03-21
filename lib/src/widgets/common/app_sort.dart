@@ -1,5 +1,6 @@
 ﻿import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
+// TODO: Remove go_router once migration is complete
+// import 'package:go_router/go_router.dart';
 import 'package:test_app/l10n/locales/l10n.dart';
 import 'package:test_app/src/core/resources/app_icons.dart';
 import 'package:test_app/src/features/themes/app_theme.dart';
@@ -139,7 +140,7 @@ class _AppSortMenuState extends State<AppSortMenu> {
         leftText: context.l10n.cancelLabel,
         rightText: context.l10n.defaultLabel,
         onPressedLeft: () {
-          context.pop();
+          Navigator.of(context).pop();
         },
         onPressedRight: () {
           _internalSortOption.value = widget.defaultSortOption;
@@ -248,7 +249,7 @@ class _AppSortMenuState extends State<AppSortMenu> {
                   onPressed: () {
                     widget.sortOption.value = _internalSortOption.value;
                     widget.sortOrder.value = _internalSortOrder.value;
-                    context.pop();
+                    Navigator.of(context).pop();
                   },
                 ),
               ),
