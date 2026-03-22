@@ -1,4 +1,4 @@
-class NotificationSettings {
+final class NotificationSettings {
   final bool pushNotificationsEnabled;
   final bool messageNotificationsEnabled;
   final bool friendRequestNotificationsEnabled;

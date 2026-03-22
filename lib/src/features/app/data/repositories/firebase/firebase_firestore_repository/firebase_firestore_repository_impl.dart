@@ -111,6 +111,7 @@ class FirebaseFirestoreRepositoryImpl implements IFirebaseFirestoreRepository {
     required String chatId,
     required String senderId,
     required String body,
+    required List<String> imageUrls,
   }) async {
     try {
       final doc = _directChats.doc(chatId).collection('messages').doc();
@@ -119,6 +120,7 @@ class FirebaseFirestoreRepositoryImpl implements IFirebaseFirestoreRepository {
         id: doc.id,
         senderId: senderId,
         body: body,
+        imageUrls: imageUrls,
         timestamp: DateTime.now(),
       );
       await doc.set(message.toFirestore());
@@ -160,6 +162,7 @@ class FirebaseFirestoreRepositoryImpl implements IFirebaseFirestoreRepository {
     required String chatId,
     required String senderId,
     required String body,
+    required List<String> imageUrls,
   }) async {
     try {
       final doc = _groupChats.doc(chatId).collection('messages').doc();
@@ -168,6 +171,7 @@ class FirebaseFirestoreRepositoryImpl implements IFirebaseFirestoreRepository {
         id: doc.id,
         senderId: senderId,
         body: body,
+        imageUrls: imageUrls,
         timestamp: DateTime.now(),
       );
       await doc.set(message.toFirestore());
@@ -207,16 +211,22 @@ class FirebaseFirestoreRepositoryImpl implements IFirebaseFirestoreRepository {
   }
 
   @override
-  Future<void> createSavedMessage(String userId, String body) {
+  Future<void> createSavedMessage(
+    String userId,
+    String body,
+    List<String> imageUrls,
+  ) async {
     try {
       final doc = _users.doc(userId).collection('savedMessages').doc();
       final message = SavedMessage(
         id: doc.id,
         senderId: userId,
         body: body,
+        imageUrls: imageUrls,
         timestamp: DateTime.now(),
         chatId: '',
         chatType: ChatType.direct,
+        savedAt: DateTime.now(),
       );
       return doc.set(message.toFirestore());
     } catch (e) {
@@ -887,6 +897,7 @@ class FirebaseFirestoreRepositoryImpl implements IFirebaseFirestoreRepository {
     return _users
         .doc(userId)
         .collection('savedMessages')
+        .orderBy('savedAt', descending: true)
         .snapshots()
         .map(
           (snapshot) => snapshot.docs.map(SavedMessage.fromFirestore).toList(),

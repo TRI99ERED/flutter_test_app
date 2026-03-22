@@ -5,6 +5,77 @@ import 'package:test_app/src/features/app/data/repositories/firebase/firebase_st
 
 class FirebaseStorageRepositoryImpl implements IFirebaseStorageRepository {
   @override
+  Future<void> deleteUserAvatar({required String userId}) async {
+    try {
+      final ref = FirebaseStorage.instance.ref().child('avatars/$userId');
+      final ListResult result = await ref.listAll();
+      for (var item in result.items) {
+        await item.delete();
+      }
+    } catch (e) {
+      throw Exception('Failed to delete avatar: $e');
+    }
+  }
+
+  @override
+  Future<List<String>> uploadMessageImages({
+    required String chatId,
+    required List<File> files,
+  }) async {
+    try {
+      final urls = <String>[];
+      for (var file in files) {
+        final metadata = switch (file.path.split('.').last.toLowerCase()) {
+          'jpg' || 'jpeg' => SettableMetadata(contentType: 'image/jpeg'),
+          'png' => SettableMetadata(contentType: 'image/png'),
+          'svg' => SettableMetadata(contentType: 'image/svg+xml'),
+          'gif' => SettableMetadata(contentType: 'image/gif'),
+          'webp' => SettableMetadata(contentType: 'image/webp'),
+          _ => throw Exception('Unsupported file type'),
+        };
+        final ref = FirebaseStorage.instance.ref().child(
+          'messages/$chatId/${DateTime.now().millisecondsSinceEpoch}.${file.path.split('.').last.toLowerCase()}',
+        );
+        await ref.putData(await file.readAsBytes(), metadata);
+        final url = await ref.getDownloadURL();
+        urls.add(url);
+      }
+      return urls;
+    } catch (e) {
+      throw Exception('Failed to upload message images: $e');
+    }
+  }
+
+  @override
+  Future<List<String>> uploadSavedMessageImages({
+    required String userId,
+    required List<File> files,
+  }) async {
+    try {
+      final urls = <String>[];
+      for (var file in files) {
+        final metadata = switch (file.path.split('.').last.toLowerCase()) {
+          'jpg' || 'jpeg' => SettableMetadata(contentType: 'image/jpeg'),
+          'png' => SettableMetadata(contentType: 'image/png'),
+          'svg' => SettableMetadata(contentType: 'image/svg+xml'),
+          'gif' => SettableMetadata(contentType: 'image/gif'),
+          'webp' => SettableMetadata(contentType: 'image/webp'),
+          _ => throw Exception('Unsupported file type'),
+        };
+        final ref = FirebaseStorage.instance.ref().child(
+          'savedMessages/$userId/${DateTime.now().millisecondsSinceEpoch}.${file.path.split('.').last.toLowerCase()}',
+        );
+        await ref.putData(await file.readAsBytes(), metadata);
+        final url = await ref.getDownloadURL();
+        urls.add(url);
+      }
+      return urls;
+    } catch (e) {
+      throw Exception('Failed to upload saved message image: $e');
+    }
+  }
+
+  @override
   Future<String> uploadUserAvatar({required String userId, File? file}) async {
     try {
       await deleteUserAvatar(userId: userId);
@@ -24,19 +95,6 @@ class FirebaseStorageRepositoryImpl implements IFirebaseStorageRepository {
       return url;
     } catch (e) {
       throw Exception('Failed to upload avatar: $e');
-    }
-  }
-
-  @override
-  Future<void> deleteUserAvatar({required String userId}) async {
-    try {
-      final ref = FirebaseStorage.instance.ref().child('avatars/$userId');
-      final ListResult result = await ref.listAll();
-      for (var item in result.items) {
-        await item.delete();
-      }
-    } catch (e) {
-      throw Exception('Failed to delete avatar: $e');
     }
   }
 }

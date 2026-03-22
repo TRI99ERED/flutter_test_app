@@ -585,5 +585,9 @@
         "placeholders": {
             "project": {}
         }
-    }
+    },
+    "addImageLabel": "Додати зображення",
+    "@addImageLabel": {},
+    "typeAMessageLabel": "Введіть повідомлення...",
+    "@typeAMessageLabel": {}
 }

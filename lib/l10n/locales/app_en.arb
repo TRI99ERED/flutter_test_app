@@ -585,5 +585,9 @@
         "placeholders": {
             "project": {}
         }
-    }
+    },
+    "addImageLabel": "Add images",
+    "@addImageLabel": {},
+    "typeAMessageLabel": "Type a message...",
+    "@typeAMessageLabel": {}
 }

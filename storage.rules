@@ -18,6 +18,20 @@ service firebase.storage {
       allow write: if request.auth != null;
     }
 
+    // Allow users to upload images for messages - only allow users in the chat to read/write
+    match /messages/{chatId}/{filename} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null;
+    }
+
+    // Allow users to upload images for saved messages - only allow the owner to read/write
+    match /savedMessages/{userId}/{filename} {
+      allow read: if request.auth != null &&
+      request.auth.uid == userId;
+      allow write: if request.auth != null &&
+      request.auth.uid == userId;
+    }
+
     match /{allPaths=**} {
       allow read, write: if false;
     }

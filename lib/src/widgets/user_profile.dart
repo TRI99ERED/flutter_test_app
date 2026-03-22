@@ -5,6 +5,7 @@ import 'package:test_app/src/features/app/data/models/user_model.dart';
 import 'package:test_app/src/features/themes/app_theme.dart';
 import 'package:test_app/src/widgets/common/app_avatar.dart';
 import 'package:test_app/src/widgets/common/app_button.dart';
+import 'package:test_app/src/widgets/common/app_image_view.dart';
 import 'package:test_app/src/widgets/common/app_loader.dart';
 import 'package:test_app/src/widgets/common/app_nav_bar.dart';
 import 'package:test_app/src/widgets/common/app_text_field.dart';
@@ -42,24 +43,7 @@ class UserProfile extends StatefulWidget {
 class _UserProfileState extends State<UserProfile> {
   final _nameController = TextEditingController();
   final _handleController = TextEditingController();
-  final _formKey = GlobalKey<FormState>();
   final _isFormValid = ValueNotifier(false);
-
-  @override
-  void initState() {
-    super.initState();
-    _nameController.text = widget.user.name;
-    _handleController.text = widget.user.handle;
-    _nameController.addListener(_validateForm);
-    _handleController.addListener(_validateForm);
-  }
-
-  void _validateForm() {
-    if (_formKey.currentState != null) {
-      final isValid = _formKey.currentState!.validate();
-      _isFormValid.value = isValid;
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -78,8 +62,8 @@ class _UserProfileState extends State<UserProfile> {
           children: [
             Expanded(
               child: switch (widget.mode) {
-                UserProfileMode.view => _buildProfileView(),
-                UserProfileMode.edit => _buildProfileEdit(),
+                UserProfileMode.view => _UserProfileView(user: widget.user),
+                UserProfileMode.edit => _UserProfileEdit(user: widget.user),
               },
             ),
             if (widget.mode == UserProfileMode.edit)
@@ -122,16 +106,41 @@ class _UserProfileState extends State<UserProfile> {
     );
   }
 
-  Widget _buildProfileView() {
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _handleController.dispose();
+    super.dispose();
+  }
+}
+
+class _UserProfileView extends StatelessWidget {
+  final AuthorizedUser user;
+
+  const _UserProfileView({required this.user});
+
+  @override
+  Widget build(BuildContext context) {
     return ListView(
       children: [
         Center(
           child: StreamBuilder(
-            stream: context.appController.watchUserWithId(widget.user.id),
+            stream: context.appController.watchUserWithId(user.id),
             builder: (context, asyncSnapshot) {
-              return AppAvatar.avatarOrPlaceholder(
-                asyncSnapshot.data ?? widget.user,
-                AvatarSize.large,
+              return TextButton(
+                onPressed: () {
+                  if (asyncSnapshot.data?.avatarUrl != null &&
+                      asyncSnapshot.data!.avatarUrl.isNotEmpty) {
+                    AppImageView.show(
+                      context,
+                      imageUrl: asyncSnapshot.data!.avatarUrl,
+                    );
+                  }
+                },
+                child: AppAvatar.avatarOrPlaceholder(
+                  asyncSnapshot.data ?? user,
+                  AvatarSize.large,
+                ),
               );
             },
           ),
@@ -150,7 +159,7 @@ class _UserProfileState extends State<UserProfile> {
               ),
             ),
             Text(
-              widget.user.name,
+              user.name,
               style: TextStyle(
                 fontSize: bMSize,
                 fontWeight: bMWeight,
@@ -174,9 +183,9 @@ class _UserProfileState extends State<UserProfile> {
                 ).extension<AppTheme>()?.foregroundStrongestColor,
               ),
             ),
-            if (widget.user.handle.isNotEmpty)
+            if (user.handle.isNotEmpty)
               Text(
-                '@${widget.user.handle}',
+                '@${user.handle}',
                 style: TextStyle(
                   fontSize: bMSize,
                   fontWeight: bMWeight,
@@ -190,8 +199,41 @@ class _UserProfileState extends State<UserProfile> {
       ],
     );
   }
+}
 
-  Widget _buildProfileEdit() {
+class _UserProfileEdit extends StatefulWidget {
+  final AuthorizedUser _user;
+
+  const _UserProfileEdit({required AuthorizedUser user}) : _user = user;
+
+  @override
+  State<_UserProfileEdit> createState() => _UserProfileEditState();
+}
+
+class _UserProfileEditState extends State<_UserProfileEdit> {
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _handleController = TextEditingController();
+  final ValueNotifier<bool> _isFormValid = ValueNotifier(false);
+
+  @override
+  void initState() {
+    super.initState();
+    _nameController.text = widget._user.name;
+    _handleController.text = widget._user.handle;
+    _nameController.addListener(_validateForm);
+    _handleController.addListener(_validateForm);
+  }
+
+  void _validateForm() {
+    if (_formKey.currentState != null) {
+      final isValid = _formKey.currentState!.validate();
+      _isFormValid.value = isValid;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Form(
       key: _formKey,
       child: ListView(
@@ -206,11 +248,22 @@ class _UserProfileState extends State<UserProfile> {
                 },
               ),
               StreamBuilder(
-                stream: context.appController.watchUserWithId(widget.user.id),
+                stream: context.appController.watchUserWithId(widget._user.id),
                 builder: (context, asyncSnapshot) {
-                  return AppAvatar.avatarOrPlaceholder(
-                    asyncSnapshot.data ?? widget.user,
-                    AvatarSize.medium,
+                  return TextButton(
+                    onPressed: () {
+                      if (asyncSnapshot.data?.avatarUrl != null &&
+                          asyncSnapshot.data!.avatarUrl.isNotEmpty) {
+                        AppImageView.show(
+                          context,
+                          imageUrl: asyncSnapshot.data!.avatarUrl,
+                        );
+                      }
+                    },
+                    child: AppAvatar.avatarOrPlaceholder(
+                      asyncSnapshot.data ?? widget._user,
+                      AvatarSize.medium,
+                    ),
                   );
                 },
               ),
@@ -276,7 +329,7 @@ class _UserProfileState extends State<UserProfile> {
                     (user) =>
                         user.handle.toLowerCase() ==
                             _handleController.text.toLowerCase() &&
-                        user.id != widget.user.id,
+                        user.id != widget._user.id,
                   );
                   if (isHandleTaken) {
                     return context.l10n.handleIsAlreadyTakenMessage;
@@ -290,12 +343,5 @@ class _UserProfileState extends State<UserProfile> {
         ],
       ),
     );
-  }
-
-  @override
-  void dispose() {
-    _nameController.dispose();
-    _handleController.dispose();
-    super.dispose();
   }
 }

@@ -1,6 +1,8 @@
-import 'package:async/async.dart';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:rxdart/rxdart.dart';
 import 'package:test_app/src/features/home_screen/controllers/chat_controller.dart';
 import 'package:test_app/src/router/app_navigator.dart';
 import 'package:test_app/l10n/locales/l10n.dart';
@@ -413,18 +415,26 @@ class _ChatScreenNavBar extends StatelessWidget implements PreferredSizeWidget {
   }
 }
 
-class _ChatScreenMessageInput extends StatelessWidget {
+class _ChatScreenMessageInput extends StatefulWidget {
   final Chat chat;
 
   const _ChatScreenMessageInput({required this.chat});
 
   @override
+  State<_ChatScreenMessageInput> createState() =>
+      _ChatScreenMessageInputState();
+}
+
+class _ChatScreenMessageInputState extends State<_ChatScreenMessageInput> {
+  final _imageFiles = ValueNotifier<List<File>>([]);
+
+  @override
   Widget build(BuildContext context) {
     final chatController = context.chatController!;
 
-    if (chat is DirectChat) {
+    if (widget.chat is DirectChat) {
       return StreamBuilder(
-        stream: chatController.watchDirectChatUnreadCount(chat.id),
+        stream: chatController.watchDirectChatUnreadCount(widget.chat.id),
         builder: (context, asyncSnapshot) {
           if (asyncSnapshot.hasError) {
             return ErrorState(
@@ -433,56 +443,150 @@ class _ChatScreenMessageInput extends StatelessWidget {
             );
           }
           final unreadCount = asyncSnapshot.data ?? 0;
-          return AppMessageInput(
-            onSendPressed: (value) async {
-              final message = value.trim();
-              if (message.isEmpty) {
-                return;
-              }
-              final user = context.appState.user as AuthorizedUser;
-              final appController = context.appController;
-              await chatController.createDirectChatMessage(
-                chatId: chat.id,
-                senderId: user.id,
-                senderName: user.name,
-                body: message,
-              );
-              await chatController.updateDirectChatLastMessage(
-                chatId: chat.id,
-                lastMessage: message,
-              );
-              final chatList = await chatController
-                  .watchDirectChatsForUser(user.id)
-                  .first;
-              final currentChat = chatList?.firstWhere((c) => c.id == chat.id);
-              final users = await appController.watchAllUsers().first;
-              for (final participantId in currentChat?.participants ?? []) {
-                if (participantId != user.id) {
-                  final participant = users?.firstWhere(
-                    (u) => u.id == participantId,
-                    orElse: () => AuthorizedUser(
-                      id: participantId,
-                      name: context.l10n.unknownChatterLabel,
-                      email: '',
-                      handle: '',
-                      avatarUrl: '',
+          return Column(
+            children: [
+              ValueListenableBuilder(
+                valueListenable: _imageFiles,
+                builder: (context, value, child) {
+                  return SizedBox(
+                    height: _imageFiles.value.isEmpty ? 0 : 100,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: _imageFiles.value.length,
+                      itemBuilder: (context, index) {
+                        return Stack(
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.all(spacing8),
+                              child: Image.file(
+                                _imageFiles.value[index],
+                                height: 100,
+                                width: 100,
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                            Positioned(
+                              top: 12,
+                              right: 12,
+                              child: Container(
+                                height: 24,
+                                width: 24,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: Theme.of(context)
+                                      .extension<AppTheme>()
+                                      ?.backgroundStrongestColor,
+                                ),
+                              ),
+                            ),
+                            Positioned(
+                              top: 0,
+                              right: 0,
+                              child: IconButton(
+                                onPressed: () {
+                                  _imageFiles.value = List.from(
+                                    _imageFiles.value,
+                                  )..removeAt(index);
+                                },
+                                icon: Icon(
+                                  AppIcons.delete,
+                                  color: Theme.of(context)
+                                      .extension<AppTheme>()
+                                      ?.foregroundStrongestColor,
+                                  size: 24,
+                                ),
+                              ),
+                            ),
+                          ],
+                        );
+                      },
                     ),
                   );
-                  if (participant?.currentDirectChatId != chat.id) {
-                    await chatController.updateDirectChatUnreadCount(
-                      chatId: chat.id,
-                      unreadCount: unreadCount + 1,
-                    );
+                },
+              ),
+              AppMessageInput(
+                onMorePressed: () {
+                  showModalBottomSheet(
+                    context: context,
+                    builder: (context) {
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(
+                          vertical: spacing16,
+                        ),
+                        child: Column(
+                          children: [
+                            AppListItem(
+                              title: context.l10n.addImageLabel,
+                              icon: AppIcons.image,
+                              onPressed: () async {
+                                _imageFiles.value = await context
+                                    .chatController!
+                                    .pickMessageImages(chatId: widget.chat.id);
+                                if (!context.mounted) return;
+                                Navigator.of(context).pop();
+                              },
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  );
+                },
+                onSendPressed: (value) async {
+                  final message = value.trim();
+                  if (message.isEmpty && _imageFiles.value.isEmpty) {
+                    return;
                   }
-                }
-              }
-            },
+                  final user = context.appState.user as AuthorizedUser;
+                  final appController = context.appController;
+                  await chatController.createDirectChatMessage(
+                    chatId: widget.chat.id,
+                    senderId: user.id,
+                    senderName: user.name,
+                    body: message,
+                    imageFiles: _imageFiles.value,
+                  );
+                  _imageFiles.value = [];
+                  await chatController.updateDirectChatLastMessage(
+                    chatId: widget.chat.id,
+                    lastMessage: message,
+                  );
+                  final chatList = await chatController
+                      .watchDirectChatsForUser(user.id)
+                      .first;
+                  final currentChat = chatList?.firstWhere(
+                    (c) => c.id == widget.chat.id,
+                  );
+                  final users = await appController.watchAllUsers().first;
+                  for (final participantId in currentChat?.participants ?? []) {
+                    if (participantId != user.id) {
+                      final participant = users?.firstWhere(
+                        (u) => u.id == participantId,
+                        orElse: () => AuthorizedUser(
+                          id: participantId,
+                          name: context.l10n.unknownChatterLabel,
+                          email: '',
+                          handle: '',
+                          avatarUrl: '',
+                        ),
+                      );
+                      if (participant?.currentDirectChatId != widget.chat.id) {
+                        await chatController.updateDirectChatUnreadCount(
+                          chatId: widget.chat.id,
+                          unreadCount: unreadCount + 1,
+                        );
+                      }
+                    }
+                  }
+                },
+              ),
+            ],
           );
         },
       );
-    } else if (chat is GroupChat) {
+    } else if (widget.chat is GroupChat) {
       return StreamBuilder(
-        stream: chatController.watchGroupChatUnreadCounts(chat.id),
+        stream: chatController.watchGroupChatUnreadCounts(widget.chat.id),
         builder: (context, asyncSnapshot) {
           if (asyncSnapshot.hasError) {
             return ErrorState(
@@ -491,53 +595,149 @@ class _ChatScreenMessageInput extends StatelessWidget {
             );
           }
           final unreadCounts = asyncSnapshot.data ?? {};
-          return AppMessageInput(
-            onSendPressed: (value) async {
-              final message = value.trim();
-              if (message.isEmpty) {
-                return;
-              }
-              final user = context.appState.user as AuthorizedUser;
-              final appController = context.appController;
-              await chatController.createGroupChatMessage(
-                chatId: chat.id,
-                senderId: user.id,
-                senderName: user.name,
-                body: message,
-              );
-              await chatController.updateGroupChatLastMessage(
-                chatId: chat.id,
-                lastMessage: message,
-              );
-              final chatList = await chatController
-                  .watchGroupChatsForUser(user.id)
-                  .first;
-              final currentChat = chatList?.firstWhere((c) => c.id == chat.id);
-              final users = await appController.watchAllUsers().first;
-              final updatedUnreadCounts = Map<String, int>.from(unreadCounts);
-              for (final participantId in currentChat?.participants ?? []) {
-                if (participantId != user.id) {
-                  final participant = users?.firstWhere(
-                    (u) => u.id == participantId,
-                    orElse: () => AuthorizedUser(
-                      id: participantId,
-                      name: context.l10n.unknownChattersLabel,
-                      email: '',
-                      handle: '',
-                      avatarUrl: '',
+          return Column(
+            children: [
+              ValueListenableBuilder(
+                valueListenable: _imageFiles,
+                builder: (context, value, child) {
+                  return SizedBox(
+                    height: _imageFiles.value.isEmpty ? 0 : 100,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: _imageFiles.value.length,
+                      itemBuilder: (context, index) {
+                        return Stack(
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.all(spacing8),
+                              child: Image.file(
+                                _imageFiles.value[index],
+                                height: 100,
+                                width: 100,
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                            Positioned(
+                              top: 12,
+                              right: 12,
+                              child: Container(
+                                height: 24,
+                                width: 24,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: Theme.of(context)
+                                      .extension<AppTheme>()
+                                      ?.backgroundStrongestColor,
+                                ),
+                              ),
+                            ),
+                            Positioned(
+                              top: 0,
+                              right: 0,
+                              child: IconButton(
+                                onPressed: () {
+                                  _imageFiles.value = List.from(
+                                    _imageFiles.value,
+                                  )..removeAt(index);
+                                },
+                                icon: Icon(
+                                  AppIcons.delete,
+                                  color: Theme.of(context)
+                                      .extension<AppTheme>()
+                                      ?.foregroundStrongestColor,
+                                  size: 24,
+                                ),
+                              ),
+                            ),
+                          ],
+                        );
+                      },
                     ),
                   );
-                  if (participant?.currentGroupChatId != chat.id) {
-                    updatedUnreadCounts[participantId] =
-                        (updatedUnreadCounts[participantId] ?? 0) + 1;
+                },
+              ),
+              AppMessageInput(
+                onMorePressed: () {
+                  showModalBottomSheet(
+                    context: context,
+                    builder: (context) {
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(
+                          vertical: spacing16,
+                        ),
+                        child: Column(
+                          children: [
+                            AppListItem(
+                              title: context.l10n.addImageLabel,
+                              icon: AppIcons.image,
+                              onPressed: () async {
+                                _imageFiles.value = await context
+                                    .chatController!
+                                    .pickMessageImages(chatId: widget.chat.id);
+                                if (!context.mounted) return;
+                                Navigator.of(context).pop();
+                              },
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  );
+                },
+                onSendPressed: (value) async {
+                  final message = value.trim();
+                  if (message.isEmpty && _imageFiles.value.isEmpty) {
+                    return;
                   }
-                }
-              }
-              await chatController.updateGroupChatUnreadCounts(
-                chatId: chat.id,
-                unreadCounts: updatedUnreadCounts,
-              );
-            },
+                  final user = context.appState.user as AuthorizedUser;
+                  final appController = context.appController;
+                  await chatController.createGroupChatMessage(
+                    chatId: widget.chat.id,
+                    senderId: user.id,
+                    senderName: user.name,
+                    body: message,
+                    imageFiles: _imageFiles.value,
+                  );
+                  _imageFiles.value = [];
+                  await chatController.updateGroupChatLastMessage(
+                    chatId: widget.chat.id,
+                    lastMessage: message,
+                  );
+                  final chatList = await chatController
+                      .watchGroupChatsForUser(user.id)
+                      .first;
+                  final currentChat = chatList?.firstWhere(
+                    (c) => c.id == widget.chat.id,
+                  );
+                  final users = await appController.watchAllUsers().first;
+                  final updatedUnreadCounts = Map<String, int>.from(
+                    unreadCounts,
+                  );
+                  for (final participantId in currentChat?.participants ?? []) {
+                    if (participantId != user.id) {
+                      final participant = users?.firstWhere(
+                        (u) => u.id == participantId,
+                        orElse: () => AuthorizedUser(
+                          id: participantId,
+                          name: context.l10n.unknownChattersLabel,
+                          email: '',
+                          handle: '',
+                          avatarUrl: '',
+                        ),
+                      );
+                      if (participant?.currentGroupChatId != widget.chat.id) {
+                        updatedUnreadCounts[participantId] =
+                            (updatedUnreadCounts[participantId] ?? 0) + 1;
+                      }
+                    }
+                  }
+                  await chatController.updateGroupChatUnreadCounts(
+                    chatId: widget.chat.id,
+                    unreadCounts: updatedUnreadCounts,
+                  );
+                },
+              ),
+            ],
           );
         },
       );
@@ -560,7 +760,11 @@ class _ChatScreenMessageList extends StatelessWidget {
         : chatController.watchMessagesForGroupChat(chat.id);
     final usersStream = appController.watchAllUsers();
     return StreamBuilder(
-      stream: StreamZip([messageStream, usersStream]),
+      stream: Rx.combineLatest2(
+        messageStream,
+        usersStream,
+        (messages, users) => [messages, users],
+      ),
       builder: (context, snapshot) {
         if (snapshot.hasError) {
           return Center(
@@ -735,6 +939,7 @@ class _ChatScreenMessageList extends StatelessWidget {
                     index: index,
                     isFirstInSequence: true,
                     isRead: isRead,
+                    imageUrls: message.imageUrls,
                     timestamp: message.timestamp,
                     onTap: () {
                       _handleMessageTap(context, message);
@@ -753,6 +958,7 @@ class _ChatScreenMessageList extends StatelessWidget {
                 isFirstInSequence: true,
                 isLastInSequence: true,
                 isRead: isRead,
+                imageUrls: message.imageUrls,
                 timestamp: message.timestamp,
                 onTap: () {
                   _handleMessageTap(context, message);
@@ -766,6 +972,7 @@ class _ChatScreenMessageList extends StatelessWidget {
                 index: index,
                 isLastInSequence: true,
                 isRead: isRead,
+                imageUrls: message.imageUrls,
                 timestamp: message.timestamp,
                 onTap: () {
                   _handleMessageTap(context, message);
@@ -779,6 +986,7 @@ class _ChatScreenMessageList extends StatelessWidget {
                 index: index,
                 isFirstInSequence: true,
                 isRead: isRead,
+                imageUrls: message.imageUrls,
                 timestamp: message.timestamp,
                 onTap: () {
                   _handleMessageTap(context, message);
@@ -789,6 +997,7 @@ class _ChatScreenMessageList extends StatelessWidget {
               messagesWithSenderNames: messagesWithSenderNames,
               index: index,
               isRead: isRead,
+              imageUrls: message.imageUrls,
               timestamp: message.timestamp,
               onTap: () {
                 _handleMessageTap(context, message);
@@ -826,11 +1035,13 @@ class _ChatScreenMessageList extends StatelessWidget {
                     id: message.id,
                     senderId: message.senderId,
                     body: message.body,
+                    imageUrls: message.imageUrls,
                     timestamp: message.timestamp,
                     chatId: chat.id,
                     chatType: chat is DirectChat
                         ? ChatType.direct
                         : ChatType.group,
+                    savedAt: DateTime.now(),
                   ),
                 );
                 if (!context.mounted) return;

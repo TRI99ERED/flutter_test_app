@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:file_picker/file_picker.dart';
 import 'package:test_app/src/core/controller/base_controller/base_controller.dart';
 import 'package:test_app/src/features/app/app_controller/app_controller.dart';
@@ -9,6 +11,8 @@ import 'package:test_app/src/features/app/data/repositories/firebase/firebase_fi
 import 'package:test_app/src/features/app/data/repositories/firebase/firebase_firestore_repository/ifirebase_firestore_repository.dart';
 import 'package:test_app/src/features/app/data/repositories/firebase/firebase_functions_repository/firebase_functions_repository_impl.dart';
 import 'package:test_app/src/features/app/data/repositories/firebase/firebase_functions_repository/ifirebase_functions_repository.dart';
+import 'package:test_app/src/features/app/data/repositories/firebase/firebase_storage_repository/firebase_storage_repository_impl.dart';
+import 'package:test_app/src/features/app/data/repositories/firebase/firebase_storage_repository/ifirebase_storage_repository.dart';
 
 part 'chat_state.dart';
 
@@ -16,11 +20,13 @@ final class ChatController extends BaseController<ChatState> {
   final AppController _appController;
   final IFirebaseFirestoreRepository _firestoreRepository;
   final IFirebaseFunctionsRepository _functionsRepository;
+  final IFirebaseStorageRepository _storageRepository;
 
   ChatController({required AppController appController})
     : _appController = appController,
       _firestoreRepository = FirebaseFirestoreRepositoryImpl(),
       _functionsRepository = FirebaseFunctionsRepositoryImpl(),
+      _storageRepository = FirebaseStorageRepositoryImpl(),
       super(
         state: const ChatState.idle(message: 'initialized'),
         name: 'ChatController',
@@ -128,6 +134,7 @@ final class ChatController extends BaseController<ChatState> {
     required String senderId,
     required String senderName,
     required String body,
+    required List<File> imageFiles,
   }) async => await serialExecutor.synchronized(() async {
     setState(
       ChatState.processing(
@@ -135,10 +142,18 @@ final class ChatController extends BaseController<ChatState> {
       ),
     );
     try {
+      List<String> imageUrls = [];
+      if (imageFiles.isNotEmpty) {
+        imageUrls = await _storageRepository.uploadMessageImages(
+          files: imageFiles,
+          chatId: chatId,
+        );
+      }
       final message = await _firestoreRepository.createDirectChatMessage(
         chatId: chatId,
         senderId: senderId,
         body: body,
+        imageUrls: imageUrls,
       );
       setState(
         ChatState.idle(
@@ -165,6 +180,7 @@ final class ChatController extends BaseController<ChatState> {
     required String senderId,
     required String senderName,
     required String body,
+    required List<File> imageFiles,
   }) async => await serialExecutor.synchronized(() async {
     setState(
       ChatState.processing(
@@ -172,10 +188,18 @@ final class ChatController extends BaseController<ChatState> {
       ),
     );
     try {
+      List<String> imageUrls = [];
+      if (imageFiles.isNotEmpty) {
+        imageUrls = await _storageRepository.uploadMessageImages(
+          files: imageFiles,
+          chatId: chatId,
+        );
+      }
       final message = await _firestoreRepository.createGroupChatMessage(
         chatId: chatId,
         senderId: senderId,
         body: body,
+        imageUrls: imageUrls,
       );
       setState(
         ChatState.idle(
@@ -651,13 +675,21 @@ final class ChatController extends BaseController<ChatState> {
     );
   }
 
-  Future<void> createSavedMessage(String body) async =>
+  Future<void> createSavedMessage(String body, List<File> imageFiles) async =>
       await serialExecutor.synchronized(() async {
         setState(ChatState.processing(message: 'Creating saved message...'));
         try {
+          List<String> imageUrls = [];
+          if (imageFiles.isNotEmpty) {
+            imageUrls = await _storageRepository.uploadSavedMessageImages(
+              files: imageFiles,
+              userId: (_appController.state.user as AuthorizedUser).id,
+            );
+          }
           await _firestoreRepository.createSavedMessage(
             (_appController.state.user as AuthorizedUser).id,
             body,
+            imageUrls,
           );
           setState(
             ChatState.idle(message: 'Saved message created successfully.'),
@@ -728,6 +760,79 @@ final class ChatController extends BaseController<ChatState> {
         ChatState.failed(
           message:
               'Failed to update this user\'s unread count for group chat "$chatId": ${error.toString()}',
+          error: error,
+          stackTrace: stackTrace,
+        ),
+      );
+      return Future.error(error, stackTrace);
+    }
+  });
+
+  Future<List<File>> pickMessageImages({required String chatId}) async =>
+      await serialExecutor.synchronized(() async {
+        setState(ChatState.processing(message: 'Picking message image...'));
+        try {
+          final imageFile = await FilePicker.platform.pickFiles(
+            type: FileType.image,
+            allowMultiple: true,
+          );
+          if (imageFile == null || imageFile.files.isEmpty) {
+            setState(
+              ChatState.idle(
+                message:
+                    'Message image selection cancelled for chat "$chatId".',
+              ),
+            );
+            return [];
+          }
+          final files = imageFile.files
+              .map(
+                (file) => file.path != null
+                    ? File(file.path!)
+                    : File.fromRawPath(file.bytes!),
+              )
+              .toList();
+          setState(ChatState.idle(message: 'Message image selected.'));
+          return files;
+        } catch (error, stackTrace) {
+          setState(
+            ChatState.failed(
+              message: 'Failed to pick message image: ${error.toString()}',
+              error: error,
+              stackTrace: stackTrace,
+            ),
+          );
+          return Future.error(error, stackTrace);
+        }
+      });
+
+  Future<List<File>>
+  pickSavedMessageImages() async => await serialExecutor.synchronized(() async {
+    setState(ChatState.processing(message: 'Picking saved message image...'));
+    try {
+      final imageFile = await FilePicker.platform.pickFiles(
+        type: FileType.image,
+        allowMultiple: true,
+      );
+      if (imageFile == null || imageFile.files.isEmpty) {
+        setState(
+          ChatState.idle(message: 'Saved message image selection cancelled.'),
+        );
+        return [];
+      }
+      final files = imageFile.files
+          .map(
+            (file) => file.path != null
+                ? File(file.path!)
+                : File.fromRawPath(file.bytes!),
+          )
+          .toList();
+      setState(ChatState.idle(message: 'Saved message image selected.'));
+      return files;
+    } catch (error, stackTrace) {
+      setState(
+        ChatState.failed(
+          message: 'Failed to pick saved message image: ${error.toString()}',
           error: error,
           stackTrace: stackTrace,
         ),

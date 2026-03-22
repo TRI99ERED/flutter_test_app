@@ -11,6 +11,7 @@ class AlignedMessageBubble extends StatelessWidget {
   final bool isLastInSequence;
   final bool isFirstInSequence;
   final bool? isRead;
+  final List<String> imageUrls;
   final DateTime timestamp;
   final VoidCallback? onTap;
 
@@ -21,6 +22,7 @@ class AlignedMessageBubble extends StatelessWidget {
     this.isLastInSequence = false,
     this.isFirstInSequence = false,
     this.isRead,
+    this.imageUrls = const [],
     required this.timestamp,
     this.onTap,
   });
@@ -44,6 +46,7 @@ class AlignedMessageBubble extends StatelessWidget {
                 ? messagesWithSenderNames.values.elementAt(index)
                 : null,
             body: messagesWithSenderNames.keys.elementAt(index).body,
+            imageUrls: imageUrls,
             isLastInSequence: isLastInSequence,
             isRead: isRead,
             messageType:

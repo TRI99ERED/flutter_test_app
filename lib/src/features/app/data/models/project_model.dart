@@ -20,7 +20,7 @@ enum ProjectStatus {
   }
 }
 
-class Project {
+final class Project {
   final String id;
   final String name;
   final String description;

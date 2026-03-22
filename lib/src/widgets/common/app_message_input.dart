@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:test_app/l10n/locales/l10n.dart';
 import 'package:test_app/src/core/resources/app_icons.dart';
 import 'package:test_app/src/features/themes/app_theme.dart';
 import 'package:test_app/src/features/themes/styles.dart';
@@ -95,7 +96,7 @@ class _AppMessageInputState extends State<AppMessageInput> {
             keyboardType: TextInputType.text,
             textInputAction: TextInputAction.send,
             decoration: InputDecoration(
-              hintText: 'Type a message...',
+              hintText: context.l10n.typeAMessageLabel,
               contentPadding: const EdgeInsets.symmetric(
                 vertical: spacing8,
                 horizontal: spacing16,

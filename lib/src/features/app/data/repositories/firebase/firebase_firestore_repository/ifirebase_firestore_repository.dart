@@ -24,6 +24,7 @@ abstract interface class IFirebaseFirestoreRepository {
     required String chatId,
     required String senderId,
     required String body,
+    required List<String> imageUrls,
   });
 
   Future<GroupChat> createGroupChat({
@@ -36,6 +37,7 @@ abstract interface class IFirebaseFirestoreRepository {
     required String chatId,
     required String senderId,
     required String body,
+    required List<String> imageUrls,
   });
 
   Future<Project> createProjectForUser(
@@ -46,7 +48,11 @@ abstract interface class IFirebaseFirestoreRepository {
     DateTime deadline,
   );
 
-  Future<void> createSavedMessage(String userId, String body);
+  Future<void> createSavedMessage(
+    String userId,
+    String body,
+    List<String> imageUrls,
+  );
 
   Future<void> createUser({required AuthorizedUser user});
 

@@ -4,6 +4,7 @@ import 'package:test_app/src/features/app/app_scope.dart';
 import 'package:test_app/src/features/app/data/models/chat_model.dart';
 import 'package:test_app/src/features/app/data/models/user_model.dart';
 import 'package:test_app/src/widgets/common/app_avatar.dart';
+import 'package:test_app/src/widgets/common/app_image_view.dart';
 import 'package:test_app/src/widgets/common/app_nav_bar.dart';
 import 'package:test_app/src/widgets/user_picker.dart';
 import 'package:test_app/src/widgets/common/app_button.dart';
@@ -212,9 +213,19 @@ class _ChatWizardState extends State<ChatWizard> {
                                 if (chat == null) {
                                   return const SizedBox.shrink();
                                 }
-                                return AppAvatar.groupAvatarOrPlaceholder(
-                                  chat,
-                                  AvatarSize.large,
+                                return TextButton(
+                                  onPressed: () {
+                                    if (chat.avatarUrl.isNotEmpty) {
+                                      AppImageView.show(
+                                        context,
+                                        imageUrl: chat.avatarUrl,
+                                      );
+                                    }
+                                  },
+                                  child: AppAvatar.groupAvatarOrPlaceholder(
+                                    chat,
+                                    AvatarSize.large,
+                                  ),
                                 );
                               },
                             ),

@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 
-class ProjectFeedback {
+final class ProjectFeedback {
   final String feedbackId;
   final String projectId;
   final String userId;

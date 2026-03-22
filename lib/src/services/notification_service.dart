@@ -5,7 +5,7 @@ import 'package:firebase_messaging/firebase_messaging.dart'
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:test_app/src/features/app/data/models/notification_settings.dart';
+import 'package:test_app/src/features/app/data/models/notification_settings_model.dart';
 import 'package:test_app/src/router/app_page.dart';
 import 'package:test_app/src/router/app_router.dart';
 
@@ -65,7 +65,8 @@ class NotificationService {
         final didNotificationLaunchApp =
             notificationAppLaunchDetails?.didNotificationLaunchApp ?? false;
         final lastHandled = _notificationLaunchHandledAt;
-        final isRecentHandling = lastHandled != null &&
+        final isRecentHandling =
+            lastHandled != null &&
             DateTime.now().difference(lastHandled).inSeconds < 2;
         if (didNotificationLaunchApp &&
             notificationAppLaunchDetails?.notificationResponse != null &&

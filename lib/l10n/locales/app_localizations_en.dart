@@ -896,4 +896,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String deleteProjectConfirmationLabel(Object project) {
     return 'Are you sure you want to delete project $project? This action cannot be undone.';
   }
+
+  @override
+  String get addImageLabel => 'Add images';
+
+  @override
+  String get typeAMessageLabel => 'Type a message...';
 }

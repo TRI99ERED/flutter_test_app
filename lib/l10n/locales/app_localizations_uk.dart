@@ -909,4 +909,10 @@ class AppLocalizationsUk extends AppLocalizations {
   String deleteProjectConfirmationLabel(Object project) {
     return 'Ви впевнені, що хочете видалити проєкт $project? Цю дію не можна скасувати.';
   }
+
+  @override
+  String get addImageLabel => 'Додати зображення';
+
+  @override
+  String get typeAMessageLabel => 'Введіть повідомлення...';
 }

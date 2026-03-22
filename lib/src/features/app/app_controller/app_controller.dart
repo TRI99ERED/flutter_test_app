@@ -4,7 +4,7 @@ import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:test_app/src/core/controller/base_controller/base_controller.dart';
-import 'package:test_app/src/features/app/data/models/notification_settings.dart';
+import 'package:test_app/src/features/app/data/models/notification_settings_model.dart';
 import 'package:test_app/src/features/app/data/models/project_feedback_model.dart';
 import 'package:test_app/src/features/app/data/models/user_model.dart';
 import 'package:test_app/src/features/app/data/repositories/firebase/firebase_auth_repository/firebase_auth_repository_impl.dart';

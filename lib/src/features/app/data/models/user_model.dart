@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:test_app/src/features/app/data/models/notification_settings.dart';
+import 'package:test_app/src/features/app/data/models/notification_settings_model.dart';
 
 abstract base class UserEntity {
   const UserEntity();
