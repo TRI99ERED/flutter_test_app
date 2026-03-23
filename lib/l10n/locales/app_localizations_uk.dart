@@ -93,7 +93,7 @@ class AppLocalizationsUk extends AppLocalizations {
   String get friendsTitle => 'Друзі';
 
   @override
-  String get projectsTitle => 'Проєкти';
+  String get projectsTitle => 'Проекти';
 
   @override
   String get settingsTitle => 'Налаштування';
@@ -224,30 +224,30 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get errorLoadingToDoProjectsMessage =>
-      'Помилка завантаження проєктів до виконання';
+      'Помилка завантаження проектів до виконання';
 
   @override
   String get errorLoadingInProgressProjectsMessage =>
-      'Помилка завантаження проєктів в процесі';
+      'Помилка завантаження проектів в процесі';
 
   @override
   String get errorLoadingFinishedProjectsMessage =>
-      'Помилка завантаження завершених проєктів';
+      'Помилка завантаження завершених проектів';
 
   @override
   String get thisIsWhereYoullfindYourToDoProjectsLabel =>
-      'Тут ви знайдете свої проєкти до виконання.';
+      'Тут ви знайдете свої проекти до виконання.';
 
   @override
   String get thisIsWhereYoullfindYourInProgressProjectsLabel =>
-      'Тут ви знайдете свої проєкти в процесі.';
+      'Тут ви знайдете свої проекти в процесі.';
 
   @override
   String get thisIsWhereYoullfindYourFinishedProjectsLabel =>
-      'Тут ви знайдете свої завершені проєкти.';
+      'Тут ви знайдете свої завершені проекти.';
 
   @override
-  String get startAProjectLabel => 'Розпочати проєкт';
+  String get startAProjectLabel => 'Розпочати проект';
 
   @override
   String get noDescriptionProvidedLabel => 'Опис не надано.';
@@ -366,7 +366,7 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get enableProjectInviteNotificationsLabel =>
-      'Увімкнути сповіщення про запрошення в проєкти';
+      'Увімкнути сповіщення про запрошення в проекти';
 
   @override
   String get enableMessageNotificationsLabel =>
@@ -386,7 +386,7 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get launchYourProjectWithConfidenceLabel =>
-      'Запустіть свій проєкт з упевненістю';
+      'Запустіть свій проект з упевненістю';
 
   @override
   String get enjoyThesePreMadeComponentsLabel =>
@@ -398,13 +398,13 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get launchYourProjectWithConfidenceAndEaseLabel =>
-      'Запустіть свій проєкт з упевненістю та легкістю, знаючи, що ви протестували його з реальними користувачами та внесли зміни на основі їх відгуків.';
+      'Запустіть свій проект з упевненістю та легкістю, знаючи, що ви протестували його з реальними користувачами та внесли зміни на основі їх відгуків.';
 
   @override
   String get feedbackTitle => 'Відгук';
 
   @override
-  String get yourProjectIsFinishedLabel => 'Ваш проєкт завершено.';
+  String get yourProjectIsFinishedLabel => 'Ваш проект завершено.';
 
   @override
   String get howWouldYouRateThePrototypingKitLabel =>
@@ -456,14 +456,14 @@ class AppLocalizationsUk extends AppLocalizations {
   String get feedbackSubmittedLabel => 'Відгук надіслано!';
 
   @override
-  String get projectNotFoundLabel => 'Проєкт не знайдено';
+  String get projectNotFoundLabel => 'Проект не знайдено';
 
   @override
-  String get errorLoadingProjectMessage => 'Помилка завантаження проєкту';
+  String get errorLoadingProjectMessage => 'Помилка завантаження проекту';
 
   @override
   String projectWithIdNotFoundMessage(Object projectId) {
-    return 'Проєкт з id $projectId не знайдено';
+    return 'Проект з id $projectId не знайдено';
   }
 
   @override
@@ -477,7 +477,7 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get projectCompletedLabel =>
-      'Проєкт завершено! Будь ласка, залиште свій відгук.';
+      'Проект завершено! Будь ласка, залиште свій відгук.';
 
   @override
   String get provideFeedbackLabel => 'Залишити Відгук';
@@ -511,14 +511,14 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get noOtherParticipantsMessage =>
-      'Інші учасники не знайдені в проєкті.';
+      'Інші учасники не знайдені в проекті.';
 
   @override
   String get noGroupChatFoundMessage =>
-      'Груповий чат для цього проєкту не знайдено. Будь ласка, попросіть власника проєкту створити його.';
+      'Груповий чат для цього проекту не знайдено. Будь ласка, попросіть власника проекту створити його.';
 
   @override
-  String get projectTitle => 'Проєкт';
+  String get projectTitle => 'Проект';
 
   @override
   String get errorLoadingParticipantsMessage =>
@@ -768,19 +768,19 @@ class AppLocalizationsUk extends AppLocalizations {
   String get saveLabel => 'Зберегти';
 
   @override
-  String get createAProjectTitle => 'Створити проєкт';
+  String get createAProjectTitle => 'Створити проект';
 
   @override
-  String get editProjectTitle => 'Редагувати проєкт';
+  String get editProjectTitle => 'Редагувати проект';
 
   @override
-  String get projectNameLabel => 'Назва проєкту';
+  String get projectNameLabel => 'Назва проекту';
 
   @override
-  String get enterProjectNameLabel => 'Введіть назву проєкту';
+  String get enterProjectNameLabel => 'Введіть назву проекту';
 
   @override
-  String get enterProjectDescriptionLabel => 'Введіть опис проєкту';
+  String get enterProjectDescriptionLabel => 'Введіть опис проекту';
 
   @override
   String get setDeadlineLabel => 'Встановити кінцевий термін';
@@ -903,11 +903,11 @@ class AppLocalizationsUk extends AppLocalizations {
   }
 
   @override
-  String get deleteProjectLabel => 'Видалити проєкт?';
+  String get deleteProjectLabel => 'Видалити проект?';
 
   @override
   String deleteProjectConfirmationLabel(Object project) {
-    return 'Ви впевнені, що хочете видалити проєкт $project? Цю дію не можна скасувати.';
+    return 'Ви впевнені, що хочете видалити проект $project? Цю дію не можна скасувати.';
   }
 
   @override
