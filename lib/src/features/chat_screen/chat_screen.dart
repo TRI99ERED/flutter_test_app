@@ -813,6 +813,9 @@ class _ChatScreenMessageInputState extends State<_ChatScreenMessageInput> {
                 onMorePressed: () {
                   showModalBottomSheet(
                     context: context,
+                    constraints: BoxConstraints(
+                      maxHeight: MediaQuery.sizeOf(context).height * 0.3,
+                    ),
                     builder: (context) {
                       return Padding(
                         padding: const EdgeInsets.symmetric(
@@ -932,7 +935,7 @@ class _ChatScreenMessageList extends StatefulWidget {
 
 class _ChatScreenMessageListState extends State<_ChatScreenMessageList> {
   late List<Message> _messages;
-  String? _highlightedMessageId;
+  final _highlightedMessageId = ValueNotifier<String?>(null);
 
   @override
   Widget build(BuildContext context) {
@@ -964,7 +967,7 @@ class _ChatScreenMessageListState extends State<_ChatScreenMessageList> {
         if (_messages.isEmpty) {
           return EmptyState(title: context.l10n.noMessagesYetLabel);
         }
-        final messagesWithSenderNames = <Message, String>{};
+        final messagesWithSenderNames = <({Message message, String senderName})>[];
         for (final message in _messages) {
           final sender = users.firstWhere(
             (user) => user.id == message.senderId,
@@ -978,7 +981,7 @@ class _ChatScreenMessageListState extends State<_ChatScreenMessageList> {
               );
             },
           );
-          messagesWithSenderNames[message] = sender.name;
+          messagesWithSenderNames.add((message: message, senderName: sender.name));
         }
         return ListView.separated(
           controller: widget.scrollController,
@@ -1137,14 +1140,20 @@ class _ChatScreenMessageListState extends State<_ChatScreenMessageList> {
                       ),
                     ),
                   ),
-                  AnimatedContainer(
-                    duration: const Duration(milliseconds: 200),
-                    color: _highlightedMessageId == message.id
-                        ? Theme.of(context)
-                              .extension<AppTheme>()
-                              ?.foregroundStrongestColor
-                              .withAlpha(32)
-                        : Colors.transparent,
+                  ValueListenableBuilder(
+                    valueListenable: _highlightedMessageId,
+                    builder: (context, highlightedId, child) {
+                      return AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        color: highlightedId == message.id
+                            ? Theme.of(context)
+                                  .extension<AppTheme>()
+                                  ?.foregroundStrongestColor
+                                  .withAlpha(32)
+                            : Colors.transparent,
+                        child: child,
+                      );
+                    },
                     child: KeyedSubtree(
                       key: widget.getKeyForMessage(message.id),
                       child: AlignedMessageBubble(
@@ -1173,14 +1182,20 @@ class _ChatScreenMessageListState extends State<_ChatScreenMessageList> {
                 (index == _messages.length - 1 ||
                     _messages[index + 1].senderId !=
                         _messages[index].senderId)) {
-              return AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                color: _highlightedMessageId == message.id
-                    ? Theme.of(context)
-                          .extension<AppTheme>()
-                          ?.foregroundStrongestColor
-                          .withAlpha(32)
-                    : Colors.transparent,
+              return ValueListenableBuilder(
+                valueListenable: _highlightedMessageId,
+                builder: (context, highlightedId, child) {
+                  return AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    color: highlightedId == message.id
+                        ? Theme.of(context)
+                              .extension<AppTheme>()
+                              ?.foregroundStrongestColor
+                              .withAlpha(32)
+                        : Colors.transparent,
+                    child: child,
+                  );
+                },
                 child: AlignedMessageBubble(
                   key: widget.getKeyForMessage(message.id),
                   messagesWithSenderNames: messagesWithSenderNames,
@@ -1202,14 +1217,20 @@ class _ChatScreenMessageListState extends State<_ChatScreenMessageList> {
             }
             if (index == 0 ||
                 _messages[index - 1].senderId != _messages[index].senderId) {
-              return AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                color: _highlightedMessageId == message.id
-                    ? Theme.of(context)
-                          .extension<AppTheme>()
-                          ?.foregroundStrongestColor
-                          .withAlpha(32)
-                    : Colors.transparent,
+              return ValueListenableBuilder(
+                valueListenable: _highlightedMessageId,
+                builder: (context, highlightedId, child) {
+                  return AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    color: highlightedId == message.id
+                        ? Theme.of(context)
+                              .extension<AppTheme>()
+                              ?.foregroundStrongestColor
+                              .withAlpha(32)
+                        : Colors.transparent,
+                    child: child,
+                  );
+                },
                 child: AlignedMessageBubble(
                   key: widget.getKeyForMessage(message.id),
                   messagesWithSenderNames: messagesWithSenderNames,
@@ -1230,14 +1251,20 @@ class _ChatScreenMessageListState extends State<_ChatScreenMessageList> {
             }
             if (index == _messages.length - 1 ||
                 _messages[index + 1].senderId != _messages[index].senderId) {
-              return AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                color: _highlightedMessageId == message.id
-                    ? Theme.of(context)
-                          .extension<AppTheme>()
-                          ?.foregroundStrongestColor
-                          .withAlpha(32)
-                    : Colors.transparent,
+              return ValueListenableBuilder(
+                valueListenable: _highlightedMessageId,
+                builder: (context, highlightedId, child) {
+                  return AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    color: highlightedId == message.id
+                        ? Theme.of(context)
+                              .extension<AppTheme>()
+                              ?.foregroundStrongestColor
+                              .withAlpha(32)
+                        : Colors.transparent,
+                    child: child,
+                  );
+                },
                 child: AlignedMessageBubble(
                   key: widget.getKeyForMessage(message.id),
                   messagesWithSenderNames: messagesWithSenderNames,
@@ -1256,14 +1283,20 @@ class _ChatScreenMessageListState extends State<_ChatScreenMessageList> {
                 ),
               );
             }
-            return AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              color: _highlightedMessageId == message.id
-                  ? Theme.of(context)
-                        .extension<AppTheme>()
-                        ?.foregroundStrongestColor
-                        .withAlpha(32)
-                  : Colors.transparent,
+            return ValueListenableBuilder(
+              valueListenable: _highlightedMessageId,
+              builder: (context, highlightedId, child) {
+                return AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  color: highlightedId == message.id
+                      ? Theme.of(context)
+                            .extension<AppTheme>()
+                            ?.foregroundStrongestColor
+                            .withAlpha(32)
+                      : Colors.transparent,
+                  child: child,
+                );
+              },
               child: AlignedMessageBubble(
                 key: widget.getKeyForMessage(message.id),
                 messagesWithSenderNames: messagesWithSenderNames,
@@ -1382,14 +1415,10 @@ class _ChatScreenMessageListState extends State<_ChatScreenMessageList> {
   }
 
   void _highlightMessage(String messageId) {
-    setState(() {
-      _highlightedMessageId = messageId;
-    });
+    _highlightedMessageId.value = messageId;
     Future.delayed(const Duration(milliseconds: 500), () {
       if (mounted) {
-        setState(() {
-          _highlightedMessageId = null;
-        });
+        _highlightedMessageId.value = null;
       }
     });
   }
@@ -1426,5 +1455,11 @@ class _ChatScreenMessageListState extends State<_ChatScreenMessageList> {
             });
       }
     });
+  }
+
+  @override
+  void dispose() {
+    _highlightedMessageId.dispose();
+    super.dispose();
   }
 }

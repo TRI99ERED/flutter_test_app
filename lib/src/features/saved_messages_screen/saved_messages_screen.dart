@@ -37,21 +37,17 @@ class _SavedMessagesScreenState extends State<SavedMessagesScreen> {
   final _scrollController = ScrollController();
   final _itemKeys = <String, GlobalKey>{};
   List<SavedMessage> _messages = [];
-  String? _highlightedMessageId;
+  final _highlightedMessageId = ValueNotifier<String?>(null);
 
   GlobalKey _getKeyForMessage(String id) {
     return _itemKeys.putIfAbsent(id, () => GlobalKey());
   }
 
   void _highlightMessage(String messageId) {
-    setState(() {
-      _highlightedMessageId = messageId;
-    });
+    _highlightedMessageId.value = messageId;
     Future.delayed(const Duration(milliseconds: 500), () {
       if (mounted) {
-        setState(() {
-          _highlightedMessageId = null;
-        });
+        _highlightedMessageId.value = null;
       }
     });
   }
@@ -61,6 +57,7 @@ class _SavedMessagesScreenState extends State<SavedMessagesScreen> {
     _messageToReply.dispose();
     _messageToReplyBody.dispose();
     _scrollController.dispose();
+    _highlightedMessageId.dispose();
     super.dispose();
   }
 
@@ -141,7 +138,7 @@ class _SavedMessagesScreenState extends State<SavedMessagesScreen> {
                           );
                         }
                         final messagesWithSenderNames =
-                            <SavedMessage, String>{};
+                            <({SavedMessage message, String senderName})>[];
                         for (final message in _messages) {
                           final sender = users.firstWhere(
                             (user) => user.id == message.senderId,
@@ -155,7 +152,10 @@ class _SavedMessagesScreenState extends State<SavedMessagesScreen> {
                               );
                             },
                           );
-                          messagesWithSenderNames[message] = sender.name;
+                          messagesWithSenderNames.add((
+                            message: message,
+                            senderName: sender.name,
+                          ));
                         }
                         return ListView.separated(
                           controller: _scrollController,
@@ -271,33 +271,45 @@ class _SavedMessagesScreenState extends State<SavedMessagesScreen> {
                                       ),
                                     ),
                                   ),
-                                  AnimatedContainer(
-                                    duration: const Duration(milliseconds: 200),
-                                    color: _highlightedMessageId == message.id
-                                        ? Theme.of(context)
-                                              .extension<AppTheme>()
-                                              ?.foregroundStrongestColor
-                                              .withAlpha(32)
-                                        : Colors.transparent,
-                                    child: KeyedSubtree(
-                                      key: _getKeyForMessage(message.id),
-                                      child: AlignedMessageBubble(
-                                        messagesWithSenderNames:
-                                            messagesWithSenderNames,
-                                        index: index,
-                                        isFirstInSequence: true,
-                                        isRead: true,
-                                        imageUrls: message.imageUrls,
-                                        replyBody: message.replyBody,
-                                        timestamp: message.timestamp,
-                                        onTap: () {
-                                          _handleMessageTap(context, message);
-                                        },
-                                        onReplyTap: () {
-                                          _handleReplyTap(context, message);
-                                        },
-                                      ),
-                                    ),
+                                  ValueListenableBuilder(
+                                    valueListenable: _highlightedMessageId,
+                                    builder: (context, value, child) {
+                                      return AnimatedContainer(
+                                        duration: const Duration(
+                                          milliseconds: 200,
+                                        ),
+                                        color:
+                                            _highlightedMessageId.value ==
+                                                message.id
+                                            ? Theme.of(context)
+                                                  .extension<AppTheme>()
+                                                  ?.foregroundStrongestColor
+                                                  .withAlpha(32)
+                                            : Colors.transparent,
+                                        child: KeyedSubtree(
+                                          key: _getKeyForMessage(message.id),
+                                          child: AlignedMessageBubble(
+                                            messagesWithSenderNames:
+                                                messagesWithSenderNames,
+                                            index: index,
+                                            isFirstInSequence: true,
+                                            isRead: true,
+                                            imageUrls: message.imageUrls,
+                                            replyBody: message.replyBody,
+                                            timestamp: message.timestamp,
+                                            onTap: () {
+                                              _handleMessageTap(
+                                                context,
+                                                message,
+                                              );
+                                            },
+                                            onReplyTap: () {
+                                              _handleReplyTap(context, message);
+                                            },
+                                          ),
+                                        ),
+                                      );
+                                    },
                                   ),
                                 ],
                               );
@@ -308,118 +320,145 @@ class _SavedMessagesScreenState extends State<SavedMessagesScreen> {
                                 (index == _messages.length - 1 ||
                                     _messages[index + 1].senderId !=
                                         _messages[index].senderId)) {
-                              return AnimatedContainer(
-                                duration: const Duration(milliseconds: 200),
-                                color: _highlightedMessageId == message.id
-                                    ? Theme.of(context)
-                                          .extension<AppTheme>()
-                                          ?.foregroundStrongestColor
-                                          .withAlpha(32)
-                                    : Colors.transparent,
-                                child: AlignedMessageBubble(
-                                  key: _getKeyForMessage(message.id),
-                                  messagesWithSenderNames:
-                                      messagesWithSenderNames,
-                                  index: index,
-                                  isFirstInSequence: true,
-                                  isLastInSequence: true,
-                                  isRead: true,
-                                  imageUrls: message.imageUrls,
-                                  replyBody: message.replyBody,
-                                  timestamp: message.timestamp,
-                                  onTap: () {
-                                    _handleMessageTap(context, message);
-                                  },
-                                  onReplyTap: () {
-                                    _handleReplyTap(context, message);
-                                  },
-                                ),
+                              return ValueListenableBuilder(
+                                valueListenable: _highlightedMessageId,
+                                builder: (context, value, child) {
+                                  return AnimatedContainer(
+                                    duration: const Duration(milliseconds: 200),
+                                    color:
+                                        _highlightedMessageId.value ==
+                                            message.id
+                                        ? Theme.of(context)
+                                              .extension<AppTheme>()
+                                              ?.foregroundStrongestColor
+                                              .withAlpha(32)
+                                        : Colors.transparent,
+                                    child: AlignedMessageBubble(
+                                      key: _getKeyForMessage(message.id),
+                                      messagesWithSenderNames:
+                                          messagesWithSenderNames,
+                                      index: index,
+                                      isFirstInSequence: true,
+                                      isLastInSequence: true,
+                                      isRead: true,
+                                      imageUrls: message.imageUrls,
+                                      replyBody: message.replyBody,
+                                      timestamp: message.timestamp,
+                                      onTap: () {
+                                        _handleMessageTap(context, message);
+                                      },
+                                      onReplyTap: () {
+                                        _handleReplyTap(context, message);
+                                      },
+                                    ),
+                                  );
+                                },
                               );
                             }
                             if (index == 0 ||
                                 _messages[index - 1].senderId !=
                                     _messages[index].senderId) {
-                              return AnimatedContainer(
-                                duration: const Duration(milliseconds: 200),
-                                color: _highlightedMessageId == message.id
-                                    ? Theme.of(context)
-                                          .extension<AppTheme>()
-                                          ?.foregroundStrongestColor
-                                          .withAlpha(32)
-                                    : Colors.transparent,
-                                child: AlignedMessageBubble(
-                                  key: _getKeyForMessage(message.id),
-                                  messagesWithSenderNames:
-                                      messagesWithSenderNames,
-                                  index: index,
-                                  isLastInSequence: true,
-                                  isRead: true,
-                                  imageUrls: message.imageUrls,
-                                  replyBody: message.replyBody,
-                                  timestamp: message.timestamp,
-                                  onTap: () {
-                                    _handleMessageTap(context, message);
-                                  },
-                                  onReplyTap: () {
-                                    _handleReplyTap(context, message);
-                                  },
-                                ),
+                              return ValueListenableBuilder(
+                                valueListenable: _highlightedMessageId,
+                                builder: (context, value, child) {
+                                  return AnimatedContainer(
+                                    duration: const Duration(milliseconds: 200),
+                                    color:
+                                        _highlightedMessageId.value ==
+                                            message.id
+                                        ? Theme.of(context)
+                                              .extension<AppTheme>()
+                                              ?.foregroundStrongestColor
+                                              .withAlpha(32)
+                                        : Colors.transparent,
+                                    child: AlignedMessageBubble(
+                                      key: _getKeyForMessage(message.id),
+                                      messagesWithSenderNames:
+                                          messagesWithSenderNames,
+                                      index: index,
+                                      isLastInSequence: true,
+                                      isRead: true,
+                                      imageUrls: message.imageUrls,
+                                      replyBody: message.replyBody,
+                                      timestamp: message.timestamp,
+                                      onTap: () {
+                                        _handleMessageTap(context, message);
+                                      },
+                                      onReplyTap: () {
+                                        _handleReplyTap(context, message);
+                                      },
+                                    ),
+                                  );
+                                },
                               );
                             }
                             if (index == _messages.length - 1 ||
                                 _messages[index + 1].senderId !=
                                     _messages[index].senderId) {
-                              return AnimatedContainer(
-                                duration: const Duration(milliseconds: 200),
-                                color: _highlightedMessageId == message.id
-                                    ? Theme.of(context)
-                                          .extension<AppTheme>()
-                                          ?.foregroundStrongestColor
-                                          .withAlpha(32)
-                                    : Colors.transparent,
-                                child: AlignedMessageBubble(
-                                  key: _getKeyForMessage(message.id),
-                                  messagesWithSenderNames:
-                                      messagesWithSenderNames,
-                                  index: index,
-                                  isFirstInSequence: true,
-                                  isRead: true,
-                                  imageUrls: message.imageUrls,
-                                  replyBody: message.replyBody,
-                                  timestamp: message.timestamp,
-                                  onTap: () {
-                                    _handleMessageTap(context, message);
-                                  },
-                                  onReplyTap: () {
-                                    _handleReplyTap(context, message);
-                                  },
-                                ),
+                              return ValueListenableBuilder(
+                                valueListenable: _highlightedMessageId,
+                                builder: (context, value, child) {
+                                  return AnimatedContainer(
+                                    duration: const Duration(milliseconds: 200),
+                                    color:
+                                        _highlightedMessageId.value ==
+                                            message.id
+                                        ? Theme.of(context)
+                                              .extension<AppTheme>()
+                                              ?.foregroundStrongestColor
+                                              .withAlpha(32)
+                                        : Colors.transparent,
+                                    child: AlignedMessageBubble(
+                                      key: _getKeyForMessage(message.id),
+                                      messagesWithSenderNames:
+                                          messagesWithSenderNames,
+                                      index: index,
+                                      isFirstInSequence: true,
+                                      isRead: true,
+                                      imageUrls: message.imageUrls,
+                                      replyBody: message.replyBody,
+                                      timestamp: message.timestamp,
+                                      onTap: () {
+                                        _handleMessageTap(context, message);
+                                      },
+                                      onReplyTap: () {
+                                        _handleReplyTap(context, message);
+                                      },
+                                    ),
+                                  );
+                                },
                               );
                             }
-                            return AnimatedContainer(
-                              duration: const Duration(milliseconds: 200),
-                              color: _highlightedMessageId == message.id
-                                  ? Theme.of(context)
-                                        .extension<AppTheme>()
-                                        ?.foregroundStrongestColor
-                                        .withAlpha(32)
-                                  : Colors.transparent,
-                              child: AlignedMessageBubble(
-                                key: _getKeyForMessage(message.id),
-                                messagesWithSenderNames:
-                                    messagesWithSenderNames,
-                                index: index,
-                                isRead: true,
-                                imageUrls: message.imageUrls,
-                                replyBody: message.replyBody,
-                                timestamp: message.timestamp,
-                                onTap: () {
-                                  _handleMessageTap(context, message);
-                                },
-                                onReplyTap: () {
-                                  _handleReplyTap(context, message);
-                                },
-                              ),
+                            return ValueListenableBuilder(
+                              valueListenable: _highlightedMessageId,
+                              builder: (context, value, child) {
+                                return AnimatedContainer(
+                                  duration: const Duration(milliseconds: 200),
+                                  color:
+                                      _highlightedMessageId.value == message.id
+                                      ? Theme.of(context)
+                                            .extension<AppTheme>()
+                                            ?.foregroundStrongestColor
+                                            .withAlpha(32)
+                                      : Colors.transparent,
+                                  child: AlignedMessageBubble(
+                                    key: _getKeyForMessage(message.id),
+                                    messagesWithSenderNames:
+                                        messagesWithSenderNames,
+                                    index: index,
+                                    isRead: true,
+                                    imageUrls: message.imageUrls,
+                                    replyBody: message.replyBody,
+                                    timestamp: message.timestamp,
+                                    onTap: () {
+                                      _handleMessageTap(context, message);
+                                    },
+                                    onReplyTap: () {
+                                      _handleReplyTap(context, message);
+                                    },
+                                  ),
+                                );
+                              },
                             );
                           },
                         );
@@ -685,6 +724,9 @@ class _SavedMessagesScreenMessageInputState
           onMorePressed: () {
             showModalBottomSheet(
               context: context,
+              constraints: BoxConstraints(
+                maxHeight: MediaQuery.sizeOf(context).height * 0.3,
+              ),
               builder: (context) {
                 return Padding(
                   padding: const EdgeInsets.symmetric(vertical: spacing16),

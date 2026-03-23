@@ -6,7 +6,7 @@ import 'package:test_app/src/widgets/common/app_message_bubble.dart';
 import 'package:test_app/src/features/themes/styles.dart';
 
 class AlignedMessageBubble extends StatelessWidget {
-  final Map<Message, String> messagesWithSenderNames;
+  final List<({Message message, String senderName})> messagesWithSenderNames;
   final int index;
   final bool isLastInSequence;
   final bool isFirstInSequence;
@@ -33,12 +33,11 @@ class AlignedMessageBubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final item = messagesWithSenderNames[index];
+    final isSent = item.message.senderId ==
+        (context.appState.user as AuthorizedUser).id;
     return Align(
-      alignment:
-          messagesWithSenderNames.keys.elementAt(index).senderId ==
-              (context.appState.user as AuthorizedUser).id
-          ? Alignment.centerRight
-          : Alignment.centerLeft,
+      alignment: isSent ? Alignment.centerRight : Alignment.centerLeft,
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: spacing4),
         child: ConstrainedBox(
@@ -46,19 +45,13 @@ class AlignedMessageBubble extends StatelessWidget {
             maxWidth: MediaQuery.sizeOf(context).width * 0.5,
           ),
           child: AppMessageBubble(
-            name: isFirstInSequence
-                ? messagesWithSenderNames.values.elementAt(index)
-                : null,
-            body: messagesWithSenderNames.keys.elementAt(index).body,
+            name: isFirstInSequence ? item.senderName : null,
+            body: item.message.body,
             imageUrls: imageUrls,
             isLastInSequence: isLastInSequence,
             isRead: isRead,
             replyBody: replyBody,
-            messageType:
-                messagesWithSenderNames.keys.elementAt(index).senderId ==
-                    (context.appState.user as AuthorizedUser).id
-                ? MessageType.sent
-                : MessageType.received,
+            messageType: isSent ? MessageType.sent : MessageType.received,
             timestamp: timestamp,
             onTap: onTap,
             onReplyTap: onReplyTap,
