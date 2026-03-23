@@ -597,6 +597,18 @@ class _ChatScreenMessageInputState extends State<_ChatScreenMessageInput> {
                 onMorePressed: () {
                   showModalBottomSheet(
                     context: context,
+                    backgroundColor: Theme.of(
+                      context,
+                    ).extension<AppTheme>()?.backgroundStrongestColor,
+                    elevation: 0,
+                    constraints: BoxConstraints(
+                      maxHeight: MediaQuery.sizeOf(context).height * 0.3,
+                    ),
+                    barrierColor: Colors.black.withAlpha(216),
+                    shape: ContinuousRectangleBorder(
+                      borderRadius: BorderRadius.zero,
+                    ),
+                    showDragHandle: true,
                     builder: (context) {
                       return Padding(
                         padding: const EdgeInsets.symmetric(
@@ -813,9 +825,18 @@ class _ChatScreenMessageInputState extends State<_ChatScreenMessageInput> {
                 onMorePressed: () {
                   showModalBottomSheet(
                     context: context,
+                    backgroundColor: Theme.of(
+                      context,
+                    ).extension<AppTheme>()?.backgroundStrongestColor,
+                    elevation: 0,
                     constraints: BoxConstraints(
                       maxHeight: MediaQuery.sizeOf(context).height * 0.3,
                     ),
+                    barrierColor: Colors.black.withAlpha(216),
+                    shape: ContinuousRectangleBorder(
+                      borderRadius: BorderRadius.zero,
+                    ),
+                    showDragHandle: true,
                     builder: (context) {
                       return Padding(
                         padding: const EdgeInsets.symmetric(
@@ -967,7 +988,8 @@ class _ChatScreenMessageListState extends State<_ChatScreenMessageList> {
         if (_messages.isEmpty) {
           return EmptyState(title: context.l10n.noMessagesYetLabel);
         }
-        final messagesWithSenderNames = <({Message message, String senderName})>[];
+        final messagesWithSenderNames =
+            <({Message message, String senderName})>[];
         for (final message in _messages) {
           final sender = users.firstWhere(
             (user) => user.id == message.senderId,
@@ -981,7 +1003,10 @@ class _ChatScreenMessageListState extends State<_ChatScreenMessageList> {
               );
             },
           );
-          messagesWithSenderNames.add((message: message, senderName: sender.name));
+          messagesWithSenderNames.add((
+            message: message,
+            senderName: sender.name,
+          ));
         }
         return ListView.separated(
           controller: widget.scrollController,

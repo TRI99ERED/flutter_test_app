@@ -488,7 +488,7 @@ class _SavedMessagesScreenState extends State<SavedMessagesScreen> {
       context: context,
       backgroundColor: Theme.of(
         context,
-      ).extension<AppTheme>()?.backgroundStrongColor,
+      ).extension<AppTheme>()?.backgroundStrongestColor,
       elevation: 0,
       constraints: BoxConstraints(
         maxHeight: MediaQuery.sizeOf(context).height * 0.3,
@@ -724,9 +724,16 @@ class _SavedMessagesScreenMessageInputState
           onMorePressed: () {
             showModalBottomSheet(
               context: context,
+              backgroundColor: Theme.of(
+                context,
+              ).extension<AppTheme>()?.backgroundStrongestColor,
+              elevation: 0,
               constraints: BoxConstraints(
                 maxHeight: MediaQuery.sizeOf(context).height * 0.3,
               ),
+              barrierColor: Colors.black.withAlpha(216),
+              shape: ContinuousRectangleBorder(borderRadius: BorderRadius.zero),
+              showDragHandle: true,
               builder: (context) {
                 return Padding(
                   padding: const EdgeInsets.symmetric(vertical: spacing16),
