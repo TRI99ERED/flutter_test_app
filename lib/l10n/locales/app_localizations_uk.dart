@@ -915,4 +915,20 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get typeAMessageLabel => 'Введіть повідомлення...';
+
+  @override
+  String get viewChatTitle => 'Перегляд чату';
+
+  @override
+  String get deleteMessageLabel => 'Видалити повідомлення';
+
+  @override
+  String get confirmDeleteMessageLabel =>
+      'Ви впевнені, що хочете видалити це повідомлення? Цю дію не можна скасувати.';
+
+  @override
+  String get replyToMessageLabel => 'Відповісти на повідомлення';
+
+  @override
+  String get replyingToLabel => 'Відповідь на';
 }

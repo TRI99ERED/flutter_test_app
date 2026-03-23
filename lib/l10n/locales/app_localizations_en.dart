@@ -902,4 +902,20 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get typeAMessageLabel => 'Type a message...';
+
+  @override
+  String get viewChatTitle => 'View Chat';
+
+  @override
+  String get deleteMessageLabel => 'Delete message';
+
+  @override
+  String get confirmDeleteMessageLabel =>
+      'Are you sure you want to delete this message? This action cannot be undone.';
+
+  @override
+  String get replyToMessageLabel => 'Reply to message';
+
+  @override
+  String get replyingToLabel => 'Replying to';
 }

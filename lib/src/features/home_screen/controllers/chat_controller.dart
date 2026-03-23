@@ -135,6 +135,8 @@ final class ChatController extends BaseController<ChatState> {
     required String senderName,
     required String body,
     required List<File> imageFiles,
+    String? replyId,
+    String? replyBody,
   }) async => await serialExecutor.synchronized(() async {
     setState(
       ChatState.processing(
@@ -154,6 +156,8 @@ final class ChatController extends BaseController<ChatState> {
         senderId: senderId,
         body: body,
         imageUrls: imageUrls,
+        replyId: replyId ?? '',
+        replyBody: replyBody ?? '',
       );
       setState(
         ChatState.idle(
@@ -181,6 +185,8 @@ final class ChatController extends BaseController<ChatState> {
     required String senderName,
     required String body,
     required List<File> imageFiles,
+    String? replyId,
+    String? replyBody,
   }) async => await serialExecutor.synchronized(() async {
     setState(
       ChatState.processing(
@@ -200,6 +206,8 @@ final class ChatController extends BaseController<ChatState> {
         senderId: senderId,
         body: body,
         imageUrls: imageUrls,
+        replyId: replyId ?? '',
+        replyBody: replyBody ?? '',
       );
       setState(
         ChatState.idle(
@@ -675,36 +683,40 @@ final class ChatController extends BaseController<ChatState> {
     );
   }
 
-  Future<void> createSavedMessage(String body, List<File> imageFiles) async =>
-      await serialExecutor.synchronized(() async {
-        setState(ChatState.processing(message: 'Creating saved message...'));
-        try {
-          List<String> imageUrls = [];
-          if (imageFiles.isNotEmpty) {
-            imageUrls = await _storageRepository.uploadSavedMessageImages(
-              files: imageFiles,
-              userId: (_appController.state.user as AuthorizedUser).id,
-            );
-          }
-          await _firestoreRepository.createSavedMessage(
-            (_appController.state.user as AuthorizedUser).id,
-            body,
-            imageUrls,
-          );
-          setState(
-            ChatState.idle(message: 'Saved message created successfully.'),
-          );
-        } catch (error, stackTrace) {
-          setState(
-            ChatState.failed(
-              message: 'Failed to create saved message: ${error.toString()}',
-              error: error,
-              stackTrace: stackTrace,
-            ),
-          );
-          return Future.error(error, stackTrace);
-        }
-      });
+  Future<void> createSavedMessage(
+    String body,
+    List<File> imageFiles,
+    String? replyId,
+    String? replyBody,
+  ) async => await serialExecutor.synchronized(() async {
+    setState(ChatState.processing(message: 'Creating saved message...'));
+    try {
+      List<String> imageUrls = [];
+      if (imageFiles.isNotEmpty) {
+        imageUrls = await _storageRepository.uploadSavedMessageImages(
+          files: imageFiles,
+          userId: (_appController.state.user as AuthorizedUser).id,
+        );
+      }
+      await _firestoreRepository.createSavedMessage(
+        (_appController.state.user as AuthorizedUser).id,
+        body,
+        imageUrls,
+        replyId,
+        replyBody,
+      );
+      setState(ChatState.idle(message: 'Saved message created successfully.'));
+    } catch (error, stackTrace) {
+      setState(
+        ChatState.failed(
+          message: 'Failed to create saved message: ${error.toString()}',
+          error: error,
+          stackTrace: stackTrace,
+        ),
+      );
+      return Future.error(error, stackTrace);
+    }
+  });
 
   Future<void> deleteSavedMessage(String messageId) async =>
       await serialExecutor.synchronized(() async {
@@ -840,4 +852,63 @@ final class ChatController extends BaseController<ChatState> {
       return Future.error(error, stackTrace);
     }
   });
+
+  Future<void> deleteDirectChatMessage(String chatId, String messageId) async {
+    setState(ChatState.processing(message: 'Deleting message "$messageId"...'));
+    try {
+      await _firestoreRepository.deleteDirectChatMessage(chatId, messageId);
+      setState(
+        ChatState.idle(message: 'Message "$messageId" deleted successfully.'),
+      );
+    } catch (error, stackTrace) {
+      setState(
+        ChatState.failed(
+          message: 'Failed to delete message "$messageId": ${error.toString()}',
+          error: error,
+          stackTrace: stackTrace,
+        ),
+      );
+      return Future.error(error, stackTrace);
+    }
+  }
+
+  Future<void> deleteGroupChatMessage(String chatId, String messageId) async {
+    setState(ChatState.processing(message: 'Deleting message "$messageId"...'));
+    try {
+      await _firestoreRepository.deleteGroupChatMessage(chatId, messageId);
+      setState(
+        ChatState.idle(message: 'Message "$messageId" deleted successfully.'),
+      );
+    } catch (error, stackTrace) {
+      setState(
+        ChatState.failed(
+          message: 'Failed to delete message "$messageId": ${error.toString()}',
+          error: error,
+          stackTrace: stackTrace,
+        ),
+      );
+      return Future.error(error, stackTrace);
+    }
+  }
+
+  Stream<Message?> watchDirectMessageById(String chatId, String messageId) {
+    return _firestoreRepository.watchDirectMessageById(
+      chatId: chatId,
+      messageId: messageId,
+    );
+  }
+
+  Stream<Message?> watchGroupMessageById(String chatId, String messageId) {
+    return _firestoreRepository.watchGroupMessageById(
+      chatId: chatId,
+      messageId: messageId,
+    );
+  }
+
+  Stream<Message?> watchSavedMessageById(String messageId) {
+    return _firestoreRepository.watchSavedMessageById(
+      (_appController.state.user as AuthorizedUser).id,
+      messageId,
+    );
+  }
 }

@@ -589,5 +589,15 @@
     "addImageLabel": "Додати зображення",
     "@addImageLabel": {},
     "typeAMessageLabel": "Введіть повідомлення...",
-    "@typeAMessageLabel": {}
+    "@typeAMessageLabel": {},
+    "viewChatTitle": "Перегляд чату",
+    "@viewChatTitle": {},
+    "deleteMessageLabel": "Видалити повідомлення",
+    "@deleteMessageLabel": {},
+    "confirmDeleteMessageLabel": "Ви впевнені, що хочете видалити це повідомлення? Цю дію не можна скасувати.",
+    "@confirmDeleteMessageLabel": {},
+    "replyToMessageLabel": "Відповісти на повідомлення",
+    "@replyToMessageLabel": {},
+    "replyingToLabel": "Відповідь на",
+    "@replyingToLabel": {}
 }

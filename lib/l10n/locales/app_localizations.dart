@@ -1777,6 +1777,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Type a message...'**
   String get typeAMessageLabel;
+
+  /// No description provided for @viewChatTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'View Chat'**
+  String get viewChatTitle;
+
+  /// No description provided for @deleteMessageLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete message'**
+  String get deleteMessageLabel;
+
+  /// No description provided for @confirmDeleteMessageLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to delete this message? This action cannot be undone.'**
+  String get confirmDeleteMessageLabel;
+
+  /// No description provided for @replyToMessageLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Reply to message'**
+  String get replyToMessageLabel;
+
+  /// No description provided for @replyingToLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Replying to'**
+  String get replyingToLabel;
 }
 
 class _AppLocalizationsDelegate

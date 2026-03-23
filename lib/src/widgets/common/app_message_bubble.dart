@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:test_app/l10n/locales/l10n.dart';
 import 'package:test_app/src/features/themes/app_theme.dart';
 import 'package:test_app/src/features/themes/styles.dart';
 import 'package:test_app/src/widgets/common/app_image_view.dart';
@@ -11,9 +12,11 @@ class AppMessageBubble extends StatelessWidget {
   final bool isLastInSequence;
   final bool? isRead;
   final List<String> imageUrls;
+  final String replyBody;
   final MessageType messageType;
   final DateTime timestamp;
   final VoidCallback? onTap;
+  final VoidCallback? onReplyTap;
 
   const AppMessageBubble({
     super.key,
@@ -23,8 +26,10 @@ class AppMessageBubble extends StatelessWidget {
     required this.messageType,
     required this.isRead,
     this.imageUrls = const [],
+    this.replyBody = '',
     required this.timestamp,
     this.onTap,
+    this.onReplyTap,
   });
 
   @override
@@ -33,10 +38,7 @@ class AppMessageBubble extends StatelessWidget {
       MessageType.received => IntrinsicWidth(
         child: TextButton(
           style: TextButton.styleFrom(
-            padding: const EdgeInsets.symmetric(
-              vertical: spacing12,
-              horizontal: spacing16,
-            ),
+            padding: const EdgeInsets.symmetric(vertical: spacing12),
             backgroundColor: Theme.of(
               context,
             ).extension<AppTheme>()?.backgroundStrongColor,
@@ -60,22 +62,24 @@ class AppMessageBubble extends StatelessWidget {
             messageType: messageType,
             isRead: isRead,
             timestamp: timestamp,
+            replyBody: replyBody,
             nameColor: Theme.of(
               context,
             ).extension<AppTheme>()?.foregroundStrongColor,
             bodyColor: Theme.of(
               context,
             ).extension<AppTheme>()?.foregroundStrongestColor,
+            replyColor: Theme.of(
+              context,
+            ).extension<AppTheme>()?.backgroundMediumColor,
+            onReplyTap: onReplyTap,
           ),
         ),
       ),
       MessageType.sent => IntrinsicWidth(
         child: TextButton(
           style: TextButton.styleFrom(
-            padding: const EdgeInsets.symmetric(
-              vertical: spacing12,
-              horizontal: spacing16,
-            ),
+            padding: const EdgeInsets.symmetric(vertical: spacing12),
             backgroundColor: Theme.of(
               context,
             ).extension<AppTheme>()?.highlightDarkestColor,
@@ -99,12 +103,17 @@ class AppMessageBubble extends StatelessWidget {
             messageType: messageType,
             isRead: isRead,
             timestamp: timestamp,
+            replyBody: replyBody,
             nameColor: Theme.of(
               context,
             ).extension<AppTheme>()?.highlightLightColor,
             bodyColor: Theme.of(
               context,
             ).extension<AppTheme>()?.backgroundStrongestColor,
+            replyColor: Theme.of(
+              context,
+            ).extension<AppTheme>()?.highlightDarkColor,
+            onReplyTap: onReplyTap,
           ),
         ),
       ),
@@ -118,10 +127,13 @@ class AppMessageContent extends StatelessWidget {
   final bool isLastInSequence;
   final bool? isRead;
   final List<String> imageUrls;
+  final String replyBody;
   final MessageType messageType;
   final DateTime timestamp;
   final Color? nameColor;
   final Color? bodyColor;
+  final Color? replyColor;
+  final VoidCallback? onReplyTap;
 
   const AppMessageContent({
     super.key,
@@ -131,9 +143,12 @@ class AppMessageContent extends StatelessWidget {
     required this.messageType,
     required this.isRead,
     this.imageUrls = const [],
+    this.replyBody = '',
     required this.timestamp,
     this.nameColor,
     this.bodyColor,
+    this.replyColor,
+    this.onReplyTap,
   });
 
   @override
@@ -143,26 +158,56 @@ class AppMessageContent extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         if (name != null)
-          Text(
-            name!,
-            style: TextStyle(
-              fontSize: h5Size,
-              fontWeight: h5Weight,
-              color: nameColor,
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: spacing16),
+            child: Text(
+              name!,
+              style: TextStyle(
+                fontSize: h5Size,
+                fontWeight: h5Weight,
+                color: nameColor,
+              ),
+            ),
+          ),
+        if (replyBody.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.only(top: spacing4, bottom: spacing8),
+            child: TextButton(
+              style: TextButton.styleFrom(
+                padding: const EdgeInsets.all(spacing8),
+                backgroundColor: replyColor,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+              ),
+              onPressed: onReplyTap,
+              child: Text(
+                '${context.l10n.replyingToLabel}: $replyBody',
+                style: TextStyle(
+                  fontSize: bMSize,
+                  fontWeight: bMWeight,
+                  color: bodyColor,
+                ),
+              ),
             ),
           ),
         if (body.isNotEmpty)
-          Text(
-            body,
-            style: TextStyle(
-              fontSize: bMSize,
-              fontWeight: bMWeight,
-              color: bodyColor,
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: spacing16),
+            child: Text(
+              body,
+              style: TextStyle(
+                fontSize: bMSize,
+                fontWeight: bMWeight,
+                color: bodyColor,
+              ),
             ),
           ),
         if (imageUrls.isNotEmpty)
           Padding(
-            padding: const EdgeInsets.only(top: spacing2),
+            padding: const EdgeInsets.only(
+              top: spacing2,
+              left: spacing16,
+              right: spacing16,
+            ),
             child: Wrap(
               spacing: spacing8,
               runSpacing: spacing8,
@@ -187,24 +232,28 @@ class AppMessageContent extends StatelessWidget {
                   .toList(),
             ),
           ),
-        Align(
-          alignment: Alignment.centerRight,
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                TimeOfDay.fromDateTime(timestamp).format(context),
-                style: TextStyle(
-                  fontSize: cMSize,
-                  fontWeight: cMWeight,
-                  color: nameColor,
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: spacing16),
+          child: Align(
+            alignment: Alignment.centerRight,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  TimeOfDay.fromDateTime(timestamp).format(context),
+                  style: TextStyle(
+                    fontSize: cMSize,
+                    fontWeight: cMWeight,
+                    color: nameColor,
+                  ),
                 ),
-              ),
-              if (isRead != null)
-                isRead!
-                    ? Icon(Icons.done_all, size: 16, color: nameColor)
-                    : Icon(Icons.done, size: 16, color: nameColor),
-            ],
+                if (isRead != null) const SizedBox(width: spacing4),
+                if (isRead != null)
+                  isRead!
+                      ? Icon(Icons.done_all, size: 16, color: nameColor)
+                      : Icon(Icons.done, size: 16, color: nameColor),
+              ],
+            ),
           ),
         ),
       ],

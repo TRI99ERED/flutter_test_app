@@ -25,6 +25,8 @@ abstract interface class IFirebaseFirestoreRepository {
     required String senderId,
     required String body,
     required List<String> imageUrls,
+    String replyId = '',
+    String replyBody = '',
   });
 
   Future<GroupChat> createGroupChat({
@@ -38,6 +40,8 @@ abstract interface class IFirebaseFirestoreRepository {
     required String senderId,
     required String body,
     required List<String> imageUrls,
+    String replyId = '',
+    String replyBody = '',
   });
 
   Future<Project> createProjectForUser(
@@ -52,6 +56,8 @@ abstract interface class IFirebaseFirestoreRepository {
     String userId,
     String body,
     List<String> imageUrls,
+    String? replyId,
+    String? replyBody,
   );
 
   Future<void> createUser({required AuthorizedUser user});
@@ -63,7 +69,11 @@ abstract interface class IFirebaseFirestoreRepository {
 
   Future<void> deleteDirectChat(String chatId);
 
+  Future<void> deleteDirectChatMessage(String chatId, String messageId);
+
   Future<void> deleteGroupChat(String chatId);
+
+  Future<void> deleteGroupChatMessage(String chatId, String messageId);
 
   Future<void> deleteProject(String projectId);
 
@@ -148,6 +158,11 @@ abstract interface class IFirebaseFirestoreRepository {
 
   Stream<DirectChat?> watchDirectChatWithId(String chatId);
 
+  Stream<Message?> watchDirectMessageById({
+    required String chatId,
+    required String messageId,
+  });
+
   Stream<List<AuthorizedUser>?> watchFriendIncomingRequestsForUser({
     required String userId,
   });
@@ -166,6 +181,11 @@ abstract interface class IFirebaseFirestoreRepository {
 
   Stream<GroupChat?> watchGroupChatWithId(String chatId);
 
+  Stream<Message?> watchGroupMessageById({
+    required String chatId,
+    required String messageId,
+  });
+
   Stream<List<Message>?> watchMessagesForDirectChat({required String chatId});
 
   Stream<List<Message>?> watchMessagesForGroupChat({required String chatId});
@@ -177,6 +197,8 @@ abstract interface class IFirebaseFirestoreRepository {
   );
 
   Stream<Project?> watchProjectWithId(String projectId);
+
+  Stream<Message?> watchSavedMessageById(String userId, String messageId);
 
   Stream<List<SavedMessage>?> watchSavedMessages(String userId);
 }

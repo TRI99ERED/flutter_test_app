@@ -6,6 +6,8 @@ base class Message {
   final String senderId;
   final String body;
   final List<String> imageUrls;
+  final String replyId;
+  final String replyBody;
   final DateTime timestamp;
 
   const Message({
@@ -13,6 +15,8 @@ base class Message {
     required this.senderId,
     required this.body,
     this.imageUrls = const [],
+    this.replyId = '',
+    this.replyBody = '',
     required this.timestamp,
   });
 
@@ -23,6 +27,8 @@ base class Message {
       senderId: data['senderId'] ?? '',
       body: data['body'] ?? '',
       imageUrls: List<String>.from(data['imageUrls'] ?? []),
+      replyId: data['replyId'] ?? '',
+      replyBody: data['replyBody'] ?? '',
       timestamp: (data['timestamp'] as Timestamp?)?.toDate() ?? DateTime.now(),
     );
   }
@@ -32,6 +38,8 @@ base class Message {
     String? senderId,
     String? body,
     List<String>? imageUrls,
+    String? replyId,
+    String? replyBody,
     DateTime? timestamp,
   }) {
     return Message(
@@ -39,6 +47,8 @@ base class Message {
       senderId: senderId ?? this.senderId,
       body: body ?? this.body,
       imageUrls: imageUrls ?? this.imageUrls,
+      replyId: replyId ?? this.replyId,
+      replyBody: replyBody ?? this.replyBody,
       timestamp: timestamp ?? this.timestamp,
     );
   }
@@ -52,6 +62,8 @@ base class Message {
         other.senderId == senderId &&
         other.body == body &&
         ListEquality().equals(other.imageUrls, imageUrls) &&
+        other.replyId == replyId &&
+        other.replyBody == replyBody &&
         other.timestamp == timestamp;
   }
 
@@ -62,6 +74,8 @@ base class Message {
       senderId,
       body,
       Object.hashAll(imageUrls),
+      replyId,
+      replyBody,
       timestamp,
     );
   }
@@ -71,6 +85,8 @@ base class Message {
       'senderId': senderId,
       'body': body,
       'imageUrls': imageUrls,
+      'replyId': replyId,
+      'replyBody': replyBody,
       'timestamp': Timestamp.fromDate(timestamp),
     };
   }
@@ -87,6 +103,8 @@ final class SavedMessage extends Message {
     required super.body,
     required super.imageUrls,
     required super.timestamp,
+    required super.replyId,
+    required super.replyBody,
     required this.chatId,
     required this.chatType,
     required this.savedAt,
@@ -101,6 +119,8 @@ final class SavedMessage extends Message {
       senderId: data['senderId'] ?? '',
       body: data['body'] ?? '',
       imageUrls: List<String>.from(data['imageUrls'] ?? []),
+      replyId: data['replyId'] ?? '',
+      replyBody: data['replyBody'] ?? '',
       timestamp: (data['timestamp'] as Timestamp?)?.toDate() ?? DateTime.now(),
       chatId: data['chatId'] ?? '',
       chatType: ChatType.values.firstWhere(
@@ -117,6 +137,8 @@ final class SavedMessage extends Message {
     String? senderId,
     String? body,
     List<String>? imageUrls,
+    String? replyId,
+    String? replyBody,
     DateTime? timestamp,
     String? chatId,
     ChatType? chatType,
@@ -127,6 +149,8 @@ final class SavedMessage extends Message {
       senderId: senderId ?? this.senderId,
       body: body ?? this.body,
       imageUrls: imageUrls ?? this.imageUrls,
+      replyId: replyId ?? this.replyId,
+      replyBody: replyBody ?? this.replyBody,
       timestamp: timestamp ?? this.timestamp,
       chatId: chatId ?? this.chatId,
       chatType: chatType ?? this.chatType,

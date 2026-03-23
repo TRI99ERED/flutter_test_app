@@ -112,6 +112,8 @@ class FirebaseFirestoreRepositoryImpl implements IFirebaseFirestoreRepository {
     required String senderId,
     required String body,
     required List<String> imageUrls,
+    String replyId = '',
+    String replyBody = '',
   }) async {
     try {
       final doc = _directChats.doc(chatId).collection('messages').doc();
@@ -122,6 +124,8 @@ class FirebaseFirestoreRepositoryImpl implements IFirebaseFirestoreRepository {
         body: body,
         imageUrls: imageUrls,
         timestamp: DateTime.now(),
+        replyId: replyId,
+        replyBody: replyBody,
       );
       await doc.set(message.toFirestore());
       return message;
@@ -163,6 +167,8 @@ class FirebaseFirestoreRepositoryImpl implements IFirebaseFirestoreRepository {
     required String senderId,
     required String body,
     required List<String> imageUrls,
+    String replyId = '',
+    String replyBody = '',
   }) async {
     try {
       final doc = _groupChats.doc(chatId).collection('messages').doc();
@@ -173,6 +179,8 @@ class FirebaseFirestoreRepositoryImpl implements IFirebaseFirestoreRepository {
         body: body,
         imageUrls: imageUrls,
         timestamp: DateTime.now(),
+        replyId: replyId,
+        replyBody: replyBody,
       );
       await doc.set(message.toFirestore());
       return message;
@@ -215,6 +223,8 @@ class FirebaseFirestoreRepositoryImpl implements IFirebaseFirestoreRepository {
     String userId,
     String body,
     List<String> imageUrls,
+    String? replyId,
+    String? replyBody,
   ) async {
     try {
       final doc = _users.doc(userId).collection('savedMessages').doc();
@@ -223,10 +233,12 @@ class FirebaseFirestoreRepositoryImpl implements IFirebaseFirestoreRepository {
         senderId: userId,
         body: body,
         imageUrls: imageUrls,
+        replyId: replyId ?? '',
         timestamp: DateTime.now(),
         chatId: '',
         chatType: ChatType.direct,
         savedAt: DateTime.now(),
+        replyBody: replyBody ?? '',
       );
       return doc.set(message.toFirestore());
     } catch (e) {
@@ -298,6 +310,16 @@ class FirebaseFirestoreRepositoryImpl implements IFirebaseFirestoreRepository {
   }
 
   @override
+  Future<void> deleteDirectChatMessage(String chatId, String messageId) async {
+    final doc = _directChats.doc(chatId).collection('messages').doc(messageId);
+    try {
+      await doc.delete();
+    } catch (e) {
+      throw Exception('Failed to delete direct chat message: $e');
+    }
+  }
+
+  @override
   Future<void> deleteGroupChat(String chatId) async {
     final doc = _groupChats.doc(chatId);
     try {
@@ -317,6 +339,16 @@ class FirebaseFirestoreRepositoryImpl implements IFirebaseFirestoreRepository {
       });
     } catch (e) {
       throw Exception('Failed to delete chat: $e');
+    }
+  }
+
+  @override
+  Future<void> deleteGroupChatMessage(String chatId, String messageId) async {
+    final doc = _groupChats.doc(chatId).collection('messages').doc(messageId);
+    try {
+      await doc.delete();
+    } catch (e) {
+      throw Exception('Failed to delete group chat message: $e');
     }
   }
 
@@ -908,5 +940,59 @@ class FirebaseFirestoreRepositoryImpl implements IFirebaseFirestoreRepository {
           final nextIds = next.map((m) => m.id).toSet();
           return prevIds.containsAll(nextIds) && nextIds.containsAll(prevIds);
         });
+  }
+
+  @override
+  Stream<Message?> watchDirectMessageById({
+    required String chatId,
+    required String messageId,
+  }) {
+    return _directChats
+        .doc(chatId)
+        .collection('messages')
+        .doc(messageId)
+        .snapshots()
+        .map((snapshot) {
+          if (!snapshot.exists) {
+            return null;
+          }
+          return Message.fromFirestore(snapshot);
+        })
+        .distinct((prev, next) => prev == next);
+  }
+
+  @override
+  Stream<Message?> watchGroupMessageById({
+    required String chatId,
+    required String messageId,
+  }) {
+    return _groupChats
+        .doc(chatId)
+        .collection('messages')
+        .doc(messageId)
+        .snapshots()
+        .map((snapshot) {
+          if (!snapshot.exists) {
+            return null;
+          }
+          return Message.fromFirestore(snapshot);
+        })
+        .distinct((prev, next) => prev == next);
+  }
+
+  @override
+  Stream<Message?> watchSavedMessageById(String userId, String messageId) {
+    return _users
+        .doc(userId)
+        .collection('savedMessages')
+        .doc(messageId)
+        .snapshots()
+        .map((snapshot) {
+          if (!snapshot.exists) {
+            return null;
+          }
+          return SavedMessage.fromFirestore(snapshot);
+        })
+        .distinct((prev, next) => prev == next);
   }
 }

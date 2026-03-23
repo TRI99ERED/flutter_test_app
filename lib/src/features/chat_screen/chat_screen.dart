@@ -44,6 +44,14 @@ class _ChatScreenState extends State<ChatScreen> {
   String? _lastGroupChatId;
   String? _userId;
   bool _initialized = false;
+  final _messageToReply = ValueNotifier<String>('');
+  final _messageToReplyBody = ValueNotifier<String>('');
+  final _scrollController = ScrollController();
+  final _itemKeys = <String, GlobalKey>{};
+
+  GlobalKey _getKeyForMessage(String id) {
+    return _itemKeys.putIfAbsent(id, () => GlobalKey());
+  }
 
   @override
   void initState() {
@@ -200,10 +208,21 @@ class _ChatScreenState extends State<ChatScreen> {
                       Expanded(
                         child: Padding(
                           padding: const EdgeInsets.all(spacing8),
-                          child: _ChatScreenMessageList(chat: directChat),
+                          child: _ChatScreenMessageList(
+                            chat: directChat,
+                            messageToReply: _messageToReply,
+                            messageToReplyBody: _messageToReplyBody,
+                            scrollController: _scrollController,
+                            getKeyForMessage: _getKeyForMessage,
+                            itemKeys: _itemKeys,
+                          ),
                         ),
                       ),
-                      _ChatScreenMessageInput(chat: directChat),
+                      _ChatScreenMessageInput(
+                        chat: directChat,
+                        messageToReply: _messageToReply,
+                        messageToReplyBody: _messageToReplyBody,
+                      ),
                     ],
                   ),
                 ),
@@ -250,10 +269,21 @@ class _ChatScreenState extends State<ChatScreen> {
                       Expanded(
                         child: Padding(
                           padding: const EdgeInsets.all(spacing8),
-                          child: _ChatScreenMessageList(chat: groupChat),
+                          child: _ChatScreenMessageList(
+                            chat: groupChat,
+                            messageToReply: _messageToReply,
+                            messageToReplyBody: _messageToReplyBody,
+                            scrollController: _scrollController,
+                            getKeyForMessage: _getKeyForMessage,
+                            itemKeys: _itemKeys,
+                          ),
                         ),
                       ),
-                      _ChatScreenMessageInput(chat: groupChat),
+                      _ChatScreenMessageInput(
+                        chat: groupChat,
+                        messageToReply: _messageToReply,
+                        messageToReplyBody: _messageToReplyBody,
+                      ),
                     ],
                   ),
                 ),
@@ -267,6 +297,9 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   void dispose() {
+    _messageToReply.dispose();
+    _messageToReplyBody.dispose();
+    _scrollController.dispose();
     switch (widget.chatType) {
       case ChatType.direct:
         if (_userId != null && _lastDirectChatId != null) {
@@ -390,11 +423,7 @@ class _ChatScreenNavBar extends StatelessWidget implements PreferredSizeWidget {
           AppNavigator.of(context).pop();
         },
         onPressedRight: () {
-          ChatWizard.manageChat(
-            context,
-            mode: ChatWizardMode.edit,
-            chatToEdit: chat,
-          );
+          ChatWizard.manageChat(context, mode: ChatWizardMode.edit, chat: chat);
         },
       );
     }
@@ -417,8 +446,14 @@ class _ChatScreenNavBar extends StatelessWidget implements PreferredSizeWidget {
 
 class _ChatScreenMessageInput extends StatefulWidget {
   final Chat chat;
+  final ValueNotifier<String> messageToReply;
+  final ValueNotifier<String> messageToReplyBody;
 
-  const _ChatScreenMessageInput({required this.chat});
+  const _ChatScreenMessageInput({
+    required this.chat,
+    required this.messageToReply,
+    required this.messageToReplyBody,
+  });
 
   @override
   State<_ChatScreenMessageInput> createState() =>
@@ -445,6 +480,60 @@ class _ChatScreenMessageInputState extends State<_ChatScreenMessageInput> {
           final unreadCount = asyncSnapshot.data ?? 0;
           return Column(
             children: [
+              ValueListenableBuilder(
+                valueListenable: widget.messageToReply,
+                builder: (context, value, child) {
+                  if (value.isEmpty) {
+                    return const SizedBox.shrink();
+                  }
+                  return Container(
+                    color: Theme.of(
+                      context,
+                    ).extension<AppTheme>()?.backgroundStrongestColor,
+                    padding: const EdgeInsets.symmetric(horizontal: spacing8),
+                    child: Row(
+                      children: [
+                        Text(
+                          '${context.l10n.replyingToLabel}:',
+                          style: TextStyle(
+                            fontSize: bMSize,
+                            fontWeight: bMWeight,
+                            color: Theme.of(
+                              context,
+                            ).extension<AppTheme>()?.foregroundStrongestColor,
+                          ),
+                        ),
+                        SizedBox(width: spacing8),
+                        Expanded(
+                          child: Text(
+                            widget.messageToReplyBody.value,
+                            style: TextStyle(
+                              fontSize: bMSize,
+                              fontWeight: bMWeight,
+                              color: Theme.of(
+                                context,
+                              ).extension<AppTheme>()?.foregroundStrongColor,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ),
+                        IconButton(
+                          onPressed: () {
+                            widget.messageToReply.value = '';
+                            widget.messageToReplyBody.value = '';
+                          },
+                          icon: Icon(
+                            AppIcons.close,
+                            color: Theme.of(
+                              context,
+                            ).extension<AppTheme>()?.foregroundStrongestColor,
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
               ValueListenableBuilder(
                 valueListenable: _imageFiles,
                 builder: (context, value, child) {
@@ -539,14 +628,24 @@ class _ChatScreenMessageInputState extends State<_ChatScreenMessageInput> {
                   }
                   final user = context.appState.user as AuthorizedUser;
                   final appController = context.appController;
+                  final replyId = widget.messageToReply.value.isNotEmpty
+                      ? widget.messageToReply.value
+                      : null;
+                  final replyBody = widget.messageToReplyBody.value.isNotEmpty
+                      ? widget.messageToReplyBody.value
+                      : null;
                   await chatController.createDirectChatMessage(
                     chatId: widget.chat.id,
                     senderId: user.id,
                     senderName: user.name,
                     body: message,
                     imageFiles: _imageFiles.value,
+                    replyId: replyId,
+                    replyBody: replyBody,
                   );
                   _imageFiles.value = [];
+                  widget.messageToReply.value = '';
+                  widget.messageToReplyBody.value = '';
                   await chatController.updateDirectChatLastMessage(
                     chatId: widget.chat.id,
                     lastMessage: message,
@@ -598,6 +697,60 @@ class _ChatScreenMessageInputState extends State<_ChatScreenMessageInput> {
           return Column(
             children: [
               ValueListenableBuilder(
+                valueListenable: widget.messageToReply,
+                builder: (context, value, child) {
+                  if (value.isEmpty) {
+                    return const SizedBox.shrink();
+                  }
+                  return Container(
+                    color: Theme.of(
+                      context,
+                    ).extension<AppTheme>()?.backgroundStrongestColor,
+                    padding: const EdgeInsets.symmetric(horizontal: spacing8),
+                    child: Row(
+                      children: [
+                        Text(
+                          '${context.l10n.replyingToLabel}:',
+                          style: TextStyle(
+                            fontSize: bMSize,
+                            fontWeight: bMWeight,
+                            color: Theme.of(
+                              context,
+                            ).extension<AppTheme>()?.foregroundStrongestColor,
+                          ),
+                        ),
+                        SizedBox(width: spacing8),
+                        Expanded(
+                          child: Text(
+                            widget.messageToReplyBody.value,
+                            style: TextStyle(
+                              fontSize: bMSize,
+                              fontWeight: bMWeight,
+                              color: Theme.of(
+                                context,
+                              ).extension<AppTheme>()?.foregroundStrongColor,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ),
+                        IconButton(
+                          onPressed: () {
+                            widget.messageToReply.value = '';
+                            widget.messageToReplyBody.value = '';
+                          },
+                          icon: Icon(
+                            AppIcons.close,
+                            color: Theme.of(
+                              context,
+                            ).extension<AppTheme>()?.foregroundStrongestColor,
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+              ValueListenableBuilder(
                 valueListenable: _imageFiles,
                 builder: (context, value, child) {
                   return SizedBox(
@@ -691,14 +844,24 @@ class _ChatScreenMessageInputState extends State<_ChatScreenMessageInput> {
                   }
                   final user = context.appState.user as AuthorizedUser;
                   final appController = context.appController;
+                  final replyId = widget.messageToReply.value.isNotEmpty
+                      ? widget.messageToReply.value
+                      : null;
+                  final replyBody = widget.messageToReplyBody.value.isNotEmpty
+                      ? widget.messageToReplyBody.value
+                      : null;
                   await chatController.createGroupChatMessage(
                     chatId: widget.chat.id,
                     senderId: user.id,
                     senderName: user.name,
                     body: message,
                     imageFiles: _imageFiles.value,
+                    replyId: replyId,
+                    replyBody: replyBody,
                   );
                   _imageFiles.value = [];
+                  widget.messageToReply.value = '';
+                  widget.messageToReplyBody.value = '';
                   await chatController.updateGroupChatLastMessage(
                     chatId: widget.chat.id,
                     lastMessage: message,
@@ -746,18 +909,38 @@ class _ChatScreenMessageInputState extends State<_ChatScreenMessageInput> {
   }
 }
 
-class _ChatScreenMessageList extends StatelessWidget {
+class _ChatScreenMessageList extends StatefulWidget {
   final Chat chat;
+  final ValueNotifier<String> messageToReply;
+  final ValueNotifier<String> messageToReplyBody;
+  final ScrollController scrollController;
+  final GlobalKey Function(String) getKeyForMessage;
+  final Map<String, GlobalKey> itemKeys;
 
-  const _ChatScreenMessageList({required this.chat});
+  const _ChatScreenMessageList({
+    required this.chat,
+    required this.messageToReply,
+    required this.messageToReplyBody,
+    required this.scrollController,
+    required this.getKeyForMessage,
+    required this.itemKeys,
+  });
+
+  @override
+  State<_ChatScreenMessageList> createState() => _ChatScreenMessageListState();
+}
+
+class _ChatScreenMessageListState extends State<_ChatScreenMessageList> {
+  late List<Message> _messages;
+  String? _highlightedMessageId;
 
   @override
   Widget build(BuildContext context) {
     final appController = context.appController;
     final chatController = context.chatController!;
-    final messageStream = chat is DirectChat
-        ? chatController.watchMessagesForDirectChat(chat.id)
-        : chatController.watchMessagesForGroupChat(chat.id);
+    final messageStream = widget.chat is DirectChat
+        ? chatController.watchMessagesForDirectChat(widget.chat.id)
+        : chatController.watchMessagesForGroupChat(widget.chat.id);
     final usersStream = appController.watchAllUsers();
     return StreamBuilder(
       stream: Rx.combineLatest2(
@@ -776,13 +959,13 @@ class _ChatScreenMessageList extends StatelessWidget {
         } else if (!snapshot.hasData || snapshot.data == null) {
           return const Center(child: AppLoader());
         }
-        final messages = (snapshot.data?[0] ?? []) as List<Message>;
+        _messages = (snapshot.data?[0] ?? []) as List<Message>;
         final users = (snapshot.data?[1] ?? []) as List<AuthorizedUser>;
-        if (messages.isEmpty) {
+        if (_messages.isEmpty) {
           return EmptyState(title: context.l10n.noMessagesYetLabel);
         }
         final messagesWithSenderNames = <Message, String>{};
-        for (final message in messages) {
+        for (final message in _messages) {
           final sender = users.firstWhere(
             (user) => user.id == message.senderId,
             orElse: () {
@@ -798,12 +981,14 @@ class _ChatScreenMessageList extends StatelessWidget {
           messagesWithSenderNames[message] = sender.name;
         }
         return ListView.separated(
+          controller: widget.scrollController,
           reverse: true,
-          itemCount: messages.length,
+          cacheExtent: 10000,
+          itemCount: _messages.length,
           separatorBuilder: (context, index) {
-            if (index < messages.length - 1 &&
-                messages[index].timestamp.day !=
-                    messages[index + 1].timestamp.day) {
+            if (index < _messages.length - 1 &&
+                _messages[index].timestamp.day !=
+                    _messages[index + 1].timestamp.day) {
               return Padding(
                 padding: const EdgeInsets.symmetric(vertical: spacing8),
                 child: Center(
@@ -818,8 +1003,8 @@ class _ChatScreenMessageList extends StatelessWidget {
                     padding: const EdgeInsets.all(spacing8),
                     child: Text(
                       context.l10n.dateSeparatorLabel(
-                        messages[index].timestamp.day,
-                        switch (messages[index].timestamp.month) {
+                        _messages[index].timestamp.day,
+                        switch (_messages[index].timestamp.month) {
                           1 => context.l10n.ofJanuaryLabel,
                           2 => context.l10n.ofFebruaryLabel,
                           3 => context.l10n.ofMarchLabel,
@@ -834,7 +1019,7 @@ class _ChatScreenMessageList extends StatelessWidget {
                           12 => context.l10n.ofDecemberLabel,
                           _ => '',
                         },
-                        messages[index].timestamp.year,
+                        _messages[index].timestamp.year,
                       ),
                       textAlign: TextAlign.center,
                       style: TextStyle(
@@ -852,12 +1037,12 @@ class _ChatScreenMessageList extends StatelessWidget {
             return const SizedBox.shrink();
           },
           itemBuilder: (context, index) {
-            final message = messages[index];
+            final message = _messages[index];
             bool? isRead;
             if (message.senderId ==
                 (context.appState.user as AuthorizedUser).id) {
-              if (chat is DirectChat) {
-                final sentMessages = messages
+              if (widget.chat is DirectChat) {
+                final sentMessages = _messages
                     .where(
                       (m) =>
                           m.senderId ==
@@ -865,9 +1050,9 @@ class _ChatScreenMessageList extends StatelessWidget {
                     )
                     .toList();
                 final sentIndex = sentMessages.indexOf(message);
-                isRead = sentIndex >= (chat as DirectChat).unreadCount;
-              } else if (chat is GroupChat) {
-                final sentMessages = messages
+                isRead = sentIndex >= (widget.chat as DirectChat).unreadCount;
+              } else if (widget.chat is GroupChat) {
+                final sentMessages = _messages
                     .where(
                       (m) =>
                           m.senderId ==
@@ -876,7 +1061,7 @@ class _ChatScreenMessageList extends StatelessWidget {
                     .toList();
                 final sentIndex = sentMessages.indexOf(message);
                 final unreadCountsExcludingThisUser =
-                    (chat as GroupChat).unreadCounts
+                    (widget.chat as GroupChat).unreadCounts
                       ..remove((context.appState.user as AuthorizedUser).id);
                 final lowestUnreadCount =
                     unreadCountsExcludingThisUser.values.isEmpty
@@ -887,7 +1072,25 @@ class _ChatScreenMessageList extends StatelessWidget {
                 isRead = sentIndex >= lowestUnreadCount;
               }
             }
-            if (index == messages.length - 1) {
+
+            String? replyBody;
+            if (message.replyId.isNotEmpty) {
+              final repliedMessage = _messages.firstWhere(
+                (m) => m.id == message.replyId,
+                orElse: () => Message(
+                  id: '',
+                  senderId: '',
+                  body: '',
+                  imageUrls: [],
+                  timestamp: DateTime.now(),
+                  replyId: '',
+                  replyBody: '',
+                ),
+              );
+              replyBody = repliedMessage.body;
+            }
+
+            if (index == _messages.length - 1) {
               return Column(
                 children: [
                   Padding(
@@ -934,74 +1137,148 @@ class _ChatScreenMessageList extends StatelessWidget {
                       ),
                     ),
                   ),
-                  AlignedMessageBubble(
-                    messagesWithSenderNames: messagesWithSenderNames,
-                    index: index,
-                    isFirstInSequence: true,
-                    isRead: isRead,
-                    imageUrls: message.imageUrls,
-                    timestamp: message.timestamp,
-                    onTap: () {
-                      _handleMessageTap(context, message);
-                    },
+                  AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    color: _highlightedMessageId == message.id
+                        ? Theme.of(context)
+                              .extension<AppTheme>()
+                              ?.foregroundStrongestColor
+                              .withAlpha(32)
+                        : Colors.transparent,
+                    child: KeyedSubtree(
+                      key: widget.getKeyForMessage(message.id),
+                      child: AlignedMessageBubble(
+                        messagesWithSenderNames: messagesWithSenderNames,
+                        index: index,
+                        isFirstInSequence: true,
+                        isRead: isRead,
+                        imageUrls: message.imageUrls,
+                        replyBody: replyBody ?? '',
+                        timestamp: message.timestamp,
+                        onTap: () {
+                          _handleMessageTap(context, message);
+                        },
+                        onReplyTap: () {
+                          _handleReplyTap(context, message);
+                        },
+                      ),
+                    ),
                   ),
                 ],
               );
             }
             if ((index == 0 ||
-                    messages[index - 1].senderId != messages[index].senderId) &&
-                (index == messages.length - 1 ||
-                    messages[index + 1].senderId != messages[index].senderId)) {
-              return AlignedMessageBubble(
-                messagesWithSenderNames: messagesWithSenderNames,
-                index: index,
-                isFirstInSequence: true,
-                isLastInSequence: true,
-                isRead: isRead,
-                imageUrls: message.imageUrls,
-                timestamp: message.timestamp,
-                onTap: () {
-                  _handleMessageTap(context, message);
-                },
+                    _messages[index - 1].senderId !=
+                        _messages[index].senderId) &&
+                (index == _messages.length - 1 ||
+                    _messages[index + 1].senderId !=
+                        _messages[index].senderId)) {
+              return AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                color: _highlightedMessageId == message.id
+                    ? Theme.of(context)
+                          .extension<AppTheme>()
+                          ?.foregroundStrongestColor
+                          .withAlpha(32)
+                    : Colors.transparent,
+                child: AlignedMessageBubble(
+                  key: widget.getKeyForMessage(message.id),
+                  messagesWithSenderNames: messagesWithSenderNames,
+                  index: index,
+                  isFirstInSequence: true,
+                  isLastInSequence: true,
+                  isRead: isRead,
+                  imageUrls: message.imageUrls,
+                  replyBody: replyBody ?? '',
+                  timestamp: message.timestamp,
+                  onTap: () {
+                    _handleMessageTap(context, message);
+                  },
+                  onReplyTap: () {
+                    _handleReplyTap(context, message);
+                  },
+                ),
               );
             }
             if (index == 0 ||
-                messages[index - 1].senderId != messages[index].senderId) {
-              return AlignedMessageBubble(
+                _messages[index - 1].senderId != _messages[index].senderId) {
+              return AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                color: _highlightedMessageId == message.id
+                    ? Theme.of(context)
+                          .extension<AppTheme>()
+                          ?.foregroundStrongestColor
+                          .withAlpha(32)
+                    : Colors.transparent,
+                child: AlignedMessageBubble(
+                  key: widget.getKeyForMessage(message.id),
+                  messagesWithSenderNames: messagesWithSenderNames,
+                  index: index,
+                  isLastInSequence: true,
+                  isRead: isRead,
+                  imageUrls: message.imageUrls,
+                  replyBody: replyBody ?? '',
+                  timestamp: message.timestamp,
+                  onTap: () {
+                    _handleMessageTap(context, message);
+                  },
+                  onReplyTap: () {
+                    _handleReplyTap(context, message);
+                  },
+                ),
+              );
+            }
+            if (index == _messages.length - 1 ||
+                _messages[index + 1].senderId != _messages[index].senderId) {
+              return AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                color: _highlightedMessageId == message.id
+                    ? Theme.of(context)
+                          .extension<AppTheme>()
+                          ?.foregroundStrongestColor
+                          .withAlpha(32)
+                    : Colors.transparent,
+                child: AlignedMessageBubble(
+                  key: widget.getKeyForMessage(message.id),
+                  messagesWithSenderNames: messagesWithSenderNames,
+                  index: index,
+                  isFirstInSequence: true,
+                  isRead: isRead,
+                  imageUrls: message.imageUrls,
+                  replyBody: replyBody ?? '',
+                  timestamp: message.timestamp,
+                  onTap: () {
+                    _handleMessageTap(context, message);
+                  },
+                  onReplyTap: () {
+                    _handleReplyTap(context, message);
+                  },
+                ),
+              );
+            }
+            return AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              color: _highlightedMessageId == message.id
+                  ? Theme.of(context)
+                        .extension<AppTheme>()
+                        ?.foregroundStrongestColor
+                        .withAlpha(32)
+                  : Colors.transparent,
+              child: AlignedMessageBubble(
+                key: widget.getKeyForMessage(message.id),
                 messagesWithSenderNames: messagesWithSenderNames,
                 index: index,
-                isLastInSequence: true,
                 isRead: isRead,
                 imageUrls: message.imageUrls,
+                replyBody: replyBody ?? '',
                 timestamp: message.timestamp,
                 onTap: () {
                   _handleMessageTap(context, message);
                 },
-              );
-            }
-            if (index == messages.length - 1 ||
-                messages[index + 1].senderId != messages[index].senderId) {
-              return AlignedMessageBubble(
-                messagesWithSenderNames: messagesWithSenderNames,
-                index: index,
-                isFirstInSequence: true,
-                isRead: isRead,
-                imageUrls: message.imageUrls,
-                timestamp: message.timestamp,
-                onTap: () {
-                  _handleMessageTap(context, message);
+                onReplyTap: () {
+                  _handleReplyTap(context, message);
                 },
-              );
-            }
-            return AlignedMessageBubble(
-              messagesWithSenderNames: messagesWithSenderNames,
-              index: index,
-              isRead: isRead,
-              imageUrls: message.imageUrls,
-              timestamp: message.timestamp,
-              onTap: () {
-                _handleMessageTap(context, message);
-              },
+              ),
             );
           },
         );
@@ -1028,6 +1305,14 @@ class _ChatScreenMessageList extends StatelessWidget {
           spacing: spacing8,
           children: [
             AppListItem(
+              title: context.l10n.replyToMessageLabel,
+              onPressed: () {
+                Navigator.of(context).pop();
+                widget.messageToReply.value = message.id;
+                widget.messageToReplyBody.value = message.body;
+              },
+            ),
+            AppListItem(
               title: context.l10n.saveMessageLabel,
               onPressed: () async {
                 await chatController.saveMessage(
@@ -1037,8 +1322,10 @@ class _ChatScreenMessageList extends StatelessWidget {
                     body: message.body,
                     imageUrls: message.imageUrls,
                     timestamp: message.timestamp,
-                    chatId: chat.id,
-                    chatType: chat is DirectChat
+                    replyId: '',
+                    replyBody: '',
+                    chatId: widget.chat.id,
+                    chatType: widget.chat is DirectChat
                         ? ChatType.direct
                         : ChatType.group,
                     savedAt: DateTime.now(),
@@ -1092,5 +1379,52 @@ class _ChatScreenMessageList extends StatelessWidget {
         );
       },
     );
+  }
+
+  void _highlightMessage(String messageId) {
+    setState(() {
+      _highlightedMessageId = messageId;
+    });
+    Future.delayed(const Duration(milliseconds: 500), () {
+      if (mounted) {
+        setState(() {
+          _highlightedMessageId = null;
+        });
+      }
+    });
+  }
+
+  void _handleReplyTap(BuildContext context, Message message) {
+    if (message.replyId.isEmpty) return;
+    final index = _messages.indexWhere((m) => m.id == message.replyId);
+    if (index == -1) return;
+
+    final key = widget.getKeyForMessage(message.replyId);
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (key.currentContext != null) {
+        Scrollable.ensureVisible(
+          key.currentContext!,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        ).then((_) {
+          _highlightMessage(message.replyId);
+        });
+      } else {
+        final reverseIndex = _messages.length - 1 - index;
+        const estimatedItemHeight = 120.0;
+        final targetOffset = reverseIndex * estimatedItemHeight;
+        final maxScroll = widget.scrollController.position.maxScrollExtent;
+        widget.scrollController
+            .animateTo(
+              targetOffset.clamp(0.0, maxScroll),
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeOut,
+            )
+            .then((_) {
+              _highlightMessage(message.replyId);
+            });
+      }
+    });
   }
 }

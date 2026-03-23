@@ -589,5 +589,15 @@
     "addImageLabel": "Add images",
     "@addImageLabel": {},
     "typeAMessageLabel": "Type a message...",
-    "@typeAMessageLabel": {}
+    "@typeAMessageLabel": {},
+    "viewChatTitle": "View Chat",
+    "@viewChatTitle": {},
+    "deleteMessageLabel": "Delete message",
+    "@deleteMessageLabel": {},
+    "confirmDeleteMessageLabel": "Are you sure you want to delete this message? This action cannot be undone.",
+    "@confirmDeleteMessageLabel": {},
+    "replyToMessageLabel": "Reply to message",
+    "@replyToMessageLabel": {},
+    "replyingToLabel": "Replying to",
+    "@replyingToLabel": {}
 }

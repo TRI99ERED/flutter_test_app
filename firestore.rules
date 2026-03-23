@@ -101,7 +101,8 @@ service cloud.firestore {
         request.auth.uid in get(/databases/$(database)/documents/groupChats/$(chatId)).data.participants;
         allow delete: if request.auth != null &&
         request.auth.uid in get(/databases/$(database)/documents/groupChats/$(chatId)).data.participants &&
-        request.auth.uid == get(/databases/$(database)/documents/groupChats/$(chatId)).data.ownerId;
+        (request.auth.uid == get(/databases/$(database)/documents/groupChats/$(chatId)).data.ownerId ||
+        request.auth.uid == resource.data.senderId);
         allow update: if false;
       }
     }

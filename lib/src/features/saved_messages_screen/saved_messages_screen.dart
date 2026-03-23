@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:test_app/src/features/chat_screen/chat_screen.dart';
 import 'package:test_app/src/router/app_navigator.dart';
@@ -21,7 +22,7 @@ import 'package:test_app/src/widgets/common/empty_state.dart';
 import 'package:test_app/src/widgets/common/error_state.dart';
 import 'package:test_app/src/features/themes/styles.dart';
 
-enum _MessageAction { goToDirectChat, goToGroupChat, delete }
+enum _MessageAction { goToDirectChat, goToGroupChat, reply, copy, delete }
 
 class SavedMessagesScreen extends StatefulWidget {
   const SavedMessagesScreen({super.key});
@@ -31,6 +32,38 @@ class SavedMessagesScreen extends StatefulWidget {
 }
 
 class _SavedMessagesScreenState extends State<SavedMessagesScreen> {
+  final _messageToReply = ValueNotifier<String>('');
+  final _messageToReplyBody = ValueNotifier<String>('');
+  final _scrollController = ScrollController();
+  final _itemKeys = <String, GlobalKey>{};
+  List<SavedMessage> _messages = [];
+  String? _highlightedMessageId;
+
+  GlobalKey _getKeyForMessage(String id) {
+    return _itemKeys.putIfAbsent(id, () => GlobalKey());
+  }
+
+  void _highlightMessage(String messageId) {
+    setState(() {
+      _highlightedMessageId = messageId;
+    });
+    Future.delayed(const Duration(milliseconds: 500), () {
+      if (mounted) {
+        setState(() {
+          _highlightedMessageId = null;
+        });
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _messageToReply.dispose();
+    _messageToReplyBody.dispose();
+    _scrollController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     final messageStream = context.chatController!.watchSavedMessages();
@@ -95,11 +128,11 @@ class _SavedMessagesScreenState extends State<SavedMessagesScreen> {
                           return const Center(child: AppLoader());
                         }
 
-                        final messages =
+                        _messages =
                             (snapshot.data?[0] ?? []) as List<SavedMessage>;
                         final users =
                             (snapshot.data?[1] ?? []) as List<AuthorizedUser>;
-                        if (messages.isEmpty) {
+                        if (_messages.isEmpty) {
                           return EmptyState(
                             title: context.l10n.noSavedMessagesLabel,
                             body: context
@@ -109,7 +142,7 @@ class _SavedMessagesScreenState extends State<SavedMessagesScreen> {
                         }
                         final messagesWithSenderNames =
                             <SavedMessage, String>{};
-                        for (final message in messages) {
+                        for (final message in _messages) {
                           final sender = users.firstWhere(
                             (user) => user.id == message.senderId,
                             orElse: () {
@@ -125,12 +158,14 @@ class _SavedMessagesScreenState extends State<SavedMessagesScreen> {
                           messagesWithSenderNames[message] = sender.name;
                         }
                         return ListView.separated(
+                          controller: _scrollController,
                           reverse: true,
-                          itemCount: messages.length,
+                          cacheExtent: 10000,
+                          itemCount: _messages.length,
                           separatorBuilder: (context, index) {
-                            if (index < messages.length - 1 &&
-                                messages[index].savedAt.day !=
-                                    messages[index + 1].savedAt.day) {
+                            if (index < _messages.length - 1 &&
+                                _messages[index].savedAt.day !=
+                                    _messages[index + 1].savedAt.day) {
                               return Padding(
                                 padding: const EdgeInsets.symmetric(
                                   vertical: spacing8,
@@ -140,15 +175,16 @@ class _SavedMessagesScreenState extends State<SavedMessagesScreen> {
                                     decoration: BoxDecoration(
                                       color: Theme.of(context)
                                           .extension<AppTheme>()
-                                          ?.backgroundStrongColor
-                                          .withAlpha(192),
+                                          ?.backgroundStrongColor,
                                       borderRadius: BorderRadius.circular(16),
                                     ),
                                     padding: const EdgeInsets.all(spacing8),
                                     child: Text(
                                       context.l10n.dateSeparatorLabel(
-                                        messages[index].savedAt.day,
-                                        switch (messages[index].savedAt.month) {
+                                        _messages[index].savedAt.day,
+                                        switch (_messages[index]
+                                            .savedAt
+                                            .month) {
                                           1 => context.l10n.ofJanuaryLabel,
                                           2 => context.l10n.ofFebruaryLabel,
                                           3 => context.l10n.ofMarchLabel,
@@ -163,7 +199,7 @@ class _SavedMessagesScreenState extends State<SavedMessagesScreen> {
                                           12 => context.l10n.ofDecemberLabel,
                                           _ => '',
                                         },
-                                        messages[index].savedAt.year,
+                                        _messages[index].savedAt.year,
                                       ),
                                       textAlign: TextAlign.center,
                                       style: TextStyle(
@@ -181,8 +217,8 @@ class _SavedMessagesScreenState extends State<SavedMessagesScreen> {
                             return const SizedBox.shrink();
                           },
                           itemBuilder: (context, index) {
-                            final message = messages[index];
-                            if (index == messages.length - 1) {
+                            final message = _messages[index];
+                            if (index == _messages.length - 1) {
                               return Column(
                                 children: [
                                   Padding(
@@ -194,8 +230,7 @@ class _SavedMessagesScreenState extends State<SavedMessagesScreen> {
                                         decoration: BoxDecoration(
                                           color: Theme.of(context)
                                               .extension<AppTheme>()
-                                              ?.backgroundStrongColor
-                                              .withAlpha(192),
+                                              ?.backgroundStrongColor,
                                           borderRadius: BorderRadius.circular(
                                             16,
                                           ),
@@ -236,82 +271,155 @@ class _SavedMessagesScreenState extends State<SavedMessagesScreen> {
                                       ),
                                     ),
                                   ),
-                                  AlignedMessageBubble(
-                                    messagesWithSenderNames:
-                                        messagesWithSenderNames,
-                                    index: index,
-                                    isFirstInSequence: true,
-                                    isRead: true,
-                                    imageUrls: message.imageUrls,
-                                    timestamp: message.timestamp,
-                                    onTap: () {
-                                      _handleMessageTap(context, message);
-                                    },
+                                  AnimatedContainer(
+                                    duration: const Duration(milliseconds: 200),
+                                    color: _highlightedMessageId == message.id
+                                        ? Theme.of(context)
+                                              .extension<AppTheme>()
+                                              ?.foregroundStrongestColor
+                                              .withAlpha(32)
+                                        : Colors.transparent,
+                                    child: KeyedSubtree(
+                                      key: _getKeyForMessage(message.id),
+                                      child: AlignedMessageBubble(
+                                        messagesWithSenderNames:
+                                            messagesWithSenderNames,
+                                        index: index,
+                                        isFirstInSequence: true,
+                                        isRead: true,
+                                        imageUrls: message.imageUrls,
+                                        replyBody: message.replyBody,
+                                        timestamp: message.timestamp,
+                                        onTap: () {
+                                          _handleMessageTap(context, message);
+                                        },
+                                        onReplyTap: () {
+                                          _handleReplyTap(context, message);
+                                        },
+                                      ),
+                                    ),
                                   ),
                                 ],
                               );
                             }
                             if ((index == 0 ||
-                                    messages[index - 1].senderId !=
-                                        messages[index].senderId) &&
-                                (index == messages.length - 1 ||
-                                    messages[index + 1].senderId !=
-                                        messages[index].senderId)) {
-                              return AlignedMessageBubble(
-                                messagesWithSenderNames:
-                                    messagesWithSenderNames,
-                                index: index,
-                                isFirstInSequence: true,
-                                isLastInSequence: true,
-                                isRead: true,
-                                imageUrls: message.imageUrls,
-                                timestamp: message.timestamp,
-                                onTap: () {
-                                  _handleMessageTap(context, message);
-                                },
+                                    _messages[index - 1].senderId !=
+                                        _messages[index].senderId) &&
+                                (index == _messages.length - 1 ||
+                                    _messages[index + 1].senderId !=
+                                        _messages[index].senderId)) {
+                              return AnimatedContainer(
+                                duration: const Duration(milliseconds: 200),
+                                color: _highlightedMessageId == message.id
+                                    ? Theme.of(context)
+                                          .extension<AppTheme>()
+                                          ?.foregroundStrongestColor
+                                          .withAlpha(32)
+                                    : Colors.transparent,
+                                child: AlignedMessageBubble(
+                                  key: _getKeyForMessage(message.id),
+                                  messagesWithSenderNames:
+                                      messagesWithSenderNames,
+                                  index: index,
+                                  isFirstInSequence: true,
+                                  isLastInSequence: true,
+                                  isRead: true,
+                                  imageUrls: message.imageUrls,
+                                  replyBody: message.replyBody,
+                                  timestamp: message.timestamp,
+                                  onTap: () {
+                                    _handleMessageTap(context, message);
+                                  },
+                                  onReplyTap: () {
+                                    _handleReplyTap(context, message);
+                                  },
+                                ),
                               );
                             }
                             if (index == 0 ||
-                                messages[index - 1].senderId !=
-                                    messages[index].senderId) {
-                              return AlignedMessageBubble(
+                                _messages[index - 1].senderId !=
+                                    _messages[index].senderId) {
+                              return AnimatedContainer(
+                                duration: const Duration(milliseconds: 200),
+                                color: _highlightedMessageId == message.id
+                                    ? Theme.of(context)
+                                          .extension<AppTheme>()
+                                          ?.foregroundStrongestColor
+                                          .withAlpha(32)
+                                    : Colors.transparent,
+                                child: AlignedMessageBubble(
+                                  key: _getKeyForMessage(message.id),
+                                  messagesWithSenderNames:
+                                      messagesWithSenderNames,
+                                  index: index,
+                                  isLastInSequence: true,
+                                  isRead: true,
+                                  imageUrls: message.imageUrls,
+                                  replyBody: message.replyBody,
+                                  timestamp: message.timestamp,
+                                  onTap: () {
+                                    _handleMessageTap(context, message);
+                                  },
+                                  onReplyTap: () {
+                                    _handleReplyTap(context, message);
+                                  },
+                                ),
+                              );
+                            }
+                            if (index == _messages.length - 1 ||
+                                _messages[index + 1].senderId !=
+                                    _messages[index].senderId) {
+                              return AnimatedContainer(
+                                duration: const Duration(milliseconds: 200),
+                                color: _highlightedMessageId == message.id
+                                    ? Theme.of(context)
+                                          .extension<AppTheme>()
+                                          ?.foregroundStrongestColor
+                                          .withAlpha(32)
+                                    : Colors.transparent,
+                                child: AlignedMessageBubble(
+                                  key: _getKeyForMessage(message.id),
+                                  messagesWithSenderNames:
+                                      messagesWithSenderNames,
+                                  index: index,
+                                  isFirstInSequence: true,
+                                  isRead: true,
+                                  imageUrls: message.imageUrls,
+                                  replyBody: message.replyBody,
+                                  timestamp: message.timestamp,
+                                  onTap: () {
+                                    _handleMessageTap(context, message);
+                                  },
+                                  onReplyTap: () {
+                                    _handleReplyTap(context, message);
+                                  },
+                                ),
+                              );
+                            }
+                            return AnimatedContainer(
+                              duration: const Duration(milliseconds: 200),
+                              color: _highlightedMessageId == message.id
+                                  ? Theme.of(context)
+                                        .extension<AppTheme>()
+                                        ?.foregroundStrongestColor
+                                        .withAlpha(32)
+                                  : Colors.transparent,
+                              child: AlignedMessageBubble(
+                                key: _getKeyForMessage(message.id),
                                 messagesWithSenderNames:
                                     messagesWithSenderNames,
                                 index: index,
-                                isLastInSequence: true,
                                 isRead: true,
                                 imageUrls: message.imageUrls,
+                                replyBody: message.replyBody,
                                 timestamp: message.timestamp,
                                 onTap: () {
                                   _handleMessageTap(context, message);
                                 },
-                              );
-                            }
-                            if (index == messages.length - 1 ||
-                                messages[index + 1].senderId !=
-                                    messages[index].senderId) {
-                              return AlignedMessageBubble(
-                                messagesWithSenderNames:
-                                    messagesWithSenderNames,
-                                index: index,
-                                isFirstInSequence: true,
-                                isRead: true,
-                                imageUrls: message.imageUrls,
-                                timestamp: message.timestamp,
-                                onTap: () {
-                                  _handleMessageTap(context, message);
+                                onReplyTap: () {
+                                  _handleReplyTap(context, message);
                                 },
-                              );
-                            }
-                            return AlignedMessageBubble(
-                              messagesWithSenderNames: messagesWithSenderNames,
-                              index: index,
-                              isRead: true,
-                              imageUrls: message.imageUrls,
-                              timestamp: message.timestamp,
-                              onTap: () {
-                                _handleMessageTap(context, message);
-                              },
+                              ),
                             );
                           },
                         );
@@ -319,7 +427,10 @@ class _SavedMessagesScreenState extends State<SavedMessagesScreen> {
                     ),
                   ),
                 ),
-                _SavedMessagesScreenMessageInput(),
+                _SavedMessagesScreenMessageInput(
+                  messageToReply: _messageToReply,
+                  messageToReplyBody: _messageToReplyBody,
+                ),
               ],
             ),
           ),
@@ -364,6 +475,14 @@ class _SavedMessagesScreenState extends State<SavedMessagesScreen> {
                 ),
               },
             AppListItem(
+              title: context.l10n.replyToMessageLabel,
+              onPressed: () => Navigator.of(context).pop(_MessageAction.reply),
+            ),
+            AppListItem(
+              title: context.l10n.copyMessageLabel,
+              onPressed: () => Navigator.of(context).pop(_MessageAction.copy),
+            ),
+            AppListItem(
               title: context.l10n.deleteSavedMessageLabel,
               onPressed: () => Navigator.of(context).pop(_MessageAction.delete),
             ),
@@ -383,14 +502,59 @@ class _SavedMessagesScreenState extends State<SavedMessagesScreen> {
         navigator.push(
           ChatPage(chatId: message.chatId, chatType: ChatType.group),
         );
+      case _MessageAction.reply:
+        _messageToReply.value = message.id;
+        _messageToReplyBody.value = message.body;
+      case _MessageAction.copy:
+        Clipboard.setData(ClipboardData(text: message.body));
       case _MessageAction.delete:
         chatController.deleteSavedMessage(message.id);
     }
   }
+
+  void _handleReplyTap(BuildContext context, SavedMessage message) {
+    if (message.replyId.isEmpty) return;
+    final index = _messages.indexWhere((m) => m.id == message.replyId);
+    if (index == -1) return;
+
+    final key = _getKeyForMessage(message.replyId);
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (key.currentContext != null) {
+        Scrollable.ensureVisible(
+          key.currentContext!,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        ).then((_) {
+          _highlightMessage(message.replyId);
+        });
+      } else {
+        final reverseIndex = _messages.length - 1 - index;
+        const estimatedItemHeight = 120.0;
+        final targetOffset = reverseIndex * estimatedItemHeight;
+        final maxScroll = _scrollController.position.maxScrollExtent;
+        _scrollController
+            .animateTo(
+              targetOffset.clamp(0.0, maxScroll),
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeOut,
+            )
+            .then((_) {
+              _highlightMessage(message.replyId);
+            });
+      }
+    });
+  }
 }
 
 class _SavedMessagesScreenMessageInput extends StatefulWidget {
-  const _SavedMessagesScreenMessageInput();
+  final ValueNotifier<String> messageToReply;
+  final ValueNotifier<String> messageToReplyBody;
+
+  const _SavedMessagesScreenMessageInput({
+    required this.messageToReply,
+    required this.messageToReplyBody,
+  });
 
   @override
   State<_SavedMessagesScreenMessageInput> createState() =>
@@ -406,10 +570,64 @@ class _SavedMessagesScreenMessageInputState
     return Column(
       children: [
         ValueListenableBuilder(
+          valueListenable: widget.messageToReply,
+          builder: (context, value, child) {
+            if (value.isEmpty) {
+              return const SizedBox.shrink();
+            }
+            return Container(
+              color: Theme.of(
+                context,
+              ).extension<AppTheme>()?.backgroundStrongestColor,
+              padding: const EdgeInsets.symmetric(horizontal: spacing8),
+              child: Row(
+                children: [
+                  Text(
+                    '${context.l10n.replyingToLabel}:',
+                    style: TextStyle(
+                      fontSize: bMSize,
+                      fontWeight: bMWeight,
+                      color: Theme.of(
+                        context,
+                      ).extension<AppTheme>()?.foregroundStrongestColor,
+                    ),
+                  ),
+                  SizedBox(width: spacing8),
+                  Expanded(
+                    child: Text(
+                      widget.messageToReplyBody.value,
+                      style: TextStyle(
+                        fontSize: bMSize,
+                        fontWeight: bMWeight,
+                        color: Theme.of(
+                          context,
+                        ).extension<AppTheme>()?.foregroundStrongColor,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: () {
+                      widget.messageToReply.value = '';
+                      widget.messageToReplyBody.value = '';
+                    },
+                    icon: Icon(
+                      AppIcons.close,
+                      color: Theme.of(
+                        context,
+                      ).extension<AppTheme>()?.foregroundStrongestColor,
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
+        ValueListenableBuilder(
           valueListenable: _imageFiles,
           builder: (context, value, child) {
             return SizedBox(
-              height: _imageFiles.value.isEmpty ? 0 : 100,
+              height: _imageFiles.value.isNotEmpty ? 100 : 0,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
                 itemCount: _imageFiles.value.length,
@@ -494,8 +712,16 @@ class _SavedMessagesScreenMessageInputState
             context.chatController!.createSavedMessage(
               value,
               _imageFiles.value,
+              widget.messageToReply.value.isNotEmpty
+                  ? widget.messageToReply.value
+                  : null,
+              widget.messageToReply.value.isNotEmpty
+                  ? widget.messageToReplyBody.value
+                  : null,
             );
             _imageFiles.value = [];
+            widget.messageToReply.value = '';
+            widget.messageToReplyBody.value = '';
           },
         ),
       ],
