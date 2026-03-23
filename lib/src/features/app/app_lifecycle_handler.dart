@@ -1,12 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:test_app/src/features/app/app_scope.dart';
 import 'package:test_app/src/features/app/data/models/user_model.dart';
-import 'package:test_app/src/router/app_navigator.dart';
+import 'package:test_app/src/router/app_router.dart';
 
 class AppLifecycleHandler extends StatefulWidget {
+  final AppRouterDelegate routerDelegate;
   final Widget child;
 
-  const AppLifecycleHandler({super.key, required this.child});
+  const AppLifecycleHandler({
+    super.key,
+    required this.routerDelegate,
+    required this.child,
+  });
 
   @override
   State<AppLifecycleHandler> createState() => _AppLifecycleHandlerState();
@@ -38,20 +43,27 @@ class _AppLifecycleHandlerState extends State<AppLifecycleHandler>
       case AppLifecycleState.detached:
       case AppLifecycleState.inactive:
       case AppLifecycleState.hidden:
-        await appController.updateUser(
-          user.copyWith(currentDirectChatId: '', currentGroupChatId: '')
-              as AuthorizedUser,
-        );
+        final router = widget.routerDelegate;
+        final currentPage = router.currentPages.lastOrNull;
+        if (currentPage == null) return;
+        final currentPath = currentPage.path;
+        if (currentPath.startsWith('/chats/direct/') ||
+            currentPath.startsWith('/chats/group/')) {
+          await appController.updateUser(
+            user.copyWith(currentDirectChatId: '', currentGroupChatId: '')
+                as AuthorizedUser,
+          );
+        }
         break;
       case AppLifecycleState.resumed:
-        final matchedLocation = AppNavigator.of(context).current.path;
-        debugPrint('Current route: $matchedLocation');
-        if (matchedLocation.startsWith('{chatType: direct, chatId: ')) {
-          final chatId = matchedLocation
-              .split('{chatType: direct, chatId: ')
-              .last
-              .split('}')
-              .first;
+        final router = widget.routerDelegate;
+        final currentPage = router.currentPages.lastOrNull;
+        if (currentPage == null) return;
+        final currentPath = currentPage.path;
+
+        if (currentPath.startsWith('/chats/direct/')) {
+          final chatId = currentPath.split('/chats/direct/').last;
+
           appController.updateUser(
             user.copyWith(currentDirectChatId: chatId) as AuthorizedUser,
           );
@@ -62,12 +74,8 @@ class _AppLifecycleHandlerState extends State<AppLifecycleHandler>
               unreadCount: 0,
             );
           }
-        } else if (matchedLocation.startsWith('{chatType: group, chatId: ')) {
-          final chatId = matchedLocation
-              .split('{chatType: group, chatId: ')
-              .last
-              .split('}')
-              .first;
+        } else if (currentPath.startsWith('/chats/group/')) {
+          final chatId = currentPath.split('/chats/group/').last;
           appController.updateUser(
             user.copyWith(currentGroupChatId: chatId) as AuthorizedUser,
           );

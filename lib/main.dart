@@ -165,6 +165,7 @@ class _AppState extends State<App> {
                 themeMode: _themeMode,
                 locale: _locale,
                 child: AppLifecycleHandler(
+                  routerDelegate: _routerDelegate,
                   child: child ?? const SplashScreen(),
                 ),
               ),
