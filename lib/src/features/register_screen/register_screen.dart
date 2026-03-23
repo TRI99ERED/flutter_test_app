@@ -26,6 +26,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _confirmPasswordController = TextEditingController();
   final _isFormValid = ValueNotifier(false);
   final _termsAccepted = ValueNotifier<bool?>(false);
+  final FocusNode _nameFocusNode = FocusNode();
+  final FocusNode _emailFocusNode = FocusNode();
+  final FocusNode _passwordFocusNode = FocusNode();
+  final FocusNode _confirmPasswordFocusNode = FocusNode();
 
   @override
   void initState() {
@@ -129,6 +133,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             TextInputType.name,
                           ),
                           onChanged: (_) => _validateForm(),
+                          textInputAction: TextInputAction.next,
+                          onSubmitted: (_) {
+                            FocusScope.of(
+                              context,
+                            ).requestFocus(_emailFocusNode);
+                          },
+                          focusNode: _nameFocusNode,
                         ),
                         AppTextField(
                           title: context.l10n.emailAddressLabel,
@@ -139,6 +150,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             TextInputType.emailAddress,
                           ),
                           onChanged: (_) => _validateForm(),
+                          textInputAction: TextInputAction.next,
+                          onSubmitted: (_) {
+                            FocusScope.of(
+                              context,
+                            ).requestFocus(_passwordFocusNode);
+                          },
+                          focusNode: _emailFocusNode,
                         ),
                         AppTextField(
                           title: context.l10n.passwordLabel,
@@ -151,45 +169,77 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           obscureText: true,
                           showVisibilityIcon: true,
                           onChanged: (_) => _validateForm(),
-                        ),
-                        AppTextField(
-                          title: context.l10n.confirmPasswordLabel,
-                          controller: _confirmPasswordController,
-                          keyboardType: TextInputType.visiblePassword,
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return context
-                                  .l10n
-                                  .pleaseConfirmYourPasswordMessage;
-                            }
-                            if (value != _passwordController.text) {
-                              return context.l10n.passwordsDoNotMatchMessage;
-                            }
-                            if (value.length < 8) {
-                              return context
-                                  .l10n
-                                  .passwordMustBeAtLeast8CharactersMessage;
-                            }
-                            if (!RegExp(r'[A-Z]').hasMatch(value)) {
-                              return context
-                                  .l10n
-                                  .passwordMustContainAtLeastOneUppercaseLetterMessage;
-                            }
-                            if (!RegExp(r'[a-z]').hasMatch(value)) {
-                              return context
-                                  .l10n
-                                  .passwordMustContainAtLeastOneLowercaseLetterMessage;
-                            }
-                            if (!RegExp(r'[0-9]').hasMatch(value)) {
-                              return context
-                                  .l10n
-                                  .passwordMustContainAtLeastOneNumberMessage;
-                            }
-                            return null;
+                          textInputAction: TextInputAction.next,
+                          onSubmitted: (_) {
+                            FocusScope.of(
+                              context,
+                            ).requestFocus(_confirmPasswordFocusNode);
                           },
-                          obscureText: true,
-                          showVisibilityIcon: true,
-                          onChanged: (_) => _validateForm(),
+                          focusNode: _passwordFocusNode,
+                        ),
+                        ValueListenableBuilder(
+                          valueListenable: _isFormValid,
+                          builder: (context, isValid, child) {
+                            return AppTextField(
+                              title: context.l10n.confirmPasswordLabel,
+                              controller: _confirmPasswordController,
+                              keyboardType: TextInputType.visiblePassword,
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return context
+                                      .l10n
+                                      .pleaseConfirmYourPasswordMessage;
+                                }
+                                if (value != _passwordController.text) {
+                                  return context
+                                      .l10n
+                                      .passwordsDoNotMatchMessage;
+                                }
+                                if (value.length < 8) {
+                                  return context
+                                      .l10n
+                                      .passwordMustBeAtLeast8CharactersMessage;
+                                }
+                                if (!RegExp(r'[A-Z]').hasMatch(value)) {
+                                  return context
+                                      .l10n
+                                      .passwordMustContainAtLeastOneUppercaseLetterMessage;
+                                }
+                                if (!RegExp(r'[a-z]').hasMatch(value)) {
+                                  return context
+                                      .l10n
+                                      .passwordMustContainAtLeastOneLowercaseLetterMessage;
+                                }
+                                if (!RegExp(r'[0-9]').hasMatch(value)) {
+                                  return context
+                                      .l10n
+                                      .passwordMustContainAtLeastOneNumberMessage;
+                                }
+                                return null;
+                              },
+                              obscureText: true,
+                              showVisibilityIcon: true,
+                              onChanged: (_) => _validateForm(),
+                              textInputAction: TextInputAction.done,
+                              onSubmitted: isValid
+                                  ? (_) async {
+                                      final name = _nameController.text;
+                                      final email = _emailController.text;
+                                      final password = _passwordController.text;
+                                      await context.appController.register(
+                                        email,
+                                        password,
+                                        name,
+                                      );
+                                      if (!context.mounted) return;
+                                      AppNavigator.of(context).replaceAll(
+                                        const EmailConfirmationPage(),
+                                      );
+                                    }
+                                  : null,
+                              focusNode: _confirmPasswordFocusNode,
+                            );
+                          },
                         ),
                         ValueListenableBuilder<bool?>(
                           valueListenable: _termsAccepted,
@@ -293,6 +343,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
     _confirmPasswordController.dispose();
     _termsAccepted.dispose();
     _isFormValid.dispose();
+    _nameFocusNode.dispose();
+    _emailFocusNode.dispose();
+    _passwordFocusNode.dispose();
+    _confirmPasswordFocusNode.dispose();
     super.dispose();
   }
 }

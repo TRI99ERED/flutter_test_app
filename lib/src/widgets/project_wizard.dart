@@ -32,7 +32,7 @@ class ProjectWizard extends StatefulWidget {
     ProjectWizardMode mode, [
     Project? projectToEdit,
   ]) async {
-    return await showDialog<Project?>(
+    return await showDialog(
       context: context,
       barrierColor: Colors.transparent,
       builder: (context) =>
@@ -84,7 +84,18 @@ class _ProjectWizardState extends State<ProjectWizard> {
         child: Column(
           spacing: spacing8,
           children: [
-            Expanded(child: _buildForm(context)),
+            Expanded(
+              child: _ProjectWizardForm(
+                formKey: _formKey,
+                nameController: _nameController,
+                descriptionController: _descriptionController,
+                mode: widget.mode,
+                projectToEdit: widget.projectToEdit,
+                deadline: _deadline,
+                selectedStatus: _selectedStatus,
+                participants: _participants,
+              ),
+            ),
             SizedBox(
               width: double.infinity,
               child: AppButtonPrimary(
@@ -102,218 +113,6 @@ class _ProjectWizardState extends State<ProjectWizard> {
           ],
         ),
       ),
-    );
-  }
-
-  Widget _buildForm(BuildContext context) {
-    return Form(
-      key: _formKey,
-      child: SizedBox(
-        height: MediaQuery.sizeOf(context).height * 0.6,
-        child: ListView(
-          children: [
-            AppTextField(
-              title: context.l10n.projectNameLabel,
-              placeholder: context.l10n.enterProjectNameLabel,
-              controller: _nameController,
-              validator: getValidatorForKeyboardType(
-                context,
-                TextInputType.text,
-              ),
-            ),
-            if (widget.mode == ProjectWizardMode.edit)
-              const SizedBox(height: spacing16),
-            if (widget.mode == ProjectWizardMode.edit &&
-                widget.projectToEdit!.status != ProjectStatus.finished)
-              _buildStatusCheckbox(context),
-            const SizedBox(height: spacing16),
-            AppTextArea(
-              title: context.l10n.descriptionLabel,
-              placeholder: context.l10n.enterProjectDescriptionLabel,
-              controller: _descriptionController,
-            ),
-            const SizedBox(height: spacing16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  context.l10n.participantsLabel,
-                  style: TextStyle(
-                    fontSize: h5Size,
-                    fontWeight: h5Weight,
-                    color: Theme.of(
-                      context,
-                    ).extension<AppTheme>()?.foregroundStrongestColor,
-                  ),
-                ),
-                AppButtonPrimary(
-                  text: context.l10n.addAParticipantLabel,
-                  onPressed: () => _onAddMemberPressed(context),
-                ),
-              ],
-            ),
-            const SizedBox(height: spacing16),
-            _buildParticipantsList(context),
-            const SizedBox(height: spacing16),
-            Text(
-              context.l10n.setDeadlineLabel,
-              style: TextStyle(
-                fontSize: h5Size,
-                fontWeight: h5Weight,
-                color: Theme.of(
-                  context,
-                ).extension<AppTheme>()?.foregroundStrongestColor,
-              ),
-            ),
-            AppCalendarMonthly(
-              initialDate:
-                  widget.mode == ProjectWizardMode.edit &&
-                      widget.projectToEdit != null
-                  ? _deadline.value
-                  : null,
-              onDateSelected: (value) {
-                _deadline.value = value;
-              },
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildStatusCheckbox(BuildContext context) {
-    final status = widget.projectToEdit!.status;
-    return ValueListenableBuilder<ProjectStatus>(
-      valueListenable: _selectedStatus,
-      builder: (context, value, child) {
-        if (status == ProjectStatus.finished) {
-          return const SizedBox.shrink();
-        }
-        return Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(_getStatusLabel(status)),
-            AppCheckbox(
-              value: _getCheckboxValue(status),
-              onChanged: (newValue) => _onStatusChanged(status, newValue),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  String _getStatusLabel(ProjectStatus status) {
-    switch (status) {
-      case ProjectStatus.todo:
-        return context.l10n.inProgressLabel;
-      case ProjectStatus.inProgress:
-      case ProjectStatus.finished:
-        return context.l10n.finishedLabel;
-    }
-  }
-
-  bool _getCheckboxValue(ProjectStatus status) {
-    switch (status) {
-      case ProjectStatus.todo:
-        return _selectedStatus.value == ProjectStatus.inProgress;
-      case ProjectStatus.inProgress:
-        return _selectedStatus.value == ProjectStatus.finished;
-      case ProjectStatus.finished:
-        return true;
-    }
-  }
-
-  void _onStatusChanged(ProjectStatus status, bool? newValue) {
-    if (newValue == null) return;
-    if (status == ProjectStatus.todo) {
-      _selectedStatus.value = newValue
-          ? ProjectStatus.inProgress
-          : ProjectStatus.todo;
-    } else if (status == ProjectStatus.inProgress) {
-      _selectedStatus.value = newValue
-          ? ProjectStatus.finished
-          : ProjectStatus.inProgress;
-    }
-  }
-
-  void _onAddMemberPressed(BuildContext context) {
-    if (widget.mode == ProjectWizardMode.create) {
-      UserPicker.pickUser(context, UserPickerFlag.friendsOnly.value).then((
-        selectedUser,
-      ) {
-        if (selectedUser != null &&
-            !_participants.value.contains(selectedUser.id)) {
-          _participants.value = [..._participants.value, selectedUser.id];
-        }
-      });
-    } else {
-      if (widget.projectToEdit == null) return;
-      UserPicker.pickUser(
-        context,
-        UserPickerFlag.friendsOnly.value |
-            UserPickerFlag.excludeProjectParticipants.value,
-        widget.projectToEdit!.id,
-      ).then((selectedUser) {
-        if (selectedUser != null) {
-          _participants.value = [..._participants.value, selectedUser.id];
-        }
-      });
-    }
-  }
-
-  Widget _buildParticipantsList(BuildContext context) {
-    return ValueListenableBuilder<List<String>>(
-      valueListenable: _participants,
-      builder: (context, value, child) {
-        return ListView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: value.length,
-          itemBuilder: (context, index) {
-            final memberId = value[index];
-            return Column(
-              children: [
-                StreamBuilder(
-                  stream: context.appController.watchUserWithId(memberId),
-                  builder: (context, snapshot) {
-                    final participant = snapshot.data;
-                    if (participant == null) {
-                      return const SizedBox.shrink();
-                    }
-                    final currentUserId =
-                        (context.appState.user as AuthorizedUser).id;
-                    final isCurrentUser = memberId == currentUserId;
-                    return AppListItem(
-                      title: participant.name,
-                      description: participant.handle.isNotEmpty
-                          ? '@${participant.handle}'
-                          : null,
-                      avatar: AppAvatar.avatarOrPlaceholder(
-                        participant,
-                        AvatarSize.small,
-                      ),
-                      control: isCurrentUser
-                          ? AppListItemControl.none
-                          : AppListItemControl.largeButton,
-                      largeButtonText: isCurrentUser
-                          ? null
-                          : context.l10n.removeLabel,
-                      onPressed: isCurrentUser
-                          ? null
-                          : () {
-                              _participants.value = [..._participants.value]
-                                ..removeAt(index);
-                            },
-                    );
-                  },
-                ),
-                const SizedBox(height: spacing16),
-              ],
-            );
-          },
-        );
-      },
     );
   }
 
@@ -355,5 +154,241 @@ class _ProjectWizardState extends State<ProjectWizard> {
     _nameController.dispose();
     _descriptionController.dispose();
     super.dispose();
+  }
+}
+
+class _ProjectWizardForm extends StatelessWidget {
+  final GlobalKey<FormState> _formKey;
+  final TextEditingController _nameController;
+  final TextEditingController _descriptionController;
+  final ProjectWizardMode _mode;
+  final Project? _projectToEdit;
+  final ValueNotifier<DateTime> _deadline;
+  final ValueNotifier<ProjectStatus> _selectedStatus;
+  final ValueNotifier<List<String>> _participants;
+
+  const _ProjectWizardForm({
+    required GlobalKey<FormState> formKey,
+    required TextEditingController nameController,
+    required TextEditingController descriptionController,
+    required ProjectWizardMode mode,
+    required Project? projectToEdit,
+    required ValueNotifier<DateTime> deadline,
+    required ValueNotifier<ProjectStatus> selectedStatus,
+    required ValueNotifier<List<String>> participants,
+  }) : _mode = mode,
+       _projectToEdit = projectToEdit,
+       _formKey = formKey,
+       _nameController = nameController,
+       _descriptionController = descriptionController,
+       _deadline = deadline,
+       _selectedStatus = selectedStatus,
+       _participants = participants;
+
+  @override
+  Widget build(BuildContext context) {
+    return Form(
+      key: _formKey,
+      child: SizedBox(
+        height: MediaQuery.sizeOf(context).height * 0.6,
+        child: ListView(
+          children: [
+            AppTextField(
+              title: context.l10n.projectNameLabel,
+              placeholder: context.l10n.enterProjectNameLabel,
+              controller: _nameController,
+              validator: getValidatorForKeyboardType(
+                context,
+                TextInputType.text,
+              ),
+            ),
+            if (_mode == ProjectWizardMode.edit)
+              const SizedBox(height: spacing16),
+            if (_mode == ProjectWizardMode.edit &&
+                _projectToEdit!.status != ProjectStatus.finished)
+              ValueListenableBuilder<ProjectStatus>(
+                valueListenable: _selectedStatus,
+                builder: (context, value, child) {
+                  if (_projectToEdit.status == ProjectStatus.finished) {
+                    return const SizedBox.shrink();
+                  }
+                  return Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(_getStatusLabel(context, _projectToEdit.status)),
+                      AppCheckbox(
+                        value: _getCheckboxValue(_projectToEdit.status),
+                        onChanged: (newValue) =>
+                            _onStatusChanged(_projectToEdit.status, newValue),
+                      ),
+                    ],
+                  );
+                },
+              ),
+            const SizedBox(height: spacing16),
+            AppTextArea(
+              title: context.l10n.descriptionLabel,
+              placeholder: context.l10n.enterProjectDescriptionLabel,
+              controller: _descriptionController,
+            ),
+            const SizedBox(height: spacing16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  context.l10n.participantsLabel,
+                  style: TextStyle(
+                    fontSize: h5Size,
+                    fontWeight: h5Weight,
+                    color: Theme.of(
+                      context,
+                    ).extension<AppTheme>()?.foregroundStrongestColor,
+                  ),
+                ),
+                AppButtonPrimary(
+                  text: context.l10n.addAParticipantLabel,
+                  onPressed: () => _onAddMemberPressed(context),
+                ),
+              ],
+            ),
+            const SizedBox(height: spacing16),
+            ValueListenableBuilder<List<String>>(
+              valueListenable: _participants,
+              builder: (context, value, child) {
+                return ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: value.length,
+                  itemBuilder: (context, index) {
+                    final memberId = value[index];
+                    return Column(
+                      children: [
+                        StreamBuilder(
+                          stream: context.appController.watchUserWithId(
+                            memberId,
+                          ),
+                          builder: (context, snapshot) {
+                            final participant = snapshot.data;
+                            if (participant == null) {
+                              return const SizedBox.shrink();
+                            }
+                            final currentUserId =
+                                (context.appState.user as AuthorizedUser).id;
+                            final isCurrentUser = memberId == currentUserId;
+                            return AppListItem(
+                              title: participant.name,
+                              description: participant.handle.isNotEmpty
+                                  ? '@${participant.handle}'
+                                  : null,
+                              avatar: AppAvatar.avatarOrPlaceholder(
+                                participant,
+                                AvatarSize.small,
+                              ),
+                              control: isCurrentUser
+                                  ? AppListItemControl.none
+                                  : AppListItemControl.largeButton,
+                              largeButtonText: isCurrentUser
+                                  ? null
+                                  : context.l10n.removeLabel,
+                              onPressed: isCurrentUser
+                                  ? null
+                                  : () {
+                                      _participants.value = [
+                                        ..._participants.value,
+                                      ]..removeAt(index);
+                                    },
+                            );
+                          },
+                        ),
+                        const SizedBox(height: spacing16),
+                      ],
+                    );
+                  },
+                );
+              },
+            ),
+            const SizedBox(height: spacing16),
+            Text(
+              context.l10n.setDeadlineLabel,
+              style: TextStyle(
+                fontSize: h5Size,
+                fontWeight: h5Weight,
+                color: Theme.of(
+                  context,
+                ).extension<AppTheme>()?.foregroundStrongestColor,
+              ),
+            ),
+            AppCalendarMonthly(
+              initialDate:
+                  _mode == ProjectWizardMode.edit && _projectToEdit != null
+                  ? _deadline.value
+                  : null,
+              onDateSelected: (value) {
+                _deadline.value = value;
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _getStatusLabel(BuildContext context, ProjectStatus status) {
+    switch (status) {
+      case ProjectStatus.todo:
+        return context.l10n.inProgressLabel;
+      case ProjectStatus.inProgress:
+      case ProjectStatus.finished:
+        return context.l10n.finishedLabel;
+    }
+  }
+
+  bool _getCheckboxValue(ProjectStatus status) {
+    switch (status) {
+      case ProjectStatus.todo:
+        return _selectedStatus.value == ProjectStatus.inProgress;
+      case ProjectStatus.inProgress:
+        return _selectedStatus.value == ProjectStatus.finished;
+      case ProjectStatus.finished:
+        return true;
+    }
+  }
+
+  void _onStatusChanged(ProjectStatus status, bool? newValue) {
+    if (newValue == null) return;
+    if (status == ProjectStatus.todo) {
+      _selectedStatus.value = newValue
+          ? ProjectStatus.inProgress
+          : ProjectStatus.todo;
+    } else if (status == ProjectStatus.inProgress) {
+      _selectedStatus.value = newValue
+          ? ProjectStatus.finished
+          : ProjectStatus.inProgress;
+    }
+  }
+
+  void _onAddMemberPressed(BuildContext context) {
+    if (_mode == ProjectWizardMode.create) {
+      UserPicker.pickUser(context, UserPickerFlag.friendsOnly.value).then((
+        selectedUser,
+      ) {
+        if (selectedUser != null &&
+            !_participants.value.contains(selectedUser.id)) {
+          _participants.value = [..._participants.value, selectedUser.id];
+        }
+      });
+    } else {
+      if (_projectToEdit == null) return;
+      UserPicker.pickUser(
+        context,
+        UserPickerFlag.friendsOnly.value |
+            UserPickerFlag.excludeProjectParticipants.value,
+        _projectToEdit.id,
+      ).then((selectedUser) {
+        if (selectedUser != null) {
+          _participants.value = [..._participants.value, selectedUser.id];
+        }
+      });
+    }
   }
 }

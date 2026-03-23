@@ -1807,6 +1807,78 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Replying to'**
   String get replyingToLabel;
+
+  /// No description provided for @tasksLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Tasks'**
+  String get tasksLabel;
+
+  /// No description provided for @addTaskLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Task'**
+  String get addTaskLabel;
+
+  /// No description provided for @createATaskTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Create a Task'**
+  String get createATaskTitle;
+
+  /// No description provided for @editTaskTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Task'**
+  String get editTaskTitle;
+
+  /// No description provided for @taskTitleLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Task title'**
+  String get taskTitleLabel;
+
+  /// No description provided for @enterTaskTitleLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter task title'**
+  String get enterTaskTitleLabel;
+
+  /// No description provided for @enterTaskDescriptionLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter task description'**
+  String get enterTaskDescriptionLabel;
+
+  /// No description provided for @taskPriorityLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Task priority'**
+  String get taskPriorityLabel;
+
+  /// No description provided for @taskPriorityLowLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Low'**
+  String get taskPriorityLowLabel;
+
+  /// No description provided for @taskPriorityMediumLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Medium'**
+  String get taskPriorityMediumLabel;
+
+  /// No description provided for @taskPriorityHighLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'High'**
+  String get taskPriorityHighLabel;
+
+  /// No description provided for @errorLoadingTasksMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Error loading tasks'**
+  String get errorLoadingTasksMessage;
 }
 
 class _AppLocalizationsDelegate

@@ -43,15 +43,6 @@ class _SavedMessagesScreenState extends State<SavedMessagesScreen> {
     return _itemKeys.putIfAbsent(id, () => GlobalKey());
   }
 
-  void _highlightMessage(String messageId) {
-    _highlightedMessageId.value = messageId;
-    Future.delayed(const Duration(milliseconds: 500), () {
-      if (mounted) {
-        _highlightedMessageId.value = null;
-      }
-    });
-  }
-
   @override
   void dispose() {
     _messageToReply.dispose();
@@ -549,6 +540,15 @@ class _SavedMessagesScreenState extends State<SavedMessagesScreen> {
       case _MessageAction.delete:
         chatController.deleteSavedMessage(message.id);
     }
+  }
+
+  void _highlightMessage(String messageId) {
+    _highlightedMessageId.value = messageId;
+    Future.delayed(const Duration(milliseconds: 500), () {
+      if (mounted) {
+        _highlightedMessageId.value = null;
+      }
+    });
   }
 
   void _handleReplyTap(BuildContext context, SavedMessage message) {

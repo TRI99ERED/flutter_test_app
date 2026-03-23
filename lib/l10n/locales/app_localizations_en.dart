@@ -918,4 +918,40 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get replyingToLabel => 'Replying to';
+
+  @override
+  String get tasksLabel => 'Tasks';
+
+  @override
+  String get addTaskLabel => 'Add Task';
+
+  @override
+  String get createATaskTitle => 'Create a Task';
+
+  @override
+  String get editTaskTitle => 'Edit Task';
+
+  @override
+  String get taskTitleLabel => 'Task title';
+
+  @override
+  String get enterTaskTitleLabel => 'Enter task title';
+
+  @override
+  String get enterTaskDescriptionLabel => 'Enter task description';
+
+  @override
+  String get taskPriorityLabel => 'Task priority';
+
+  @override
+  String get taskPriorityLowLabel => 'Low';
+
+  @override
+  String get taskPriorityMediumLabel => 'Medium';
+
+  @override
+  String get taskPriorityHighLabel => 'High';
+
+  @override
+  String get errorLoadingTasksMessage => 'Error loading tasks';
 }

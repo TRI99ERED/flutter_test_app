@@ -2,6 +2,7 @@ import 'package:rxdart/rxdart.dart';
 import 'package:test_app/src/core/controller/base_controller/base_controller.dart';
 import 'package:test_app/src/features/app/app_controller/app_controller.dart';
 import 'package:test_app/src/features/app/data/models/project_model.dart';
+import 'package:test_app/src/features/app/data/models/task_model.dart';
 import 'package:test_app/src/features/app/data/models/user_model.dart';
 import 'package:test_app/src/features/app/data/repositories/firebase/firebase_firestore_repository/firebase_firestore_repository_impl.dart';
 import 'package:test_app/src/features/app/data/repositories/firebase/firebase_firestore_repository/ifirebase_firestore_repository.dart';
@@ -166,4 +167,91 @@ final class ProjectController extends BaseController<ProjectState> {
           return Future.error(error, stackTrace);
         }
       });
+
+  Future<Task> createTaskForProject({
+    required String projectId,
+    required String taskTitle,
+    required String taskDescription,
+    required TaskPriority priority,
+  }) async => await serialExecutor.synchronized(() async {
+    setState(ProjectState.processing(message: 'Creating task "$taskTitle"...'));
+    try {
+      final task = await _firestoreRepository.createTaskForProject(
+        projectId,
+        taskTitle,
+        taskDescription,
+        priority,
+      );
+      setState(
+        ProjectState.idle(
+          message: 'Task "$taskTitle" created successfully, id: "${task.id}"',
+        ),
+      );
+      return task;
+    } catch (error, stackTrace) {
+      setState(
+        ProjectState.failed(
+          message: 'Failed to create task "$taskTitle": ${error.toString()}',
+          error: error,
+          stackTrace: stackTrace,
+        ),
+      );
+      return Future.error(error, stackTrace);
+    }
+  });
+
+  Future<void> updateTask(
+    String projectId,
+    Task updatedTask,
+  ) async => await serialExecutor.synchronized(() async {
+    setState(
+      ProjectState.processing(
+        message: 'Updating task "${updatedTask.title}"...',
+      ),
+    );
+    try {
+      await _firestoreRepository.updateTask(projectId, updatedTask);
+      setState(
+        ProjectState.idle(
+          message: 'Task "${updatedTask.title}" updated successfully',
+        ),
+      );
+    } catch (error, stackTrace) {
+      setState(
+        ProjectState.failed(
+          message:
+              'Failed to update task "${updatedTask.title}": ${error.toString()}',
+          error: error,
+          stackTrace: stackTrace,
+        ),
+      );
+      return Future.error(error, stackTrace);
+    }
+  });
+
+  Future<void> deleteTask(String projectId, String taskId) async =>
+      await serialExecutor.synchronized(() async {
+        setState(
+          ProjectState.processing(message: 'Deleting task "$taskId"...'),
+        );
+        try {
+          await _firestoreRepository.deleteTask(projectId, taskId);
+          setState(
+            ProjectState.idle(message: 'Task "$taskId" deleted successfully.'),
+          );
+        } catch (error, stackTrace) {
+          setState(
+            ProjectState.failed(
+              message: 'Failed to delete task "$taskId": ${error.toString()}',
+              error: error,
+              stackTrace: stackTrace,
+            ),
+          );
+          return Future.error(error, stackTrace);
+        }
+      });
+
+  Stream<List<Task>?> watchTasksForProject(String projectId) {
+    return _firestoreRepository.watchTasksForProject(projectId);
+  }
 }

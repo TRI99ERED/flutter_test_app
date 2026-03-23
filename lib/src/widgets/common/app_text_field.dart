@@ -158,6 +158,7 @@ class AppTextField extends StatefulWidget {
   final ValueChanged<String>? onSubmitted;
   final FormFieldValidator<String>? validator;
   final AutovalidateMode? autovalidateMode;
+  final TextInputAction? textInputAction;
   final TextEditingController? controller;
 
   AppTextField({
@@ -181,6 +182,7 @@ class AppTextField extends StatefulWidget {
     this.onSubmitted,
     this.validator,
     this.autovalidateMode,
+    this.textInputAction,
     this.controller,
   }) : assert(
          !(obscureText && !showVisibilityIcon),
@@ -314,6 +316,7 @@ class _AppTextFieldState extends State<AppTextField> {
                     return widget.showErrorText ? result : null;
                   },
                   autovalidateMode: widget.autovalidateMode,
+                  textInputAction: widget.textInputAction,
                   enabled: widget.enabled,
                   obscureText: obscureText,
                   textAlign: widget.textAlign ?? TextAlign.start,

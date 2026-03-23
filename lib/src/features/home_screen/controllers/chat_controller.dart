@@ -856,6 +856,36 @@ final class ChatController extends BaseController<ChatState> {
   Future<void> deleteDirectChatMessage(String chatId, String messageId) async {
     setState(ChatState.processing(message: 'Deleting message "$messageId"...'));
     try {
+      final chat = await watchDirectChatWithId(
+        chatId,
+      ).firstWhere((chat) => chat != null, orElse: () => null);
+      final message = await watchDirectMessageById(
+        chatId,
+        messageId,
+      ).firstWhere((msg) => msg != null, orElse: () => null);
+      if (chat == null || message == null) {
+        setState(
+          ChatState.idle(
+            message: 'Message "$messageId" not found in direct chat "$chatId".',
+          ),
+        );
+        return;
+      }
+      if (chat.lastMessage == message.body) {
+        final newLastMessage = await _firestoreRepository
+            .watchMessagesForDirectChat(chatId: chatId)
+            .map(
+              (messages) => messages
+                  ?.where((m) => m.id != messageId)
+                  .map((m) => m.body)
+                  .firstOrNull,
+            )
+            .first;
+        await updateDirectChatLastMessage(
+          chatId: chatId,
+          lastMessage: newLastMessage ?? 'Message deleted',
+        );
+      }
       await _firestoreRepository.deleteDirectChatMessage(chatId, messageId);
       setState(
         ChatState.idle(message: 'Message "$messageId" deleted successfully.'),
@@ -875,6 +905,36 @@ final class ChatController extends BaseController<ChatState> {
   Future<void> deleteGroupChatMessage(String chatId, String messageId) async {
     setState(ChatState.processing(message: 'Deleting message "$messageId"...'));
     try {
+      final chat = await watchGroupChatWithId(
+        chatId,
+      ).firstWhere((chat) => chat != null, orElse: () => null);
+      final message = await watchGroupMessageById(
+        chatId,
+        messageId,
+      ).firstWhere((msg) => msg != null, orElse: () => null);
+      if (chat == null || message == null) {
+        setState(
+          ChatState.idle(
+            message: 'Message "$messageId" not found in group chat "$chatId".',
+          ),
+        );
+        return;
+      }
+      if (chat.lastMessage == message.body) {
+        final newLastMessage = await _firestoreRepository
+            .watchMessagesForGroupChat(chatId: chatId)
+            .map(
+              (messages) => messages
+                  ?.where((m) => m.id != messageId)
+                  .map((m) => m.body)
+                  .firstOrNull,
+            )
+            .first;
+        await updateGroupChatLastMessage(
+          chatId: chatId,
+          lastMessage: newLastMessage ?? 'Message deleted',
+        );
+      }
       await _firestoreRepository.deleteGroupChatMessage(chatId, messageId);
       setState(
         ChatState.idle(message: 'Message "$messageId" deleted successfully.'),

@@ -931,4 +931,40 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get replyingToLabel => 'Відповідь на';
+
+  @override
+  String get tasksLabel => 'Завдання';
+
+  @override
+  String get addTaskLabel => 'Додати завдання';
+
+  @override
+  String get createATaskTitle => 'Створити завдання';
+
+  @override
+  String get editTaskTitle => 'Редагувати завдання';
+
+  @override
+  String get taskTitleLabel => 'Назва завдання';
+
+  @override
+  String get enterTaskTitleLabel => 'Введіть назву завдання';
+
+  @override
+  String get enterTaskDescriptionLabel => 'Введіть опис завдання';
+
+  @override
+  String get taskPriorityLabel => 'Пріоритет завдання';
+
+  @override
+  String get taskPriorityLowLabel => 'Низький';
+
+  @override
+  String get taskPriorityMediumLabel => 'Середній';
+
+  @override
+  String get taskPriorityHighLabel => 'Високий';
+
+  @override
+  String get errorLoadingTasksMessage => 'Помилка завантаження завдань';
 }

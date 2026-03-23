@@ -121,6 +121,18 @@ service cloud.firestore {
       resource.data.ownerId != null &&
       request.auth.uid == resource.data.ownerId;
 
+      // Tasks subcollection
+      match /tasks/{taskId} {
+        allow read: if request.auth != null &&
+        request.auth.uid in get(/databases/$(database)/documents/projects/$(projectId)).data.participants;
+        allow create: if request.auth != null &&
+        request.auth.uid in get(/databases/$(database)/documents/projects/$(projectId)).data.participants;
+        allow update: if request.auth != null &&
+        request.auth.uid in get(/databases/$(database)/documents/projects/$(projectId)).data.participants;
+        allow delete: if request.auth != null &&
+        request.auth.uid in get(/databases/$(database)/documents/projects/$(projectId)).data.participants;
+      }
+
       // Feedback subcollection
       match /feedback/{feedbackId} {
         allow read: if request.auth != null &&

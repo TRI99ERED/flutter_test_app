@@ -25,6 +25,8 @@ class _LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _isFormValid = ValueNotifier(false);
+  final FocusNode _emailFocusNode = FocusNode();
+  final FocusNode _passwordFocusNode = FocusNode();
 
   @override
   void initState() {
@@ -102,26 +104,54 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                       AppTextField(
+                        focusNode: _emailFocusNode,
                         placeholder: context.l10n.emailAddressLabel,
                         controller: _emailController,
                         keyboardType: TextInputType.emailAddress,
+                        textInputAction: TextInputAction.next,
                         validator: getValidatorForKeyboardType(
                           context,
                           TextInputType.emailAddress,
                         ),
                         onChanged: (_) => _validateForm(),
+                        onSubmitted: (value) {
+                          FocusScope.of(
+                            context,
+                          ).requestFocus(_passwordFocusNode);
+                        },
                       ),
-                      AppTextField(
-                        placeholder: context.l10n.passwordLabel,
-                        controller: _passwordController,
-                        keyboardType: TextInputType.visiblePassword,
-                        validator: getValidatorForKeyboardType(
-                          context,
-                          TextInputType.visiblePassword,
-                        ),
-                        obscureText: true,
-                        showVisibilityIcon: true,
-                        onChanged: (_) => _validateForm(),
+                      ValueListenableBuilder(
+                        valueListenable: _isFormValid,
+                        builder: (context, isValid, child) {
+                          return AppTextField(
+                            focusNode: _passwordFocusNode,
+                            placeholder: context.l10n.passwordLabel,
+                            controller: _passwordController,
+                            keyboardType: TextInputType.visiblePassword,
+                            textInputAction: TextInputAction.done,
+                            validator: getValidatorForKeyboardType(
+                              context,
+                              TextInputType.visiblePassword,
+                            ),
+                            obscureText: true,
+                            showVisibilityIcon: true,
+                            onChanged: (_) => _validateForm(),
+                            onSubmitted: isValid
+                                ? (_) async {
+                                    final email = _emailController.text;
+                                    final password = _passwordController.text;
+                                    await context.appController.login(
+                                      email,
+                                      password,
+                                    );
+                                    if (!context.mounted) return;
+                                    AppNavigator.of(
+                                      context,
+                                    ).replaceAll(HomePage());
+                                  }
+                                : null,
+                          );
+                        },
                       ),
                       AppButtonTertiary(
                         onPressed: () => AppNavigator.of(
@@ -323,6 +353,8 @@ class _LoginScreenState extends State<LoginScreen> {
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
+    _emailFocusNode.dispose();
+    _passwordFocusNode.dispose();
     _isFormValid.dispose();
     super.dispose();
   }

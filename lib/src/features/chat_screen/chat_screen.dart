@@ -28,6 +28,8 @@ import 'package:test_app/src/widgets/user_profile.dart';
 
 enum ChatType { direct, group }
 
+enum _MessageAction { reply, save, copy, delete }
+
 class ChatScreen extends StatefulWidget {
   final String chatId;
   final ChatType chatType;
@@ -215,6 +217,7 @@ class _ChatScreenState extends State<ChatScreen> {
                             scrollController: _scrollController,
                             getKeyForMessage: _getKeyForMessage,
                             itemKeys: _itemKeys,
+                            chatType: widget.chatType,
                           ),
                         ),
                       ),
@@ -276,6 +279,7 @@ class _ChatScreenState extends State<ChatScreen> {
                             scrollController: _scrollController,
                             getKeyForMessage: _getKeyForMessage,
                             itemKeys: _itemKeys,
+                            chatType: widget.chatType,
                           ),
                         ),
                       ),
@@ -940,6 +944,7 @@ class _ChatScreenMessageList extends StatefulWidget {
   final ScrollController scrollController;
   final GlobalKey Function(String) getKeyForMessage;
   final Map<String, GlobalKey> itemKeys;
+  final ChatType chatType;
 
   const _ChatScreenMessageList({
     required this.chat,
@@ -948,6 +953,7 @@ class _ChatScreenMessageList extends StatefulWidget {
     required this.scrollController,
     required this.getKeyForMessage,
     required this.itemKeys,
+    required this.chatType,
   });
 
   @override
@@ -1344,9 +1350,9 @@ class _ChatScreenMessageListState extends State<_ChatScreenMessageList> {
     );
   }
 
-  void _handleMessageTap(BuildContext context, Message message) {
+  Future<void> _handleMessageTap(BuildContext context, Message message) async {
     final chatController = context.chatController!;
-    showModalBottomSheet(
+    final result = await showModalBottomSheet(
       context: context,
       backgroundColor: Theme.of(
         context,
@@ -1364,79 +1370,106 @@ class _ChatScreenMessageListState extends State<_ChatScreenMessageList> {
           children: [
             AppListItem(
               title: context.l10n.replyToMessageLabel,
-              onPressed: () {
-                Navigator.of(context).pop();
-                widget.messageToReply.value = message.id;
-                widget.messageToReplyBody.value = message.body;
-              },
+              onPressed: () => Navigator.of(context).pop(_MessageAction.reply),
             ),
             AppListItem(
               title: context.l10n.saveMessageLabel,
-              onPressed: () async {
-                await chatController.saveMessage(
-                  SavedMessage(
-                    id: message.id,
-                    senderId: message.senderId,
-                    body: message.body,
-                    imageUrls: message.imageUrls,
-                    timestamp: message.timestamp,
-                    replyId: '',
-                    replyBody: '',
-                    chatId: widget.chat.id,
-                    chatType: widget.chat is DirectChat
-                        ? ChatType.direct
-                        : ChatType.group,
-                    savedAt: DateTime.now(),
-                  ),
-                );
-                if (!context.mounted) return;
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    backgroundColor: Theme.of(
-                      context,
-                    ).extension<AppTheme>()?.backgroundStrongColor,
-                    content: Text(
-                      context.l10n.messageSavedLabel,
-                      style: TextStyle(
-                        fontSize: cMSize,
-                        fontWeight: cMWeight,
-                        color: Theme.of(
-                          context,
-                        ).extension<AppTheme>()?.foregroundStrongestColor,
-                      ),
-                    ),
-                  ),
-                );
-              },
+              onPressed: () => Navigator.of(context).pop(_MessageAction.save),
             ),
             AppListItem(
               title: context.l10n.copyMessageLabel,
-              onPressed: () async {
-                await Clipboard.setData(ClipboardData(text: message.body));
-                if (!context.mounted) return;
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    backgroundColor: Theme.of(
-                      context,
-                    ).extension<AppTheme>()?.backgroundStrongColor,
-                    content: Text(
-                      context.l10n.messageCopiedLabel,
-                      style: TextStyle(
-                        fontSize: cMSize,
-                        fontWeight: cMWeight,
-                        color: Theme.of(
-                          context,
-                        ).extension<AppTheme>()?.foregroundStrongestColor,
-                      ),
-                    ),
-                  ),
-                );
-              },
+              onPressed: () => Navigator.of(context).pop(_MessageAction.copy),
+            ),
+            AppListItem(
+              title: context.l10n.deleteMessageLabel,
+              onPressed: () => Navigator.of(context).pop(_MessageAction.delete),
             ),
           ],
         );
       },
     );
+
+    switch (result) {
+      case _MessageAction.reply:
+        widget.messageToReply.value = message.id;
+        widget.messageToReplyBody.value = message.body;
+        break;
+      case _MessageAction.save:
+        await chatController.saveMessage(
+          SavedMessage(
+            id: message.id,
+            senderId: message.senderId,
+            body: message.body,
+            imageUrls: message.imageUrls,
+            timestamp: message.timestamp,
+            replyId: '',
+            replyBody: '',
+            chatId: widget.chat.id,
+            chatType: widget.chat is DirectChat
+                ? ChatType.direct
+                : ChatType.group,
+            savedAt: DateTime.now(),
+          ),
+        );
+        if (!context.mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            backgroundColor: Theme.of(
+              context,
+            ).extension<AppTheme>()?.backgroundStrongColor,
+            content: Text(
+              context.l10n.messageSavedLabel,
+              style: TextStyle(
+                fontSize: cMSize,
+                fontWeight: cMWeight,
+                color: Theme.of(
+                  context,
+                ).extension<AppTheme>()?.foregroundStrongestColor,
+              ),
+            ),
+          ),
+        );
+        break;
+      case _MessageAction.copy:
+        await Clipboard.setData(ClipboardData(text: message.body));
+        if (!context.mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            backgroundColor: Theme.of(
+              context,
+            ).extension<AppTheme>()?.backgroundStrongColor,
+            content: Text(
+              context.l10n.messageCopiedLabel,
+              style: TextStyle(
+                fontSize: cMSize,
+                fontWeight: cMWeight,
+                color: Theme.of(
+                  context,
+                ).extension<AppTheme>()?.foregroundStrongestColor,
+              ),
+            ),
+          ),
+        );
+        break;
+      case _MessageAction.delete:
+        switch (widget.chatType) {
+          case ChatType.direct:
+            await chatController.deleteDirectChatMessage(
+              widget.chat.id,
+              message.id,
+            );
+            break;
+          case ChatType.group:
+            await chatController.deleteGroupChatMessage(
+              widget.chat.id,
+              message.id,
+            );
+            break;
+        }
+        break;
+      default:
+        break;
+    }
   }
 
   void _highlightMessage(String messageId) {

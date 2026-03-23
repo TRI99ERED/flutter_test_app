@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:test_app/src/features/app/data/models/task_model.dart';
 import 'package:test_app/src/features/chat_screen/chat_screen.dart';
+import 'package:test_app/src/features/project_screen/widgets/app_task.dart';
+import 'package:test_app/src/features/project_screen/widgets/task_wizard.dart';
 import 'package:test_app/src/router/app_navigator.dart';
 import 'package:test_app/src/router/app_page.dart';
 import 'package:test_app/l10n/locales/l10n.dart';
@@ -21,10 +24,17 @@ import 'package:test_app/src/widgets/common/error_state.dart';
 import 'package:test_app/src/features/themes/styles.dart';
 import 'package:test_app/src/widgets/project_wizard.dart';
 
-class ProjectScreen extends StatelessWidget {
+class ProjectScreen extends StatefulWidget {
   final String projectId;
 
   const ProjectScreen({super.key, required this.projectId});
+
+  @override
+  State<ProjectScreen> createState() => _ProjectScreenState();
+}
+
+class _ProjectScreenState extends State<ProjectScreen> {
+  final ValueNotifier<List<Task>> _tasks = ValueNotifier<List<Task>>([]);
 
   @override
   Widget build(BuildContext context) {
@@ -55,7 +65,7 @@ class ProjectScreen extends StatelessWidget {
         }
       },
       child: StreamBuilder(
-        stream: context.projectController!.watchProjectWithId(projectId),
+        stream: context.projectController!.watchProjectWithId(widget.projectId),
         builder: (context, asyncSnapshot) {
           if (asyncSnapshot.hasError) {
             return Scaffold(
@@ -255,6 +265,84 @@ class ProjectScreen extends StatelessWidget {
                         final updatedProject = project.copyWith(deadline: date);
                         await context.projectController!.updateProject(
                           updatedProject,
+                        );
+                      },
+                    ),
+                    const SizedBox(height: spacing24),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          context.l10n.tasksLabel,
+                          style: TextStyle(
+                            fontSize: h3Size,
+                            fontWeight: h3Weight,
+                            color: Theme.of(
+                              context,
+                            ).extension<AppTheme>()?.foregroundStrongestColor,
+                          ),
+                        ),
+                        AppButtonPrimary(
+                          text: context.l10n.addTaskLabel,
+                          onPressed: () async {
+                            final newTask = await TaskWizard.manageTask(
+                              context,
+                              project.id,
+                              TaskWizardMode.create,
+                            );
+                            if (newTask == null) return;
+                            _tasks.value = [..._tasks.value, newTask];
+                          },
+                        ),
+                      ],
+                    ),
+                    StreamBuilder(
+                      stream: context.projectController!.watchTasksForProject(
+                        project.id,
+                      ),
+                      builder: (context, asyncSnapshot) {
+                        if (asyncSnapshot.hasError) {
+                          return Center(
+                            child: ErrorState(
+                              message:
+                                  '${context.l10n.errorLoadingTasksMessage}: ${asyncSnapshot.error}',
+                            ),
+                          );
+                        } else if (!asyncSnapshot.hasData ||
+                            asyncSnapshot.data == null) {
+                          return const SizedBox.shrink();
+                        }
+
+                        final tasks = asyncSnapshot.data!;
+
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: tasks.map((task) {
+                            return AppTask(
+                              title: task.title,
+                              description: task.description,
+                              status: task.status,
+                              priority: task.priority,
+                              onEditPressed: () async {
+                                final updatedTask = await TaskWizard.manageTask(
+                                  context,
+                                  project.id,
+                                  TaskWizardMode.edit,
+                                  task,
+                                );
+                                if (updatedTask == null) return;
+                                final index = _tasks.value.indexWhere(
+                                  (t) => t.id == updatedTask.id,
+                                );
+                                if (index != -1) {
+                                  _tasks.value = [
+                                    ..._tasks.value..removeAt(index),
+                                    updatedTask,
+                                  ];
+                                }
+                              },
+                            );
+                          }).toList(),
                         );
                       },
                     ),

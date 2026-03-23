@@ -2,6 +2,7 @@ import 'package:test_app/src/features/app/data/models/chat_model.dart';
 import 'package:test_app/src/features/app/data/models/message_model.dart';
 import 'package:test_app/src/features/app/data/models/project_feedback_model.dart';
 import 'package:test_app/src/features/app/data/models/project_model.dart';
+import 'package:test_app/src/features/app/data/models/task_model.dart';
 import 'package:test_app/src/features/app/data/models/user_model.dart';
 
 abstract interface class IFirebaseFirestoreRepository {
@@ -60,6 +61,13 @@ abstract interface class IFirebaseFirestoreRepository {
     String? replyBody,
   );
 
+  Future<Task> createTaskForProject(
+    String projectId,
+    String taskTitle,
+    String taskDescription,
+    TaskPriority priority,
+  );
+
   Future<void> createUser({required AuthorizedUser user});
 
   Future<void> declineFriendRequest({
@@ -78,6 +86,8 @@ abstract interface class IFirebaseFirestoreRepository {
   Future<void> deleteProject(String projectId);
 
   Future<void> deleteSavedMessage(String userId, String messageId);
+
+  Future<void> deleteTask(String projectId, String taskId);
 
   Future<bool> doesUserExist(String id);
 
@@ -130,6 +140,8 @@ abstract interface class IFirebaseFirestoreRepository {
   });
 
   Future<void> updateProject(Project project);
+
+  Future<void> updateTask(String projectId, Task updatedTask);
 
   Future<void> updateUser(AuthorizedUser updatedUser);
 
@@ -201,4 +213,6 @@ abstract interface class IFirebaseFirestoreRepository {
   Stream<Message?> watchSavedMessageById(String userId, String messageId);
 
   Stream<List<SavedMessage>?> watchSavedMessages(String userId);
+
+  Stream<List<Task>?> watchTasksForProject(String projectId);
 }
