@@ -38,15 +38,15 @@ class _AppLifecycleHandlerState extends State<AppLifecycleHandler>
     final user = context.appState.user;
     if (user is! AuthorizedUser) return;
 
+    final router = widget.routerDelegate;
+    final currentPage = router.currentPages.lastOrNull;
+    if (currentPage == null) return;
+    final currentPath = currentPage.path;
     switch (state) {
       case AppLifecycleState.paused:
       case AppLifecycleState.detached:
       case AppLifecycleState.inactive:
       case AppLifecycleState.hidden:
-        final router = widget.routerDelegate;
-        final currentPage = router.currentPages.lastOrNull;
-        if (currentPage == null) return;
-        final currentPath = currentPage.path;
         if (currentPath.startsWith('/chats/direct/') ||
             currentPath.startsWith('/chats/group/')) {
           await appController.updateUser(
@@ -56,11 +56,6 @@ class _AppLifecycleHandlerState extends State<AppLifecycleHandler>
         }
         break;
       case AppLifecycleState.resumed:
-        final router = widget.routerDelegate;
-        final currentPage = router.currentPages.lastOrNull;
-        if (currentPage == null) return;
-        final currentPath = currentPage.path;
-
         if (currentPath.startsWith('/chats/direct/')) {
           final chatId = currentPath.split('/chats/direct/').last;
 
