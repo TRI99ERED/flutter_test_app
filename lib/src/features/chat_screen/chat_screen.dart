@@ -378,22 +378,22 @@ class _ChatScreenNavBar extends StatelessWidget implements PreferredSizeWidget {
               onPressedLeft: () => AppNavigator.of(context).pop(),
               rightImage: null,
             );
-          }
-          final otherUser = asyncSnapshot.data;
-          if (otherUser == null) {
+          } else if (!asyncSnapshot.hasData || asyncSnapshot.data == null) {
             return AppNavBar(
-              title: l10n.userNotFoundLabel,
+              title: l10n.loadingLabel,
               leftIcon: AppIcons.arrowLeft,
-              onPressedLeft: () {
-                AppNavigator.of(context).pop();
-              },
+              onPressedLeft: () => AppNavigator.of(context).pop(),
+              rightImage: null,
             );
           }
+
+          final otherUser = asyncSnapshot.data!;
           return FutureBuilder(
             future: resolvedChatName,
             builder: (context, asyncSnapshot) {
               return AppNavBar(
-                title: asyncSnapshot.data ?? l10n.unknownChatterLabel,
+                title:
+                    '${asyncSnapshot.data ?? l10n.unknownChatterLabel} ${otherUser.isOnline ? '●' : ''}',
                 leftIcon: AppIcons.arrowLeft,
                 rightImage: AppAvatar.avatarOrPlaceholder(
                   otherUser,

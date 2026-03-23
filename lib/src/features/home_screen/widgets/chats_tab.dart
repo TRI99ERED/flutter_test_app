@@ -275,19 +275,20 @@ class _ChatListItem extends StatelessWidget {
             (id) => id != user.id,
             orElse: () => '',
           );
-          final resolvedChatNameStream =
-              participants.length == 2 && otherParticipantId.isNotEmpty
-              ? context.appController.watchUserWithId(otherParticipantId).map((
-                  user,
-                ) {
-                  if (!context.mounted) return '';
-                  return user?.name ?? context.l10n.unknownChatterLabel;
-                })
-              : Stream.value(directChat.name);
           return StreamBuilder(
-            stream: resolvedChatNameStream,
-            builder: (context, nameSnapshot) {
-              final resolvedChatName = nameSnapshot.data ?? '';
+            stream: context.appController.watchUserWithId(otherParticipantId),
+            builder: (context, ayncSnapshot) {
+              if (ayncSnapshot.hasError) {
+                return ErrorState(
+                  message: '${context.l10n.errorLabel}: ${ayncSnapshot.error}',
+                );
+              } else if (!ayncSnapshot.hasData || ayncSnapshot.data == null) {
+                return const Center(
+                  child: SizedBox(height: 72, child: AppLoader()),
+                );
+              }
+              final otherUser = ayncSnapshot.data!;
+              final resolvedChatName = otherUser.name;
               return StreamBuilder(
                 stream: context.chatController!.watchMessagesForDirectChat(
                   directChat.id,
@@ -349,7 +350,9 @@ class _ChatListItem extends StatelessWidget {
                       height: 72,
                       child: otherParticipantId.isEmpty
                           ? AppListItem(
-                              title: resolvedChatName,
+                              title:
+                                  '$resolvedChatName ${otherUser.isOnline ? '●' : ''}'
+                                      .trim(),
                               description: description,
                               avatar: AppAvatar.avatarOrPlaceholder(
                                 null,
@@ -360,25 +363,19 @@ class _ChatListItem extends StatelessWidget {
                               largeButtonText: largeButtonText,
                               onPressed: onPressed,
                             )
-                          : StreamBuilder(
-                              stream: context.appController.watchUserWithId(
-                                otherParticipantId,
+                          : AppListItem(
+                              title:
+                                  '$resolvedChatName ${otherUser.isOnline ? '●' : ''}'
+                                      .trim(),
+                              description: description,
+                              avatar: AppAvatar.avatarOrPlaceholder(
+                                otherUser,
+                                AvatarSize.small,
                               ),
-                              builder: (context, asyncSnapshot) {
-                                final otherUser = asyncSnapshot.data;
-                                return AppListItem(
-                                  title: resolvedChatName,
-                                  description: description,
-                                  avatar: AppAvatar.avatarOrPlaceholder(
-                                    otherUser,
-                                    AvatarSize.small,
-                                  ),
-                                  control: control,
-                                  symbol: symbol,
-                                  largeButtonText: largeButtonText,
-                                  onPressed: onPressed,
-                                );
-                              },
+                              control: control,
+                              symbol: symbol,
+                              largeButtonText: largeButtonText,
+                              onPressed: onPressed,
                             ),
                     ),
                   );

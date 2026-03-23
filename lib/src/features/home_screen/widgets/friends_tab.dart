@@ -299,160 +299,188 @@ class _FriendsSectionState extends State<_FriendsSection> {
                         child: ValueListenableBuilder(
                           valueListenable: widget._editPressed,
                           builder: (context, editPressed, child) {
-                            return AppCardSmall(
-                              title: friend.name,
-                              subtitle: friend.handle.isNotEmpty
-                                  ? '@${friend.handle}'
-                                  : null,
-                              avatar: AppAvatar.avatarOrPlaceholder(
-                                friend,
-                                AvatarSize.small,
+                            return StreamBuilder(
+                              stream: context.appController.watchUserWithId(
+                                friend.id,
                               ),
-                              onAvatarPressed: () {
-                                UserProfile.show(
-                                  context,
-                                  friend,
-                                  mode: UserProfileMode.view,
-                                );
-                              },
-                              leftButtonText: switch (widget._sectionType) {
-                                FriendsTabSectionType.incomingRequests =>
-                                  context.l10n.declineLabel,
-                                _ => null,
-                              },
-                              rightButtonText: switch (widget._sectionType) {
-                                FriendsTabSectionType.friends =>
-                                  editPressed
-                                      ? context.l10n.removeLabel
-                                      : context.l10n.messageLabel,
-                                FriendsTabSectionType.incomingRequests =>
-                                  context.l10n.acceptLabel,
-                                FriendsTabSectionType.outgoingRequests =>
-                                  context.l10n.cancelLabel,
-                              },
-                              onPressedLeft: switch (widget._sectionType) {
-                                FriendsTabSectionType.incomingRequests =>
-                                  () async {
-                                    final friendController =
-                                        context.friendController!;
-                                    await friendController.declineFriendRequest(
-                                      friendUserId: friend.id,
+                              builder: (context, asyncSnapshot) {
+                                if (asyncSnapshot.hasError) {
+                                  return ErrorState(
+                                    message:
+                                        '${context.l10n.errorLoadingFriend}: ${asyncSnapshot.error}',
+                                  );
+                                } else if (!asyncSnapshot.hasData ||
+                                    asyncSnapshot.data == null) {
+                                  return const SizedBox.shrink();
+                                }
+
+                                final friend = asyncSnapshot.data!;
+
+                                return AppCardSmall(
+                                  title:
+                                      '${friend.name} ${friend.isOnline ? '●' : ''}'
+                                          .trim(),
+                                  subtitle: friend.handle.isNotEmpty
+                                      ? '@${friend.handle}'
+                                      : null,
+                                  avatar: AppAvatar.avatarOrPlaceholder(
+                                    friend,
+                                    AvatarSize.small,
+                                  ),
+                                  onAvatarPressed: () {
+                                    UserProfile.show(
+                                      context,
+                                      friend,
+                                      mode: UserProfileMode.view,
                                     );
                                   },
-                                _ => null,
-                              },
-                              onPressedRight: switch (widget._sectionType) {
-                                FriendsTabSectionType.friends =>
-                                  editPressed
-                                      ? () async {
-                                          final friendController =
-                                              context.friendController!;
-                                          context.appController;
-
-                                          AppDialog2.show(
-                                            context: context,
-                                            title:
-                                                context.l10n.removeFriendLabel,
-                                            description: context.l10n
-                                                .removeFriendConfirmationLabel(
-                                                  friend.name,
-                                                ),
-                                            buttonText1:
-                                                context.l10n.cancelLabel,
-                                            buttonText2:
-                                                context.l10n.removeLabel,
-                                            onPressed1: (context) {
-                                              Navigator.of(context).pop();
-                                            },
-                                            onPressed2: (context) async {
-                                              Navigator.of(context).pop();
-                                              await friendController
-                                                  .removeFriend(
-                                                    friendUserId: friend.id,
-                                                  );
-                                            },
-                                          );
-                                        }
-                                      : () async {
-                                          final user =
-                                              context.appState.user
-                                                  as AuthorizedUser;
-                                          final chatController =
-                                              context.chatController!;
-                                          final navigator = AppNavigator.of(
-                                            context,
-                                          );
-                                          final existingChat =
-                                              await chatController
-                                                  .watchDirectChatsForUser(
-                                                    user.id,
-                                                  )
-                                                  .first
-                                                  .then((chats) {
-                                                    if (chats == null) {
-                                                      return null;
-                                                    }
-                                                    return chats.firstWhere(
-                                                      (c) => c.participants
-                                                          .contains(friend.id),
-                                                      orElse: () => DirectChat(
-                                                        id: '',
-                                                        name: '',
-                                                        participants: [],
-                                                        lastMessage: '',
-                                                        lastUpdated:
-                                                            DateTime.now(),
-                                                        unreadCount: 0,
-                                                      ),
-                                                    );
-                                                  });
-                                          if (existingChat != null &&
-                                              existingChat.id.isNotEmpty) {
-                                            if (!context.mounted) return;
-                                            navigator.push(
-                                              ChatPage(
-                                                chatId: existingChat.id,
-                                                chatType: ChatType.direct,
-                                              ),
+                                  leftButtonText: switch (widget._sectionType) {
+                                    FriendsTabSectionType.incomingRequests =>
+                                      context.l10n.declineLabel,
+                                    _ => null,
+                                  },
+                                  rightButtonText: switch (widget
+                                      ._sectionType) {
+                                    FriendsTabSectionType.friends =>
+                                      editPressed
+                                          ? context.l10n.removeLabel
+                                          : context.l10n.messageLabel,
+                                    FriendsTabSectionType.incomingRequests =>
+                                      context.l10n.acceptLabel,
+                                    FriendsTabSectionType.outgoingRequests =>
+                                      context.l10n.cancelLabel,
+                                  },
+                                  onPressedLeft: switch (widget._sectionType) {
+                                    FriendsTabSectionType.incomingRequests =>
+                                      () async {
+                                        final friendController =
+                                            context.friendController!;
+                                        await friendController
+                                            .declineFriendRequest(
+                                              friendUserId: friend.id,
                                             );
-                                            return;
-                                          }
+                                      },
+                                    _ => null,
+                                  },
+                                  onPressedRight: switch (widget._sectionType) {
+                                    FriendsTabSectionType.friends =>
+                                      editPressed
+                                          ? () async {
+                                              final friendController =
+                                                  context.friendController!;
+                                              context.appController;
 
-                                          if (!context.mounted) return;
-                                          final chat = await chatController
-                                              .createDirectChat(
-                                                participants: [
-                                                  user.id,
-                                                  friend.id,
-                                                ],
-                                                chatName:
-                                                    '${(context.appState.user as AuthorizedUser).name}, ${friend.name}',
+                                              AppDialog2.show(
+                                                context: context,
+                                                title: context
+                                                    .l10n
+                                                    .removeFriendLabel,
+                                                description: context.l10n
+                                                    .removeFriendConfirmationLabel(
+                                                      friend.name,
+                                                    ),
+                                                buttonText1:
+                                                    context.l10n.cancelLabel,
+                                                buttonText2:
+                                                    context.l10n.removeLabel,
+                                                onPressed1: (context) {
+                                                  Navigator.of(context).pop();
+                                                },
+                                                onPressed2: (context) async {
+                                                  Navigator.of(context).pop();
+                                                  await friendController
+                                                      .removeFriend(
+                                                        friendUserId: friend.id,
+                                                      );
+                                                },
                                               );
+                                            }
+                                          : () async {
+                                              final user =
+                                                  context.appState.user
+                                                      as AuthorizedUser;
+                                              final chatController =
+                                                  context.chatController!;
+                                              final navigator = AppNavigator.of(
+                                                context,
+                                              );
+                                              final existingChat =
+                                                  await chatController
+                                                      .watchDirectChatsForUser(
+                                                        user.id,
+                                                      )
+                                                      .first
+                                                      .then((chats) {
+                                                        if (chats == null) {
+                                                          return null;
+                                                        }
+                                                        return chats.firstWhere(
+                                                          (c) => c.participants
+                                                              .contains(
+                                                                friend.id,
+                                                              ),
+                                                          orElse: () => DirectChat(
+                                                            id: '',
+                                                            name: '',
+                                                            participants: [],
+                                                            lastMessage: '',
+                                                            lastUpdated:
+                                                                DateTime.now(),
+                                                            unreadCount: 0,
+                                                          ),
+                                                        );
+                                                      });
+                                              if (existingChat != null &&
+                                                  existingChat.id.isNotEmpty) {
+                                                if (!context.mounted) return;
+                                                navigator.push(
+                                                  ChatPage(
+                                                    chatId: existingChat.id,
+                                                    chatType: ChatType.direct,
+                                                  ),
+                                                );
+                                                return;
+                                              }
 
-                                          if (!context.mounted) return;
-                                          navigator.push(
-                                            ChatPage(
-                                              chatId: chat.id,
-                                              chatType: ChatType.direct,
-                                            ),
-                                          );
-                                        },
-                                FriendsTabSectionType.incomingRequests =>
-                                  () async {
-                                    final friendController =
-                                        context.friendController!;
-                                    await friendController.acceptFriendRequest(
-                                      friendUserId: friend.id,
-                                    );
+                                              if (!context.mounted) return;
+                                              final chat = await chatController
+                                                  .createDirectChat(
+                                                    participants: [
+                                                      user.id,
+                                                      friend.id,
+                                                    ],
+                                                    chatName:
+                                                        '${(context.appState.user as AuthorizedUser).name}, ${friend.name}',
+                                                  );
+
+                                              if (!context.mounted) return;
+                                              navigator.push(
+                                                ChatPage(
+                                                  chatId: chat.id,
+                                                  chatType: ChatType.direct,
+                                                ),
+                                              );
+                                            },
+                                    FriendsTabSectionType.incomingRequests =>
+                                      () async {
+                                        final friendController =
+                                            context.friendController!;
+                                        await friendController
+                                            .acceptFriendRequest(
+                                              friendUserId: friend.id,
+                                            );
+                                      },
+                                    FriendsTabSectionType.outgoingRequests =>
+                                      () async {
+                                        final friendController =
+                                            context.friendController!;
+                                        await friendController
+                                            .cancelFriendRequest(
+                                              friendUserId: friend.id,
+                                            );
+                                      },
                                   },
-                                FriendsTabSectionType.outgoingRequests =>
-                                  () async {
-                                    final friendController =
-                                        context.friendController!;
-                                    await friendController.cancelFriendRequest(
-                                      friendUserId: friend.id,
-                                    );
-                                  },
+                                );
                               },
                             );
                           },

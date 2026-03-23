@@ -308,9 +308,9 @@ final class AppController extends BaseController<AppState> {
     return _firestoreRepository.watchAllUsers();
   }
 
-  Stream<AuthorizedUser?> watchUserWithId(String memberId) {
+  Stream<AuthorizedUser?> watchUserWithId(String userId) {
     return _firestoreRepository.watchAllUsers().map((users) {
-      return users?.firstWhere((u) => u.id == memberId);
+      return users?.firstWhere((u) => u.id == userId);
     });
   }
 

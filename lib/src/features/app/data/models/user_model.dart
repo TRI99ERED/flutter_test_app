@@ -23,6 +23,7 @@ final class AuthorizedUser extends UserEntity {
   final String currentDirectChatId;
   final String currentGroupChatId;
   final String fcmToken;
+  final bool isOnline;
   final NotificationSettings notificationSettings;
   final List<String> selectedInterests;
   final List<String> chatRecentSearches;
@@ -38,6 +39,7 @@ final class AuthorizedUser extends UserEntity {
     this.currentDirectChatId = '',
     this.currentGroupChatId = '',
     this.fcmToken = '',
+    this.isOnline = false,
     this.notificationSettings = const NotificationSettings(
       pushNotificationsEnabled: true,
       messageNotificationsEnabled: true,
@@ -63,6 +65,7 @@ final class AuthorizedUser extends UserEntity {
       currentDirectChatId: data['currentDirectChatId'] ?? '',
       currentGroupChatId: data['currentGroupChatId'] ?? '',
       fcmToken: data['fcmToken'] ?? '',
+      isOnline: (data['isOnline'] as bool?) ?? false,
       notificationSettings: data['notificationSettings'] != null
           ? NotificationSettings.fromJson(
               Map<String, dynamic>.from(data['notificationSettings']),
@@ -96,6 +99,7 @@ final class AuthorizedUser extends UserEntity {
     String? currentDirectChatId,
     String? currentGroupChatId,
     String? fcmToken,
+    bool? isOnline,
     NotificationSettings? notificationSettings,
     List<String>? selectedInterests,
     List<String>? chatRecentSearches,
@@ -111,6 +115,7 @@ final class AuthorizedUser extends UserEntity {
       currentDirectChatId: currentDirectChatId ?? this.currentDirectChatId,
       currentGroupChatId: currentGroupChatId ?? this.currentGroupChatId,
       fcmToken: fcmToken ?? this.fcmToken,
+      isOnline: isOnline ?? this.isOnline,
       notificationSettings: notificationSettings ?? this.notificationSettings,
       selectedInterests: selectedInterests ?? this.selectedInterests,
       chatRecentSearches: chatRecentSearches ?? this.chatRecentSearches,
@@ -132,6 +137,7 @@ final class AuthorizedUser extends UserEntity {
             other.currentDirectChatId == currentDirectChatId &&
             other.currentGroupChatId == currentGroupChatId &&
             other.fcmToken == fcmToken &&
+            other.isOnline == isOnline &&
             other.notificationSettings == notificationSettings &&
             other.selectedInterests == selectedInterests &&
             other.chatRecentSearches == chatRecentSearches &&
@@ -150,6 +156,7 @@ final class AuthorizedUser extends UserEntity {
     currentDirectChatId,
     currentGroupChatId,
     fcmToken,
+    isOnline,
     notificationSettings,
     selectedInterests,
     chatRecentSearches,
@@ -171,6 +178,7 @@ final class AuthorizedUser extends UserEntity {
       'currentDirectChatId': currentDirectChatId,
       'currentGroupChatId': currentGroupChatId,
       'fcmToken': fcmToken,
+      'isOnline': isOnline,
       'notificationSettings': notificationSettings.toJson(),
       'selectedInterests': selectedInterests,
       'chatRecentSearches': chatRecentSearches,

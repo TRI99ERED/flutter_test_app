@@ -43,8 +43,19 @@ class _AppLifecycleHandlerState extends State<AppLifecycleHandler>
     if (currentPage == null) return;
     final currentPath = currentPage.path;
     switch (state) {
-      case AppLifecycleState.paused:
       case AppLifecycleState.detached:
+      case AppLifecycleState.paused:
+        if (currentPath.startsWith('/chats/direct/') ||
+            currentPath.startsWith('/chats/group/')) {
+          await appController.updateUser(
+            user.copyWith(currentDirectChatId: '', currentGroupChatId: '')
+                as AuthorizedUser,
+          );
+        }
+        await appController.updateUser(
+          user.copyWith(isOnline: false) as AuthorizedUser,
+        );
+        break;
       case AppLifecycleState.inactive:
       case AppLifecycleState.hidden:
         if (currentPath.startsWith('/chats/direct/') ||
@@ -54,15 +65,18 @@ class _AppLifecycleHandlerState extends State<AppLifecycleHandler>
                 as AuthorizedUser,
           );
         }
+        await appController.updateUser(
+          user.copyWith(isOnline: true) as AuthorizedUser,
+        );
         break;
       case AppLifecycleState.resumed:
         if (currentPath.startsWith('/chats/direct/')) {
           final chatId = currentPath.split('/chats/direct/').last;
+          final chatController = context.chatController;
 
-          appController.updateUser(
+          await appController.updateUser(
             user.copyWith(currentDirectChatId: chatId) as AuthorizedUser,
           );
-          final chatController = context.chatController;
           if (chatController != null) {
             chatController.updateDirectChatUnreadCount(
               chatId: chatId,
@@ -71,10 +85,10 @@ class _AppLifecycleHandlerState extends State<AppLifecycleHandler>
           }
         } else if (currentPath.startsWith('/chats/group/')) {
           final chatId = currentPath.split('/chats/group/').last;
-          appController.updateUser(
+          final chatController = context.chatController;
+          await appController.updateUser(
             user.copyWith(currentGroupChatId: chatId) as AuthorizedUser,
           );
-          final chatController = context.chatController;
           if (chatController != null) {
             chatController.updateGroupChatCurrentUserUnreadCount(
               chatId: chatId,
@@ -82,6 +96,9 @@ class _AppLifecycleHandlerState extends State<AppLifecycleHandler>
             );
           }
         }
+        await appController.updateUser(
+          user.copyWith(isOnline: true) as AuthorizedUser,
+        );
         break;
     }
   }

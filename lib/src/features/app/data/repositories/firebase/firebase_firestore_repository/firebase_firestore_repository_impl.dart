@@ -843,14 +843,7 @@ class FirebaseFirestoreRepositoryImpl implements IFirebaseFirestoreRepository {
             snapshot.docs.map((doc) async {
               final u = AuthorizedUser.fromFirestore(doc);
               final userDoc = await _users.doc(u.id).get();
-              final data = userDoc.data() ?? {};
-              return AuthorizedUser(
-                id: u.id,
-                name: data['name'] ?? '',
-                email: data['email'] ?? '',
-                handle: data['handle'] ?? '',
-                avatarUrl: data['avatarUrl'] ?? '',
-              );
+              return AuthorizedUser.fromFirestore(userDoc);
             }).toList(),
           );
           return users;

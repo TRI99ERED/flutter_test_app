@@ -121,13 +121,13 @@ class _UserProfileView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListView(
-      children: [
-        Center(
-          child: StreamBuilder(
-            stream: context.appController.watchUserWithId(user.id),
-            builder: (context, asyncSnapshot) {
-              return TextButton(
+    return StreamBuilder(
+      stream: context.appController.watchUserWithId(user.id),
+      builder: (context, asyncSnapshot) {
+        return ListView(
+          children: [
+            Center(
+              child: TextButton(
                 onPressed: () {
                   if (asyncSnapshot.data?.avatarUrl != null &&
                       asyncSnapshot.data!.avatarUrl.isNotEmpty) {
@@ -141,62 +141,62 @@ class _UserProfileView extends StatelessWidget {
                   asyncSnapshot.data ?? user,
                   AvatarSize.large,
                 ),
-              );
-            },
-          ),
-        ),
-        Column(
-          spacing: spacing8,
-          children: [
-            Text(
-              context.l10n.nameTitle,
-              style: TextStyle(
-                fontSize: h3Size,
-                fontWeight: h3Weight,
-                color: Theme.of(
-                  context,
-                ).extension<AppTheme>()?.foregroundStrongestColor,
               ),
             ),
-            Text(
-              user.name,
-              style: TextStyle(
-                fontSize: bMSize,
-                fontWeight: bMWeight,
-                color: Theme.of(
-                  context,
-                ).extension<AppTheme>()?.foregroundStrongestColor,
-              ),
-            ),
-          ],
-        ),
-        Column(
-          spacing: spacing8,
-          children: [
-            Text(
-              context.l10n.handleTitle,
-              style: TextStyle(
-                fontSize: h3Size,
-                fontWeight: h3Weight,
-                color: Theme.of(
-                  context,
-                ).extension<AppTheme>()?.foregroundStrongestColor,
-              ),
-            ),
-            if (user.handle.isNotEmpty)
-              Text(
-                '@${user.handle}',
-                style: TextStyle(
-                  fontSize: bMSize,
-                  fontWeight: bMWeight,
-                  color: Theme.of(
-                    context,
-                  ).extension<AppTheme>()?.foregroundStrongestColor,
+            Column(
+              spacing: spacing8,
+              children: [
+                Text(
+                  context.l10n.nameTitle,
+                  style: TextStyle(
+                    fontSize: h3Size,
+                    fontWeight: h3Weight,
+                    color: Theme.of(
+                      context,
+                    ).extension<AppTheme>()?.foregroundStrongestColor,
+                  ),
                 ),
-              ),
+                Text(
+                  '${asyncSnapshot.data?.name ?? user.name} ${asyncSnapshot.data?.isOnline == true ? '●' : ''}',
+                  style: TextStyle(
+                    fontSize: bMSize,
+                    fontWeight: bMWeight,
+                    color: Theme.of(
+                      context,
+                    ).extension<AppTheme>()?.foregroundStrongestColor,
+                  ),
+                ),
+              ],
+            ),
+            Column(
+              spacing: spacing8,
+              children: [
+                Text(
+                  context.l10n.handleTitle,
+                  style: TextStyle(
+                    fontSize: h3Size,
+                    fontWeight: h3Weight,
+                    color: Theme.of(
+                      context,
+                    ).extension<AppTheme>()?.foregroundStrongestColor,
+                  ),
+                ),
+                if (user.handle.isNotEmpty)
+                  Text(
+                    '@${user.handle}',
+                    style: TextStyle(
+                      fontSize: bMSize,
+                      fontWeight: bMWeight,
+                      color: Theme.of(
+                        context,
+                      ).extension<AppTheme>()?.foregroundStrongestColor,
+                    ),
+                  ),
+              ],
+            ),
           ],
-        ),
-      ],
+        );
+      },
     );
   }
 }
