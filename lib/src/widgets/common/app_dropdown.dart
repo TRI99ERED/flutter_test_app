@@ -16,6 +16,8 @@ class AppDropdown extends StatefulWidget {
   final FormFieldValidator<String>? validator;
   final AutovalidateMode? autovalidateMode;
   final TextEditingController? controller;
+  final FocusNode? focusNode;
+  final TextInputAction? textInputAction;
 
   const AppDropdown({
     super.key,
@@ -31,6 +33,8 @@ class AppDropdown extends StatefulWidget {
     this.validator,
     this.autovalidateMode,
     this.controller,
+    this.focusNode,
+    this.textInputAction,
   }) : assert(
          controller == null || text == null,
          'controller and text cannot both be provided',
@@ -45,7 +49,6 @@ class _AppDropdownState extends State<AppDropdown> {
   late final ValueNotifier<String?> _validatorErrorText;
   late final ValueNotifier<bool> _isSelected;
   late final ValueNotifier<String> _searchQuery;
-  late FocusNode _focusNode;
   OverlayEntry? _overlayEntry;
   final GlobalKey _textFieldKey = GlobalKey();
   final LayerLink _layerLink = LayerLink();
@@ -82,7 +85,6 @@ class _AppDropdownState extends State<AppDropdown> {
   @override
   void initState() {
     super.initState();
-    _focusNode = FocusNode();
     _selectedIndex = ValueNotifier<int>(widget.selectedIndex);
     _validatorErrorText = ValueNotifier<String?>(null);
     _isSelected = ValueNotifier<bool>(false);
@@ -141,7 +143,6 @@ class _AppDropdownState extends State<AppDropdown> {
               behavior: HitTestBehavior.translucent,
               onTap: () {
                 _hideOverlay();
-                _focusNode.unfocus();
               },
             ),
           ),
@@ -211,7 +212,6 @@ class _AppDropdownState extends State<AppDropdown> {
                                               .indexOf(entry);
                                           _searchQuery.value = '';
                                           _hideOverlay();
-                                          _focusNode.unfocus();
 
                                           WidgetsBinding.instance
                                               .addPostFrameCallback((_) {
@@ -258,7 +258,6 @@ class _AppDropdownState extends State<AppDropdown> {
   void dispose() {
     _overlayEntry?.remove();
     _overlayEntry = null;
-    _focusNode.dispose();
     _selectedIndex.dispose();
     _validatorErrorText.dispose();
     _isSelected.dispose();
@@ -286,7 +285,6 @@ class _AppDropdownState extends State<AppDropdown> {
                       behavior: HitTestBehavior.translucent,
                       onTap: () {
                         _hideOverlay();
-                        _focusNode.unfocus();
                       },
                     ),
                   ),
@@ -316,7 +314,7 @@ class _AppDropdownState extends State<AppDropdown> {
                         builder: (context, searchQuery, _) {
                           return TextFormField(
                             key: _textFieldKey,
-                            focusNode: _focusNode,
+                            focusNode: widget.focusNode,
                             controller: _effectiveController,
                             onTap: widget.enabled ? () => _showOverlay() : null,
                             onChanged: (value) {
@@ -328,7 +326,7 @@ class _AppDropdownState extends State<AppDropdown> {
                               }
                             },
                             keyboardType: TextInputType.text,
-                            textInputAction: TextInputAction.search,
+                            textInputAction: widget.textInputAction,
                             validator: (value) => widget.validator?.call(value),
                             autovalidateMode: widget.autovalidateMode,
                             enabled: widget.enabled,

@@ -157,7 +157,7 @@ class _ProjectWizardState extends State<ProjectWizard> {
   }
 }
 
-class _ProjectWizardForm extends StatelessWidget {
+class _ProjectWizardForm extends StatefulWidget {
   final GlobalKey<FormState> _formKey;
   final TextEditingController _nameController;
   final TextEditingController _descriptionController;
@@ -186,40 +186,64 @@ class _ProjectWizardForm extends StatelessWidget {
        _participants = participants;
 
   @override
+  State<_ProjectWizardForm> createState() => _ProjectWizardFormState();
+}
+
+class _ProjectWizardFormState extends State<_ProjectWizardForm> {
+  final FocusNode _titleFocusNode = FocusNode();
+  final FocusNode _descriptionFocusNode = FocusNode();
+
+  @override
   Widget build(BuildContext context) {
     return Form(
-      key: _formKey,
+      key: widget._formKey,
       child: SizedBox(
         height: MediaQuery.sizeOf(context).height * 0.6,
         child: ListView(
           children: [
             AppTextField(
+              focusNode: _titleFocusNode,
               title: context.l10n.projectNameLabel,
               placeholder: context.l10n.enterProjectNameLabel,
-              controller: _nameController,
+              controller: widget._nameController,
               validator: getValidatorForKeyboardType(
                 context,
                 TextInputType.text,
               ),
+              textInputAction: TextInputAction.next,
+              onSubmitted: (value) {
+                FocusScope.of(context).requestFocus(_descriptionFocusNode);
+              },
             ),
-            if (_mode == ProjectWizardMode.edit)
+            if (widget._mode == ProjectWizardMode.edit)
               const SizedBox(height: spacing16),
-            if (_mode == ProjectWizardMode.edit &&
-                _projectToEdit!.status != ProjectStatus.finished)
+            if (widget._mode == ProjectWizardMode.edit &&
+                widget._projectToEdit!.status != ProjectStatus.finished)
               ValueListenableBuilder<ProjectStatus>(
-                valueListenable: _selectedStatus,
+                valueListenable: widget._selectedStatus,
                 builder: (context, value, child) {
-                  if (_projectToEdit.status == ProjectStatus.finished) {
+                  if (widget._projectToEdit!.status == ProjectStatus.finished) {
                     return const SizedBox.shrink();
                   }
                   return Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(_getStatusLabel(context, _projectToEdit.status)),
+                      Text(
+                        _getStatusLabel(context, widget._projectToEdit!.status),
+                        style: TextStyle(
+                          fontSize: h5Size,
+                          fontWeight: h5Weight,
+                          color: Theme.of(
+                            context,
+                          ).extension<AppTheme>()?.foregroundStrongestColor,
+                        ),
+                      ),
                       AppCheckbox(
-                        value: _getCheckboxValue(_projectToEdit.status),
-                        onChanged: (newValue) =>
-                            _onStatusChanged(_projectToEdit.status, newValue),
+                        value: _getCheckboxValue(widget._projectToEdit!.status),
+                        onChanged: (newValue) => _onStatusChanged(
+                          widget._projectToEdit!.status,
+                          newValue,
+                        ),
                       ),
                     ],
                   );
@@ -227,9 +251,11 @@ class _ProjectWizardForm extends StatelessWidget {
               ),
             const SizedBox(height: spacing16),
             AppTextArea(
+              focusNode: _descriptionFocusNode,
               title: context.l10n.descriptionLabel,
               placeholder: context.l10n.enterProjectDescriptionLabel,
-              controller: _descriptionController,
+              controller: widget._descriptionController,
+              textInputAction: TextInputAction.newline,
             ),
             const SizedBox(height: spacing16),
             Row(
@@ -253,7 +279,7 @@ class _ProjectWizardForm extends StatelessWidget {
             ),
             const SizedBox(height: spacing16),
             ValueListenableBuilder<List<String>>(
-              valueListenable: _participants,
+              valueListenable: widget._participants,
               builder: (context, value, child) {
                 return ListView.builder(
                   shrinkWrap: true,
@@ -293,8 +319,8 @@ class _ProjectWizardForm extends StatelessWidget {
                               onPressed: isCurrentUser
                                   ? null
                                   : () {
-                                      _participants.value = [
-                                        ..._participants.value,
+                                      widget._participants.value = [
+                                        ...widget._participants.value,
                                       ]..removeAt(index);
                                     },
                             );
@@ -320,11 +346,12 @@ class _ProjectWizardForm extends StatelessWidget {
             ),
             AppCalendarMonthly(
               initialDate:
-                  _mode == ProjectWizardMode.edit && _projectToEdit != null
-                  ? _deadline.value
+                  widget._mode == ProjectWizardMode.edit &&
+                      widget._projectToEdit != null
+                  ? widget._deadline.value
                   : null,
               onDateSelected: (value) {
-                _deadline.value = value;
+                widget._deadline.value = value;
               },
             ),
           ],
@@ -346,9 +373,9 @@ class _ProjectWizardForm extends StatelessWidget {
   bool _getCheckboxValue(ProjectStatus status) {
     switch (status) {
       case ProjectStatus.todo:
-        return _selectedStatus.value == ProjectStatus.inProgress;
+        return widget._selectedStatus.value == ProjectStatus.inProgress;
       case ProjectStatus.inProgress:
-        return _selectedStatus.value == ProjectStatus.finished;
+        return widget._selectedStatus.value == ProjectStatus.finished;
       case ProjectStatus.finished:
         return true;
     }
@@ -357,36 +384,42 @@ class _ProjectWizardForm extends StatelessWidget {
   void _onStatusChanged(ProjectStatus status, bool? newValue) {
     if (newValue == null) return;
     if (status == ProjectStatus.todo) {
-      _selectedStatus.value = newValue
+      widget._selectedStatus.value = newValue
           ? ProjectStatus.inProgress
           : ProjectStatus.todo;
     } else if (status == ProjectStatus.inProgress) {
-      _selectedStatus.value = newValue
+      widget._selectedStatus.value = newValue
           ? ProjectStatus.finished
           : ProjectStatus.inProgress;
     }
   }
 
   void _onAddMemberPressed(BuildContext context) {
-    if (_mode == ProjectWizardMode.create) {
+    if (widget._mode == ProjectWizardMode.create) {
       UserPicker.pickUser(context, UserPickerFlag.friendsOnly.value).then((
         selectedUser,
       ) {
         if (selectedUser != null &&
-            !_participants.value.contains(selectedUser.id)) {
-          _participants.value = [..._participants.value, selectedUser.id];
+            !widget._participants.value.contains(selectedUser.id)) {
+          widget._participants.value = [
+            ...widget._participants.value,
+            selectedUser.id,
+          ];
         }
       });
     } else {
-      if (_projectToEdit == null) return;
+      if (widget._projectToEdit == null) return;
       UserPicker.pickUser(
         context,
         UserPickerFlag.friendsOnly.value |
             UserPickerFlag.excludeProjectParticipants.value,
-        _projectToEdit.id,
+        widget._projectToEdit!.id,
       ).then((selectedUser) {
         if (selectedUser != null) {
-          _participants.value = [..._participants.value, selectedUser.id];
+          widget._participants.value = [
+            ...widget._participants.value,
+            selectedUser.id,
+          ];
         }
       });
     }

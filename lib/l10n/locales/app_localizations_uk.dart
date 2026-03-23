@@ -812,7 +812,7 @@ class AppLocalizationsUk extends AppLocalizations {
   String get closeLabel => 'Закрити';
 
   @override
-  String get handleLabel => 'Ім\'я користувача';
+  String get handleTitle => 'Ім\'я користувача';
 
   @override
   String get enterYourNameLabel => 'Введіть ваше ім\'я';
@@ -967,4 +967,7 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get errorLoadingTasksMessage => 'Помилка завантаження завдань';
+
+  @override
+  String get nameTitle => 'Ім\'я';
 }

@@ -1586,11 +1586,11 @@ abstract class AppLocalizations {
   /// **'Close'**
   String get closeLabel;
 
-  /// No description provided for @handleLabel.
+  /// No description provided for @handleTitle.
   ///
   /// In en, this message translates to:
   /// **'Handle'**
-  String get handleLabel;
+  String get handleTitle;
 
   /// No description provided for @enterYourNameLabel.
   ///
@@ -1879,6 +1879,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Error loading tasks'**
   String get errorLoadingTasksMessage;
+
+  /// No description provided for @nameTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get nameTitle;
 }
 
 class _AppLocalizationsDelegate

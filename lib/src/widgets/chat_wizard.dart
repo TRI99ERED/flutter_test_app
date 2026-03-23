@@ -185,6 +185,7 @@ class _ChatWizardState extends State<ChatWizard> {
                           placeholder: context.l10n.enterChatNameLabel,
                           controller: _nameController,
                           keyboardType: TextInputType.name,
+                          textInputAction: TextInputAction.done,
                         ),
                       if (widget.mode == ChatWizardMode.edit &&
                           widget.chat! is GroupChat)

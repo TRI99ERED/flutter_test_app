@@ -512,8 +512,8 @@
     "@editProfileTitle": {},
     "closeLabel": "Close",
     "@closeLabel": {},
-    "handleLabel": "Handle",
-    "@handleLabel": {},
+    "handleTitle": "Handle",
+    "@handleTitle": {},
     "enterYourNameLabel": "Enter your name",
     "@enterYourNameLabel": {},
     "errorLoadingUsersMessage": "Error loading users",
@@ -623,5 +623,7 @@
     "taskPriorityHighLabel": "High",
     "@taskPriorityHighLabel": {},
     "errorLoadingTasksMessage": "Error loading tasks",
-    "@errorLoadingTasksMessage": {}
+    "@errorLoadingTasksMessage": {},
+    "nameTitle": "Name",
+    "@nameTitle": {}
 }

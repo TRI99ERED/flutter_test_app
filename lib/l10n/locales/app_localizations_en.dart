@@ -800,7 +800,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get closeLabel => 'Close';
 
   @override
-  String get handleLabel => 'Handle';
+  String get handleTitle => 'Handle';
 
   @override
   String get enterYourNameLabel => 'Enter your name';
@@ -954,4 +954,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get errorLoadingTasksMessage => 'Error loading tasks';
+
+  @override
+  String get nameTitle => 'Name';
 }

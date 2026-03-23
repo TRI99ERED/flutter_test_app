@@ -16,6 +16,8 @@ class AppTextArea extends StatefulWidget {
   final FormFieldValidator<String>? validator;
   final AutovalidateMode? autovalidateMode;
   final TextEditingController? controller;
+  final FocusNode? focusNode;
+  final TextInputAction? textInputAction;
 
   AppTextArea({
     super.key,
@@ -32,6 +34,8 @@ class AppTextArea extends StatefulWidget {
     this.validator,
     this.autovalidateMode,
     this.controller,
+    this.focusNode,
+    this.textInputAction,
   }) : assert(
          controller == null || text == null,
          'controller and text cannot both be provided',
@@ -136,6 +140,7 @@ class _AppTextAreaState extends State<AppTextArea> {
               ),
             TextFormField(
               controller: _effectiveController,
+              focusNode: widget.focusNode,
               onChanged: (value) {
                 final nextError = widget.validator?.call(value);
                 if (nextError != _validatorErrorText.value) {
@@ -144,6 +149,7 @@ class _AppTextAreaState extends State<AppTextArea> {
                 widget.onChanged?.call(value);
               },
               onFieldSubmitted: widget.onSubmitted,
+              textInputAction: widget.textInputAction,
               validator: (value) {
                 final result = widget.validator?.call(value);
                 _syncValidatorError(value);
@@ -158,7 +164,6 @@ class _AppTextAreaState extends State<AppTextArea> {
               cursorErrorColor: Theme.of(
                 context,
               ).extension<AppTheme>()?.errorDarkColor,
-              textInputAction: TextInputAction.newline,
               style: TextStyle(
                 fontSize: bMSize,
                 fontWeight: bMWeight,

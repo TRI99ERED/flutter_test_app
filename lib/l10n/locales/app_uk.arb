@@ -512,8 +512,8 @@
     "@editProfileTitle": {},
     "closeLabel": "Закрити",
     "@closeLabel": {},
-    "handleLabel": "Ім'я користувача",
-    "@handleLabel": {},
+    "handleTitle": "Ім'я користувача",
+    "@handleTitle": {},
     "enterYourNameLabel": "Введіть ваше ім'я",
     "@enterYourNameLabel": {},
     "errorLoadingUsersMessage": "Помилка завантаження користувачів",
@@ -623,5 +623,7 @@
     "taskPriorityHighLabel": "Високий",
     "@taskPriorityHighLabel": {},
     "errorLoadingTasksMessage": "Помилка завантаження завдань",
-    "@errorLoadingTasksMessage": {}
+    "@errorLoadingTasksMessage": {},
+    "nameTitle": "Ім'я",
+    "@nameTitle": {}
 }

@@ -149,7 +149,7 @@ class _UserProfileView extends StatelessWidget {
           spacing: spacing8,
           children: [
             Text(
-              context.l10n.nameLabel,
+              context.l10n.nameTitle,
               style: TextStyle(
                 fontSize: h3Size,
                 fontWeight: h3Weight,
@@ -174,7 +174,7 @@ class _UserProfileView extends StatelessWidget {
           spacing: spacing8,
           children: [
             Text(
-              context.l10n.handleLabel,
+              context.l10n.handleTitle,
               style: TextStyle(
                 fontSize: h3Size,
                 fontWeight: h3Weight,
@@ -215,6 +215,8 @@ class _UserProfileEditState extends State<_UserProfileEdit> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _handleController = TextEditingController();
   final ValueNotifier<bool> _isFormValid = ValueNotifier(false);
+  final FocusNode _nameFocusNode = FocusNode();
+  final FocusNode _handleFocusNode = FocusNode();
 
   @override
   void initState() {
@@ -269,32 +271,20 @@ class _UserProfileEditState extends State<_UserProfileEdit> {
               ),
             ],
           ),
-          Text(
-            context.l10n.nameLabel,
-            style: TextStyle(
-              fontSize: h3Size,
-              fontWeight: h3Weight,
-              color: Theme.of(
-                context,
-              ).extension<AppTheme>()?.foregroundStrongestColor,
-            ),
-          ),
+          const SizedBox(height: spacing16),
           AppTextField(
+            title: context.l10n.nameTitle,
             placeholder: context.l10n.enterYourNameLabel,
             controller: _nameController,
+            focusNode: _nameFocusNode,
             validator: getValidatorForKeyboardType(context, TextInputType.name),
             onChanged: (_) => _validateForm(),
+            textInputAction: TextInputAction.next,
+            onSubmitted: (value) {
+              FocusScope.of(context).requestFocus(_handleFocusNode);
+            },
           ),
-          Text(
-            context.l10n.handleLabel,
-            style: TextStyle(
-              fontSize: h3Size,
-              fontWeight: h3Weight,
-              color: Theme.of(
-                context,
-              ).extension<AppTheme>()?.foregroundStrongestColor,
-            ),
-          ),
+          const SizedBox(height: spacing16),
           StreamBuilder(
             stream: context.appController.watchAllUsers(),
             builder: (context, asyncSnapshot) {
@@ -311,6 +301,7 @@ class _UserProfileEditState extends State<_UserProfileEdit> {
 
               final users = asyncSnapshot.data ?? [];
               return AppTextField(
+                title: context.l10n.handleTitle,
                 placeholder: context.l10n.enterYourHandleLabel,
                 controller: _handleController,
                 validator: (value) {

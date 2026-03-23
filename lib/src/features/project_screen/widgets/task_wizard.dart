@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:test_app/l10n/locales/l10n.dart';
 import 'package:test_app/src/features/app/app_scope.dart';
 import 'package:test_app/src/features/app/data/models/task_model.dart';
+import 'package:test_app/src/features/themes/app_theme.dart';
 import 'package:test_app/src/features/themes/styles.dart';
 import 'package:test_app/src/widgets/common/app_button.dart';
 import 'package:test_app/src/widgets/common/app_checkbox.dart';
@@ -146,7 +147,7 @@ class _TaskWizardState extends State<TaskWizard> {
   }
 }
 
-class _TaskWizardForm extends StatelessWidget {
+class _TaskWizardForm extends StatefulWidget {
   final String _projectId;
   final GlobalKey<FormState> _formKey;
   final TextEditingController _titleController;
@@ -175,9 +176,18 @@ class _TaskWizardForm extends StatelessWidget {
        _projectId = projectId;
 
   @override
+  State<_TaskWizardForm> createState() => _TaskWizardFormState();
+}
+
+class _TaskWizardFormState extends State<_TaskWizardForm> {
+  final FocusNode _titleFocusNode = FocusNode();
+  final FocusNode _descriptionFocusNode = FocusNode();
+  final FocusNode _priorityFocusNode = FocusNode();
+
+  @override
   Widget build(BuildContext context) {
     return Form(
-      key: _formKey,
+      key: widget._formKey,
       child: SizedBox(
         height: MediaQuery.sizeOf(context).height * 0.6,
         child: ListView(
@@ -185,15 +195,21 @@ class _TaskWizardForm extends StatelessWidget {
             AppTextField(
               title: context.l10n.taskTitleLabel,
               placeholder: context.l10n.enterTaskTitleLabel,
-              controller: _titleController,
+              controller: widget._titleController,
+              focusNode: _titleFocusNode,
               validator: getValidatorForKeyboardType(
                 context,
                 TextInputType.text,
               ),
+              textInputAction: TextInputAction.next,
+              onSubmitted: (value) {
+                FocusScope.of(context).requestFocus(_priorityFocusNode);
+              },
             ),
             const SizedBox(height: spacing16),
             AppDropdown(
               title: context.l10n.taskPriorityLabel,
+              focusNode: _priorityFocusNode,
               items: [
                 DropdownMenuEntry(
                   value: TaskPriority.low.name,
@@ -208,29 +224,43 @@ class _TaskWizardForm extends StatelessWidget {
                   label: context.l10n.taskPriorityHighLabel,
                 ),
               ],
+              textInputAction: TextInputAction.next,
               onSelected: (value) {
-                _priority.value = TaskPriority.values.firstWhere(
+                widget._priority.value = TaskPriority.values.firstWhere(
                   (e) => e.name == value.$1,
                 );
+                FocusScope.of(context).requestFocus(_descriptionFocusNode);
               },
             ),
-            if (_mode == TaskWizardMode.edit) const SizedBox(height: spacing16),
-            if (_mode == TaskWizardMode.edit &&
-                _taskToEdit!.status != TaskStatus.finished)
+            if (widget._mode == TaskWizardMode.edit)
+              const SizedBox(height: spacing16),
+            if (widget._mode == TaskWizardMode.edit &&
+                widget._taskToEdit!.status != TaskStatus.finished)
               ValueListenableBuilder<TaskStatus>(
-                valueListenable: _selectedStatus,
+                valueListenable: widget._selectedStatus,
                 builder: (context, value, child) {
-                  if (_taskToEdit.status == TaskStatus.finished) {
+                  if (widget._taskToEdit!.status == TaskStatus.finished) {
                     return const SizedBox.shrink();
                   }
                   return Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(_getStatusLabel(context, _taskToEdit.status)),
+                      Text(
+                        _getStatusLabel(context, widget._taskToEdit!.status),
+                        style: TextStyle(
+                          fontSize: h5Size,
+                          fontWeight: h5Weight,
+                          color: Theme.of(
+                            context,
+                          ).extension<AppTheme>()?.foregroundStrongestColor,
+                        ),
+                      ),
                       AppCheckbox(
-                        value: _getCheckboxValue(_taskToEdit.status),
-                        onChanged: (newValue) =>
-                            _onStatusChanged(_taskToEdit.status, newValue),
+                        value: _getCheckboxValue(widget._taskToEdit!.status),
+                        onChanged: (newValue) => _onStatusChanged(
+                          widget._taskToEdit!.status,
+                          newValue,
+                        ),
                       ),
                     ],
                   );
@@ -240,16 +270,19 @@ class _TaskWizardForm extends StatelessWidget {
             AppTextArea(
               title: context.l10n.descriptionLabel,
               placeholder: context.l10n.enterTaskDescriptionLabel,
-              controller: _descriptionController,
+              controller: widget._descriptionController,
+              focusNode: _descriptionFocusNode,
+              textInputAction: TextInputAction.newline,
             ),
-            if (_mode == TaskWizardMode.edit) const SizedBox(height: spacing16),
-            if (_mode == TaskWizardMode.edit)
+            if (widget._mode == TaskWizardMode.edit)
+              const SizedBox(height: spacing16),
+            if (widget._mode == TaskWizardMode.edit)
               AppButtonPrimary(
                 text: context.l10n.deleteLabel,
                 onPressed: () async {
                   await context.projectController!.deleteTask(
-                    _projectId,
-                    _taskToEdit!.id,
+                    widget._projectId,
+                    widget._taskToEdit!.id,
                   );
                   if (!context.mounted) return;
                   Navigator.of(context).pop();
@@ -275,9 +308,9 @@ class _TaskWizardForm extends StatelessWidget {
   bool _getCheckboxValue(TaskStatus status) {
     switch (status) {
       case TaskStatus.todo:
-        return _selectedStatus.value == TaskStatus.inProgress;
+        return widget._selectedStatus.value == TaskStatus.inProgress;
       case TaskStatus.inProgress:
-        return _selectedStatus.value == TaskStatus.finished;
+        return widget._selectedStatus.value == TaskStatus.finished;
       case TaskStatus.finished:
         return true;
     }
@@ -286,11 +319,11 @@ class _TaskWizardForm extends StatelessWidget {
   void _onStatusChanged(TaskStatus status, bool? newValue) {
     if (newValue == null) return;
     if (status == TaskStatus.todo) {
-      _selectedStatus.value = newValue
+      widget._selectedStatus.value = newValue
           ? TaskStatus.inProgress
           : TaskStatus.todo;
     } else if (status == TaskStatus.inProgress) {
-      _selectedStatus.value = newValue
+      widget._selectedStatus.value = newValue
           ? TaskStatus.finished
           : TaskStatus.inProgress;
     }
