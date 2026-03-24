@@ -88,8 +88,7 @@ final class AppController extends BaseController<AppState> {
       (newToken) {
         if (state.user is AuthorizedUser) {
           final user = state.user as AuthorizedUser;
-          final updatedUser =
-              user.copyWith(fcmToken: newToken) as AuthorizedUser;
+          final updatedUser = user.copyWith(fcmToken: newToken);
           _firestoreRepository.updateUser(updatedUser);
           setState(
             AppState.idle(message: 'FCM token refreshed', user: updatedUser),
@@ -158,7 +157,7 @@ final class AppController extends BaseController<AppState> {
         name: name,
       );
       final fcmToken = await _messagingRepository.getToken();
-      user = user.copyWith(fcmToken: fcmToken) as AuthorizedUser;
+      user = user.copyWith(fcmToken: fcmToken);
       await _firestoreRepository.createUser(user: user);
       setState(AppState.idle(message: 'Registration successful', user: user));
     } catch (error, stackTrace) {
@@ -209,7 +208,7 @@ final class AppController extends BaseController<AppState> {
         password: password,
       );
       final fcmToken = await _messagingRepository.getToken();
-      final updatedUser = user.copyWith(fcmToken: fcmToken) as AuthorizedUser;
+      final updatedUser = user.copyWith(fcmToken: fcmToken);
       await _firestoreRepository.updateUser(updatedUser);
       setState(AppState.idle(message: 'Sign in successful', user: updatedUser));
     } catch (error, stackTrace) {
@@ -229,7 +228,7 @@ final class AppController extends BaseController<AppState> {
     try {
       if (state.user is AuthorizedUser) {
         final user = state.user as AuthorizedUser;
-        final updatedUser = user.copyWith(fcmToken: '') as AuthorizedUser;
+        final updatedUser = user.copyWith(fcmToken: '');
         await _firestoreRepository.updateUser(updatedUser);
       }
       await _authRepository.signOut();
@@ -482,46 +481,46 @@ final class AppController extends BaseController<AppState> {
     }
   });
 
-  Future<void> updateUser(
-    AuthorizedUser user,
-  ) async => await serialExecutor.synchronized(() async {
-    try {
-      if (state.user is! AuthorizedUser) {
-        setState(
-          AppState.failed(
-            message: 'Cannot update user: No authorized user in state.',
-            user: state.user,
-          ),
-        );
-        return;
-      }
-      setState(
-        AppState.processing(
-          message: 'Updating user "${user.id}"...',
-          user: state.user,
-        ),
-      );
-      final fcmToken = await _messagingRepository.getToken();
-      final updatedUser = user.copyWith(fcmToken: fcmToken) as AuthorizedUser;
-      await _firestoreRepository.updateUser(updatedUser);
-      setState(
-        AppState.idle(
-          message: 'User "${user.id}" updated successfully.',
-          user: updatedUser,
-        ),
-      );
-    } catch (error, stackTrace) {
-      setState(
-        AppState.failed(
-          message: 'Failed to update user "${user.id}": ${error.toString()}',
-          user: state.user,
-          error: error,
-          stackTrace: stackTrace,
-        ),
-      );
-      return Future.error(error, stackTrace);
-    }
-  });
+  Future<void> updateUser(AuthorizedUser user) async =>
+      await serialExecutor.synchronized(() async {
+        try {
+          if (state.user is! AuthorizedUser) {
+            setState(
+              AppState.failed(
+                message: 'Cannot update user: No authorized user in state.',
+                user: state.user,
+              ),
+            );
+            return;
+          }
+          setState(
+            AppState.processing(
+              message: 'Updating user "${user.id}"...',
+              user: state.user,
+            ),
+          );
+          final fcmToken = await _messagingRepository.getToken();
+          final updatedUser = user.copyWith(fcmToken: fcmToken);
+          await _firestoreRepository.updateUser(updatedUser);
+          setState(
+            AppState.idle(
+              message: 'User "${user.id}" updated successfully.',
+              user: updatedUser,
+            ),
+          );
+        } catch (error, stackTrace) {
+          setState(
+            AppState.failed(
+              message:
+                  'Failed to update user "${user.id}": ${error.toString()}',
+              user: state.user,
+              error: error,
+              stackTrace: stackTrace,
+            ),
+          );
+          return Future.error(error, stackTrace);
+        }
+      });
 
   Future<void> sendPasswordResetEmail(
     String email,
@@ -609,7 +608,7 @@ final class AppController extends BaseController<AppState> {
     try {
       final user = await _authRepository.signInWithGoogle();
       final fcmToken = await _messagingRepository.getToken();
-      final updatedUser = user?.copyWith(fcmToken: fcmToken) as AuthorizedUser?;
+      final updatedUser = user?.copyWith(fcmToken: fcmToken);
       if (updatedUser == null) {
         setState(
           AppState.idle(
@@ -769,21 +768,16 @@ final class AppController extends BaseController<AppState> {
           late final AuthorizedUser updatedUser;
           if (!settings.pushNotificationsEnabled) {
             await _messagingRepository.deleteToken();
-            updatedUser =
-                (state.user as AuthorizedUser).copyWith(
-                      fcmToken: '',
-                      notificationSettings: settings,
-                    )
-                    as AuthorizedUser;
+            updatedUser = (state.user as AuthorizedUser).copyWith(
+              fcmToken: '',
+              notificationSettings: settings,
+            );
           } else {
             final token = await _messagingRepository.getToken();
-            updatedUser =
-                (state.user as AuthorizedUser).copyWith(
-                      fcmToken:
-                          token ?? (state.user as AuthorizedUser).fcmToken,
-                      notificationSettings: settings,
-                    )
-                    as AuthorizedUser;
+            updatedUser = (state.user as AuthorizedUser).copyWith(
+              fcmToken: token ?? (state.user as AuthorizedUser).fcmToken,
+              notificationSettings: settings,
+            );
           }
           await _firestoreRepository.updateUser(updatedUser);
           NotificationService.updateSettings(settings);
@@ -829,21 +823,17 @@ final class AppController extends BaseController<AppState> {
       late final AuthorizedUser updatedUser;
       if (!settings.pushNotificationsEnabled) {
         await _messagingRepository.deleteToken();
-        updatedUser =
-            (state.user as AuthorizedUser).copyWith(
-                  fcmToken: '',
-                  notificationSettings: settings,
-                )
-                as AuthorizedUser;
+        updatedUser = (state.user as AuthorizedUser).copyWith(
+          fcmToken: '',
+          notificationSettings: settings,
+        );
       } else {
         final token = await _messagingRepository.getToken();
         if (token != null) {
-          updatedUser =
-              (state.user as AuthorizedUser).copyWith(
-                    fcmToken: token,
-                    notificationSettings: settings,
-                  )
-                  as AuthorizedUser;
+          updatedUser = (state.user as AuthorizedUser).copyWith(
+            fcmToken: token,
+            notificationSettings: settings,
+          );
         }
       }
       await _firestoreRepository.updateUser(updatedUser);

@@ -11,7 +11,7 @@ final class UnauthorizedUser extends UserEntity {
   const UnauthorizedUser();
 
   @override
-  UserEntity copyWith() => this;
+  UnauthorizedUser copyWith() => this;
 }
 
 final class AuthorizedUser extends UserEntity {
@@ -90,7 +90,7 @@ final class AuthorizedUser extends UserEntity {
   bool get hasAvatar => avatarUrl.isNotEmpty;
 
   @override
-  UserEntity copyWith({
+  AuthorizedUser copyWith({
     String? id,
     String? name,
     String? email,

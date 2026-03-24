@@ -87,8 +87,7 @@ class _FriendsTabState extends State<FriendsTab> {
                     ),
                   ];
                   await context.appController.updateUser(
-                    syncedUser.copyWith(friendRecentSearches: updatedSearches)
-                        as AuthorizedUser,
+                    syncedUser.copyWith(friendRecentSearches: updatedSearches),
                   );
                 },
                 onDelete: (value) async {
@@ -97,8 +96,7 @@ class _FriendsTabState extends State<FriendsTab> {
                       .where((entry) => entry != value)
                       .toList();
                   await context.appController.updateUser(
-                    syncedUser.copyWith(friendRecentSearches: updatedSearches)
-                        as AuthorizedUser,
+                    syncedUser.copyWith(friendRecentSearches: updatedSearches),
                   );
                 },
               );

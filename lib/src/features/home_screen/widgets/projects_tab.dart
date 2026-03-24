@@ -170,8 +170,7 @@ class _ProjectsSectionState extends State<_ProjectsSection> {
                   ),
                 ];
                 await context.appController.updateUser(
-                  syncedUser.copyWith(projectRecentSearches: updatedSearches)
-                      as AuthorizedUser,
+                  syncedUser.copyWith(projectRecentSearches: updatedSearches),
                 );
               },
               onDelete: (value) async {
@@ -180,8 +179,7 @@ class _ProjectsSectionState extends State<_ProjectsSection> {
                     .where((entry) => entry != value)
                     .toList();
                 await context.appController.updateUser(
-                  syncedUser.copyWith(projectRecentSearches: updatedSearches)
-                      as AuthorizedUser,
+                  syncedUser.copyWith(projectRecentSearches: updatedSearches),
                 );
               },
             );

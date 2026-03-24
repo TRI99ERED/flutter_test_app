@@ -152,10 +152,8 @@ class _InterestsScreenState extends State<InterestsScreen> {
                     onPressed: () async {
                       await context.appController.updateUser(
                         (context.appState.user as AuthorizedUser).copyWith(
-                              selectedInterests: _selectedInterests.value
-                                  .toList(),
-                            )
-                            as AuthorizedUser,
+                          selectedInterests: _selectedInterests.value.toList(),
+                        ),
                       );
                       if (!context.mounted) return;
                       AppNavigator.of(context).replaceAll(HomePage());

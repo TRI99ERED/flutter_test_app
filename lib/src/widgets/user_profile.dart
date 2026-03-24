@@ -78,10 +78,9 @@ class _UserProfileState extends State<UserProfile> {
                           ? () async {
                               await context.appController.updateUser(
                                 widget.user.copyWith(
-                                      name: _nameController.text,
-                                      handle: _handleController.text,
-                                    )
-                                    as AuthorizedUser,
+                                  name: _nameController.text,
+                                  handle: _handleController.text,
+                                ),
                               );
                               if (!context.mounted) return;
                               Navigator.of(context).pop();

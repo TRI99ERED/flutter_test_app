@@ -63,8 +63,7 @@ class _ChatsTabState extends State<ChatsTab> {
                     ),
                   ];
                   await context.appController.updateUser(
-                    syncedUser.copyWith(chatRecentSearches: updatedSearches)
-                        as AuthorizedUser,
+                    syncedUser.copyWith(chatRecentSearches: updatedSearches),
                   );
                 },
                 onDelete: (value) async {
@@ -73,8 +72,7 @@ class _ChatsTabState extends State<ChatsTab> {
                       .where((entry) => entry != value)
                       .toList();
                   await context.appController.updateUser(
-                    syncedUser.copyWith(chatRecentSearches: updatedSearches)
-                        as AuthorizedUser,
+                    syncedUser.copyWith(chatRecentSearches: updatedSearches),
                   );
                 },
               );
